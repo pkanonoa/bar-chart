@@ -57,13 +57,13 @@ export default function RootLayout({
             className="fixed inset-0 pointer-events-none -z-10 no-print bg-[#080414]"
             style={{
               backgroundImage: 'url(/bg.png)',
-              backgroundSize: 'cover',
-              backgroundPosition: 'center',
+              backgroundSize: 'contain',
+              backgroundPosition: 'center center',
               backgroundRepeat: 'no-repeat',
             }}
           >
             {/* Dark overlay to ensure text remains readable over the image */}
-            <div className="absolute inset-0 bg-black/40 mix-blend-multiply" />
+            <div className="absolute inset-0 bg-black/60 mix-blend-multiply" />
           </div>
           {children}
           <Navigation />
