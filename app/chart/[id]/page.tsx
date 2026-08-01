@@ -18,19 +18,25 @@ function ChartContent({ chart, showUI, collaborators, renderTextFlow }: any) {
   const lastTap = React.useRef(0);
 
   React.useEffect(() => {
+    let timeoutId: any;
+
     const fitToScreen = () => {
-      zoomToElement("chart-card", undefined, 0);
+      clearTimeout(timeoutId);
+      // Wait for mobile browser layout reflow after rotation
+      timeoutId = setTimeout(() => {
+        zoomToElement("chart-card", undefined, 0);
+      }, 200);
     };
 
     // Auto-fit on load
-    const timer = setTimeout(fitToScreen, 100);
+    fitToScreen();
 
     // Re-fit when screen rotates or resizes
     window.addEventListener('resize', fitToScreen);
     window.addEventListener('orientationchange', fitToScreen);
 
     return () => {
-      clearTimeout(timer);
+      clearTimeout(timeoutId);
       window.removeEventListener('resize', fitToScreen);
       window.removeEventListener('orientationchange', fitToScreen);
     };
