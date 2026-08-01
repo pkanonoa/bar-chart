@@ -7,15 +7,13 @@ import { useRouter } from 'next/navigation';
 
 export default function SettingsPage() {
   const router = useRouter();
-  const [activeTab, setActiveTab] = useState<'font' | 'theme' | 'stats' | 'about'>('font');
+  const [activeTab, setActiveTab] = useState<'font' | 'stats' | 'about'>('font');
   const [currentFont, setCurrentFont] = useState('system');
-  const [currentTheme, setCurrentTheme] = useState('purple');
   const [userCount, setUserCount] = useState<number | null>(null);
   const [isLoadingCount, setIsLoadingCount] = useState(false);
 
   useEffect(() => {
     setCurrentFont(localStorage.getItem('chord-grid-font') || 'system');
-    setCurrentTheme(localStorage.getItem('chord-grid-theme') || 'purple');
   }, []);
 
   // Fetch users when the stats tab is opened
@@ -46,11 +44,7 @@ export default function SettingsPage() {
     window.dispatchEvent(new Event('chord-grid-font-change'));
   };
 
-  const handleThemeChange = (theme: string) => {
-    setCurrentTheme(theme);
-    localStorage.setItem('chord-grid-theme', theme);
-    document.documentElement.setAttribute('data-theme', theme);
-  };
+
 
   return (
     <div className="min-h-screen pt-12 pb-32 px-4 flex justify-center bg-bg">
@@ -73,12 +67,7 @@ export default function SettingsPage() {
             >
               <Type size={16} className="mr-3" /> Font
             </button>
-            <button 
-              onClick={() => setActiveTab('theme')}
-              className={`flex items-center px-4 py-2.5 rounded-lg text-sm font-bold transition-all ${activeTab === 'theme' ? 'bg-accent-solid text-white' : 'text-text-secondary hover:bg-white/5 hover:text-text-primary'}`}
-            >
-              <Palette size={16} className="mr-3" /> Theme
-            </button>
+
             <button 
               onClick={() => setActiveTab('stats')}
               className={`flex items-center px-4 py-2.5 rounded-lg text-sm font-bold transition-all ${activeTab === 'stats' ? 'bg-accent-solid text-white' : 'text-text-secondary hover:bg-white/5 hover:text-text-primary'}`}
@@ -126,33 +115,6 @@ export default function SettingsPage() {
               </div>
             )}
 
-            {/* Theme Tab */}
-            {activeTab === 'theme' && (
-              <div className="space-y-6 animate-in fade-in slide-in-from-right-4">
-                <div>
-                  <h3 className="text-sm font-bold uppercase tracking-widest text-text-secondary mb-4">Accent Color</h3>
-                  <p className="text-sm text-text-primary mb-6">Personalize the app by selecting an accent color.</p>
-                  
-                  <div className="grid grid-cols-2 gap-4">
-                    {[
-                      { id: 'purple', name: 'Deep Purple', color: '#7c6cf0' },
-                      { id: 'blue', name: 'Ocean Blue', color: '#2563eb' },
-                      { id: 'green', name: 'Emerald', color: '#059669' },
-                      { id: 'orange', name: 'Sunset', color: '#ea580c' },
-                    ].map(theme => (
-                      <button
-                        key={theme.id}
-                        onClick={() => handleThemeChange(theme.id)}
-                        className={`flex items-center p-4 rounded-xl border transition-all ${currentTheme === theme.id ? 'border-accent-solid bg-surface-raised shadow-inner' : 'border-border bg-surface hover:border-text-secondary'}`}
-                      >
-                        <div className="w-8 h-8 rounded-full mr-3 shadow-md border border-white/10" style={{ backgroundColor: theme.color }} />
-                        <span className="font-bold text-text-primary">{theme.name}</span>
-                      </button>
-                    ))}
-                  </div>
-                </div>
-              </div>
-            )}
 
             {/* Stats Tab */}
             {activeTab === 'stats' && (

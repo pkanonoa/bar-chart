@@ -1,12 +1,12 @@
 import type { Metadata, Viewport } from "next";
-import { Geist_Mono, Inter } from "next/font/google";
+import { Outfit, Geist_Mono } from "next/font/google";
 import "./globals.css";
 import { AuthProvider } from "@/components/AuthProvider";
 import { Navigation } from "@/components/Navigation";
 import Script from "next/script";
 
-const inter = Inter({
-  variable: "--font-inter",
+const outfit = Outfit({
+  variable: "--font-outfit",
   subsets: ["latin"],
 });
 
@@ -16,7 +16,7 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
-  title: "ChordCraft",
+  title: "Clypto UI",
   description: "A tool for creating and editing bar chart notations.",
   generator: "Next.js",
   manifest: "/manifest.json",
@@ -31,7 +31,7 @@ export const metadata: Metadata = {
 };
 
 export const viewport: Viewport = {
-  themeColor: "#17181c",
+  themeColor: "#0a0514",
   width: "device-width",
   initialScale: 1,
   maximumScale: 1,
@@ -45,27 +45,18 @@ export default function RootLayout({
   return (
     <html
       lang="en"
-      className={`${inter.variable} ${geistMono.variable} h-full antialiased`}
+      className={`${outfit.variable} ${geistMono.variable} h-full antialiased`}
       suppressHydrationWarning
     >
       <head>
-        <script
-          dangerouslySetInnerHTML={{
-            __html: `
-              try {
-                const theme = localStorage.getItem('chord-grid-theme') || 'purple';
-                document.documentElement.setAttribute('data-theme', theme);
-              } catch (e) {}
-            `,
-          }}
-        />
       </head>
       <body className="min-h-full flex flex-col font-sans bg-bg text-text-primary selection:bg-accent-solid/30" suppressHydrationWarning>
         <AuthProvider>
           {/* Glassmorphism gradient mesh background */}
-          <div className="fixed inset-0 overflow-hidden pointer-events-none -z-10 no-print">
-            <div className="absolute top-[-10%] left-[-10%] w-[60%] h-[60%] rounded-full bg-accent-start/20 blur-[120px] mix-blend-screen opacity-60 animate-pulse" style={{ animationDuration: '10s' }} />
-            <div className="absolute bottom-[-10%] right-[-10%] w-[60%] h-[60%] rounded-full bg-accent-end/20 blur-[120px] mix-blend-screen opacity-60 animate-pulse" style={{ animationDuration: '14s' }} />
+          <div className="fixed inset-0 overflow-hidden pointer-events-none -z-10 no-print bg-[#080414]">
+            <div className="absolute top-[-20%] left-[-10%] w-[70%] h-[70%] rounded-full bg-[#4c28a4] blur-[150px] mix-blend-screen opacity-40 animate-pulse" style={{ animationDuration: '12s' }} />
+            <div className="absolute bottom-[-20%] right-[-10%] w-[80%] h-[80%] rounded-full bg-[#1b43b3] blur-[160px] mix-blend-screen opacity-30 animate-pulse" style={{ animationDuration: '18s' }} />
+            <div className="absolute top-[40%] left-[30%] w-[50%] h-[50%] rounded-full bg-[#7534ff] blur-[140px] mix-blend-screen opacity-20" />
           </div>
           {children}
           <Navigation />

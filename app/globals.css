@@ -1,52 +1,17 @@
 @import "tailwindcss";
 
-:root, [data-theme="purple"] {
-  --bg: #0d1117;
-  --surface: rgba(23, 28, 43, 0.4);
-  --surface-raised: rgba(31, 37, 54, 0.6);
-  --border: rgba(42, 49, 69, 0.4);
-  --text-primary: #f2f4f8;
-  --text-secondary: #9aa3bb;
-  --accent-start: #4f8ef7;
-  --accent-end: #a855f7;
-  --accent-solid: #7c6cf0;
-}
-
-[data-theme="green"] {
-  --bg: #0d1511;
-  --surface: rgba(22, 36, 26, 0.4);
-  --surface-raised: rgba(29, 44, 32, 0.6);
-  --border: rgba(43, 61, 48, 0.4);
-  --text-primary: #f2f8f4;
-  --text-secondary: #9abba5;
-  --accent-start: #34d399;
-  --accent-end: #10b981;
-  --accent-solid: #059669;
-}
-
-[data-theme="blue"] {
-  --bg: #0d121a;
-  --surface: rgba(21, 30, 43, 0.4);
-  --surface-raised: rgba(28, 39, 54, 0.6);
-  --border: rgba(40, 54, 74, 0.4);
-  --text-primary: #f0f6fc;
-  --text-secondary: #94a3b8;
-  --accent-start: #60a5fa;
+:root {
+  --bg: #080414;
+  --surface: rgba(26, 20, 52, 0.3);
+  --surface-raised: rgba(43, 33, 84, 0.4);
+  --border: rgba(255, 255, 255, 0.08);
+  --text-primary: #ffffff;
+  --text-secondary: rgba(255, 255, 255, 0.6);
+  --accent-start: #7534ff;
   --accent-end: #3b82f6;
-  --accent-solid: #2563eb;
+  --accent-solid: #6366f1;
 }
 
-[data-theme="orange"] {
-  --bg: #1a120d;
-  --surface: rgba(43, 27, 21, 0.4);
-  --surface-raised: rgba(54, 34, 28, 0.6);
-  --border: rgba(74, 48, 40, 0.4);
-  --text-primary: #fcf4f0;
-  --text-secondary: #b8a094;
-  --accent-start: #fb923c;
-  --accent-end: #f97316;
-  --accent-solid: #ea580c;
-}
 @theme inline {
   --color-bg: var(--bg);
   --color-surface: var(--surface);
@@ -58,7 +23,7 @@
   --color-accent-end: var(--accent-end);
   --color-accent-solid: var(--accent-solid);
   
-  --font-sans: var(--font-inter);
+  --font-sans: var(--font-outfit);
   --font-mono: var(--font-geist-mono);
 }
 
@@ -93,9 +58,17 @@ body {
 }
 
 @layer base {
-  .bg-surface, .bg-surface-raised {
-    backdrop-filter: blur(24px);
-    -webkit-backdrop-filter: blur(24px);
+  .bg-surface {
+    background-color: var(--surface);
+    backdrop-filter: blur(40px);
+    -webkit-backdrop-filter: blur(40px);
+    box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.15), inset 1px 0 0 rgba(255, 255, 255, 0.05), 0 20px 40px -10px rgba(0, 0, 0, 0.6);
+  }
+  .bg-surface-raised {
+    background-color: var(--surface-raised);
+    backdrop-filter: blur(60px);
+    -webkit-backdrop-filter: blur(60px);
+    box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.25), inset 1px 0 0 rgba(255, 255, 255, 0.1), 0 30px 60px -15px rgba(0, 0, 0, 0.8);
   }
 }
 
