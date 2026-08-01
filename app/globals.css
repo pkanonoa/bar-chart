@@ -95,7 +95,7 @@ body {
 @media print {
   @page {
     margin: 0;
-    size: A4 portrait;
+    size: landscape;
   }
   
   :root {
@@ -124,15 +124,15 @@ body {
 
   /* Reset layout constraints to prevent text cutoff */
   main {
-    padding: 1.5cm !important;
-    margin: 0 !important;
+    padding: 1cm 1cm !important;
+    margin: 0 auto !important;
     max-width: 100% !important;
     overflow: hidden !important;
   }
   
   /* Reset dynamic scaling bounds for print so it fits page width */
   .print-reset-scale {
-    font-size: min(2.5vw, 18px) !important;
+    font-size: min(2vw, 18px) !important;
     width: 100% !important;
     overflow: visible !important;
   }
