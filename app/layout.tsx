@@ -62,6 +62,11 @@ export default function RootLayout({
       </head>
       <body className="min-h-full flex flex-col font-sans bg-bg text-text-primary selection:bg-accent-solid/30" suppressHydrationWarning>
         <AuthProvider>
+          {/* Glassmorphism gradient mesh background */}
+          <div className="fixed inset-0 overflow-hidden pointer-events-none -z-10 no-print">
+            <div className="absolute top-[-10%] left-[-10%] w-[60%] h-[60%] rounded-full bg-accent-start/20 blur-[120px] mix-blend-screen opacity-60 animate-pulse" style={{ animationDuration: '10s' }} />
+            <div className="absolute bottom-[-10%] right-[-10%] w-[60%] h-[60%] rounded-full bg-accent-end/20 blur-[120px] mix-blend-screen opacity-60 animate-pulse" style={{ animationDuration: '14s' }} />
+          </div>
           {children}
           <Navigation />
         </AuthProvider>

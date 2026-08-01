@@ -2,9 +2,9 @@
 
 :root, [data-theme="purple"] {
   --bg: #0d1117;
-  --surface: #171c2b;
-  --surface-raised: #1f2536;
-  --border: #2a3145;
+  --surface: rgba(23, 28, 43, 0.4);
+  --surface-raised: rgba(31, 37, 54, 0.6);
+  --border: rgba(42, 49, 69, 0.4);
   --text-primary: #f2f4f8;
   --text-secondary: #9aa3bb;
   --accent-start: #4f8ef7;
@@ -14,9 +14,9 @@
 
 [data-theme="green"] {
   --bg: #0d1511;
-  --surface: #16241a;
-  --surface-raised: #1d2c20;
-  --border: #2b3d30;
+  --surface: rgba(22, 36, 26, 0.4);
+  --surface-raised: rgba(29, 44, 32, 0.6);
+  --border: rgba(43, 61, 48, 0.4);
   --text-primary: #f2f8f4;
   --text-secondary: #9abba5;
   --accent-start: #34d399;
@@ -26,9 +26,9 @@
 
 [data-theme="blue"] {
   --bg: #0d121a;
-  --surface: #151e2b;
-  --surface-raised: #1c2736;
-  --border: #28364a;
+  --surface: rgba(21, 30, 43, 0.4);
+  --surface-raised: rgba(28, 39, 54, 0.6);
+  --border: rgba(40, 54, 74, 0.4);
   --text-primary: #f0f6fc;
   --text-secondary: #94a3b8;
   --accent-start: #60a5fa;
@@ -38,9 +38,9 @@
 
 [data-theme="orange"] {
   --bg: #1a120d;
-  --surface: #2b1b15;
-  --surface-raised: #36221c;
-  --border: #4a3028;
+  --surface: rgba(43, 27, 21, 0.4);
+  --surface-raised: rgba(54, 34, 28, 0.6);
+  --border: rgba(74, 48, 40, 0.4);
   --text-primary: #fcf4f0;
   --text-secondary: #b8a094;
   --accent-start: #fb923c;
@@ -89,6 +89,13 @@ body {
     -webkit-background-clip: text;
     -webkit-text-fill-color: transparent;
     background-clip: text;
+  }
+}
+
+@layer base {
+  .bg-surface, .bg-surface-raised {
+    backdrop-filter: blur(24px);
+    -webkit-backdrop-filter: blur(24px);
   }
 }
 
