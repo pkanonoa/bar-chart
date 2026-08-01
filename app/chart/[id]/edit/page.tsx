@@ -674,7 +674,7 @@ export default function ChartEditor() {
           <div className="border-t border-border pt-12 mb-12">
             <label className="block text-xs font-bold tracking-widest text-text-secondary uppercase mb-4 text-center">Text Editor & Preview</label>
             <textarea 
-              className="w-full h-64 bg-surface-raised border border-border shadow-inner rounded-3xl p-8 font-mono text-[13px] sm:text-[15px] text-accent-start font-medium whitespace-pre-wrap resize-y focus:outline-none focus:border-accent-solid transition-all leading-relaxed"
+              className="w-full h-64 bg-surface-raised border border-border shadow-inner rounded-3xl p-8 font-mono text-[13px] sm:text-[15px] text-text-primary font-medium whitespace-pre-wrap resize-y focus:outline-none focus:border-accent-solid transition-all leading-relaxed"
               value={customText || ''}
               onFocus={() => isTypingText.current = true}
               onBlur={() => {
