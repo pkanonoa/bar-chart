@@ -34,8 +34,8 @@ export const viewport: Viewport = {
   themeColor: "#080414",
   width: "device-width",
   initialScale: 1,
-  maximumScale: 10,
-  userScalable: true,
+  maximumScale: 1,
+  userScalable: false,
   viewportFit: "cover",
 };
 
@@ -54,14 +54,11 @@ export default function RootLayout({
       </head>
       <body className="min-h-[100dvh] flex flex-col font-sans bg-bg text-text-primary selection:bg-accent-solid/30" suppressHydrationWarning>
         <AuthProvider>
-          {/* Glassmorphism Background Image */}
+          {/* Responsive Background Image */}
           <div 
-            className="fixed inset-0 pointer-events-none -z-10 no-print bg-[#080414]"
+            className="fixed inset-0 pointer-events-none -z-10 no-print bg-[#080414] bg-cover md:bg-contain bg-center bg-no-repeat transform scale-[1.15] md:scale-100"
             style={{
               backgroundImage: 'url(/bg.png)',
-              backgroundSize: 'cover',
-              backgroundPosition: 'center center',
-              backgroundRepeat: 'no-repeat',
             }}
           >
             {/* Dark overlay to ensure text remains readable over the image */}
