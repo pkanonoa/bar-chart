@@ -178,7 +178,7 @@ export function Sidebar({ isOpen, onClose }: { isOpen: boolean; onClose: () => v
               </label>
               <select 
                 value={selectedFont} 
-                onChange={(e) => handleFontChange(e.target.value)}
+                onChange={handleFontChange}
                 className="w-full bg-surface-raised border border-border shadow-inner text-xs font-bold tracking-wider text-text-primary rounded-lg p-2 focus:outline-none focus:border-accent-solid transition-all"
               >
                 <option value="system">System Default</option>
