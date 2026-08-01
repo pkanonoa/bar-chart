@@ -311,7 +311,6 @@ export default function ChartViewer() {
             <div 
               id="chart-card"
               className="inline-flex text-left flex-col w-max min-w-[min(100%,64rem)] max-w-none p-6 sm:p-12 print:p-0 bg-surface print:bg-transparent border border-border print:border-none shadow-card print:shadow-none rounded-3xl print:rounded-none relative"
-              onClick={(e) => e.stopPropagation()}
             >
               {renderTextFlow(chart)}
 
