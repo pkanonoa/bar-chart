@@ -235,46 +235,48 @@ export function FolderBrowser({ folderId, folderName }: Props) {
 
   return (
     <div className="w-full max-w-7xl mx-auto px-4 py-8">
-      {/* Header Actions */}
-      <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-10 space-y-4 sm:space-y-0">
-        <div className="flex items-center space-x-4">
-          {folderId && (
-            <button
-              onClick={() => router.push('/')}
-              className="p-3 text-text-secondary bg-surface border border-border rounded-xl hover:text-white hover:bg-surface-raised transition-all"
-              title="Back"
-            >
-              <CornerLeftUp size={20} />
-            </button>
-          )}
-          <h1 className="text-3xl font-bold text-text-primary tracking-tight">
-            {folderName || 'My Library'}
+      {/* Title & Back (only show if in a folder) */}
+      {folderId && (
+        <div className="flex items-center space-x-4 mb-6 text-text-primary">
+          <button
+            onClick={() => router.push('/')}
+            className="p-3 text-text-secondary bg-surface border border-border rounded-xl hover:text-white hover:bg-surface-raised transition-all"
+            title="Back"
+          >
+            <CornerLeftUp size={20} />
+          </button>
+          <h1 className="text-3xl font-bold tracking-tight">
+            {folderName}
           </h1>
         </div>
-        <div className="flex items-center space-x-3 w-full sm:w-auto justify-end">
-          <button onClick={handleCreateFolder} className="p-3 bg-surface border border-border rounded-xl text-text-secondary hover:text-white hover:bg-surface-raised transition-all flex items-center justify-center font-bold text-sm" title="New Folder">
-            <FolderPlus size={18} className="mr-2 sm:mr-0" />
-            <span className="sm:hidden">New Folder</span>
-          </button>
-          <button onClick={handleCreateChart} className="p-3 bg-accent-gradient rounded-xl text-white shadow-md hover:brightness-110 transition-all flex items-center justify-center font-bold text-sm" title="New Chart">
-            <FilePlus size={18} className="mr-2 sm:mr-0" />
-            <span className="sm:hidden">New Chart</span>
-          </button>
-        </div>
-      </div>
+      )}
 
-      {/* Search Bar */}
-      <div className="relative mb-8 max-w-md">
-        <div className="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none">
-          <Search className="h-5 w-5 text-text-secondary" />
+      <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-8 space-y-4 sm:space-y-0">
+        {/* Search Bar - Comes before buttons so it's on top in mobile */}
+        <div className="relative w-full max-w-md sm:mr-6">
+          <div className="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none">
+            <Search className="h-5 w-5 text-text-secondary" />
+          </div>
+          <input
+            type="text"
+            className="block w-full pl-12 pr-4 py-3 bg-surface border border-border rounded-xl leading-5 text-text-primary placeholder-text-secondary focus:outline-none focus:border-accent-solid transition-all font-medium shadow-inner"
+            placeholder={folderId ? "Search in this folder..." : "Search all charts..."}
+            value={searchQuery}
+            onChange={(e) => setSearchQuery(e.target.value)}
+          />
         </div>
-        <input
-          type="text"
-          className="block w-full pl-12 pr-4 py-3 bg-surface border border-border rounded-xl leading-5 text-text-primary placeholder-text-secondary focus:outline-none focus:border-accent-solid transition-all font-medium shadow-inner"
-          placeholder={folderId ? "Search in this folder..." : "Search all charts..."}
-          value={searchQuery}
-          onChange={(e) => setSearchQuery(e.target.value)}
-        />
+
+        {/* Action Buttons */}
+        <div className="flex items-center space-x-3 w-full sm:w-auto justify-end">
+          <button onClick={handleCreateFolder} className="flex-1 sm:flex-none px-4 py-3 bg-surface border border-border rounded-xl text-text-secondary hover:text-white hover:bg-surface-raised transition-all flex items-center justify-center font-bold text-sm" title="New Folder">
+            <FolderPlus size={18} className="mr-2" />
+            <span>New Folder</span>
+          </button>
+          <button onClick={handleCreateChart} className="flex-1 sm:flex-none px-4 py-3 bg-accent-gradient rounded-xl text-white shadow-md hover:brightness-110 transition-all flex items-center justify-center font-bold text-sm" title="New Chart">
+            <FilePlus size={18} className="mr-2" />
+            <span>New Chart</span>
+          </button>
+        </div>
       </div>
 
       {/* List View */}
