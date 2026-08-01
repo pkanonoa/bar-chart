@@ -46,117 +46,116 @@ export default function ChartViewer() {
     if (!chartData) return null;
     if (chartData.custom_text !== undefined && chartData.custom_text !== null) {
       return (
-        <pre className="font-mono text-accent-start font-medium text-[10px] sm:text-xs md:text-[15px] leading-normal whitespace-pre min-w-max" style={selectedFont !== 'system' ? { fontFamily: selectedFont } : {}}>
+        <pre className="font-sans text-accent-start font-medium text-[10px] sm:text-xs md:text-[15px] leading-normal whitespace-pre min-w-max" style={selectedFont !== 'system' ? { fontFamily: selectedFont } : {}}>
           {chartData.custom_text}
         </pre>
       );
     }
 
     const maxLabelLen = Math.max(...chartData.lines.map(l => l.label ? l.label.length : 0));
-    const labelCh = Math.max(4, maxLabelLen) + 3; // +3 to account for colon and pr-2 padding
+    const labelCh = Math.max(4, maxLabelLen) + 2; 
     
     const maxLabelRightLen = Math.max(...chartData.lines.map(l => l.labelRight ? l.labelRight.length : 0));
-    const labelRightCh = Math.max(4, maxLabelRightLen) + 3;
+    const labelRightCh = Math.max(4, maxLabelRightLen) + 2;
 
     return (
       <div 
-        className="flex flex-col gap-4 font-mono w-full leading-relaxed text-text-primary print-reset-scale" 
-        style={{ 
-          ...(selectedFont !== 'system' ? { fontFamily: selectedFont } : {}),
-          fontSize: 'clamp(0.8rem, 2.5vw, 1.75rem)' // Increased font size for readability
-        }}
+        className="flex flex-col gap-4 font-sans w-full leading-relaxed text-text-primary print-reset-scale" 
+        style={selectedFont !== 'system' ? { fontFamily: selectedFont } : {}}
       >
         {/* Header */}
-        <div className="flex flex-col items-center justify-center mb-4 sm:mb-8 pb-4 border-b border-border w-full text-text-primary">
-          <h1 className="text-xl sm:text-3xl font-sans font-bold tracking-wider uppercase mb-3" style={{ fontSize: 'clamp(1rem, 3vw, 1.875rem)' }}>{chartData.title || 'Untitled Chart'}</h1>
-          <div className="flex gap-6 font-sans font-semibold text-text-secondary tracking-widest" style={{ fontSize: 'clamp(0.6rem, 1.2vw, 0.875rem)' }}>
-            <span>{chartData.time_sig || '4/4'}</span>
-            <span>T={chartData.tempo || 120}</span>
+        <div className="relative flex items-center justify-center mb-6 sm:mb-10 pb-4 border-b border-border print:border-none w-full text-text-primary">
+          <div className="flex items-baseline gap-4 sm:gap-6">
+            <h1 className="text-2xl sm:text-4xl print:text-5xl font-bold tracking-wide">{chartData.title || 'Untitled Chart'}</h1>
+            <span className="font-semibold text-lg sm:text-2xl print:text-3xl">{chartData.time_sig || '4/4'}</span>
+          </div>
+          <div className="absolute right-0 font-semibold text-base sm:text-xl print:text-2xl">
+            t={chartData.tempo || 120}
           </div>
         </div>
 
         {/* Lines */}
-        <div className="flex flex-col gap-3 sm:gap-4 print:gap-1 w-full items-center">
-          {chartData.lines.map((line, lIdx) => {
-            return (
-              <div key={lIdx} className="flex flex-row items-center justify-center flex-nowrap whitespace-nowrap">
-                {/* Label */}
-                {maxLabelLen > 0 && (
+        <div className="flex flex-col w-full items-center">
+          <div className="flex flex-col gap-4 sm:gap-6 print:gap-8 w-fit">
+            {chartData.lines.map((line, lIdx) => {
+              return (
+                <div key={lIdx} className="flex flex-row items-center flex-nowrap whitespace-nowrap">
+                  {/* Left Label */}
                   <div 
-                    className="shrink-0 text-accent-solid print:text-black font-sans font-black tracking-widest text-right pr-3"
+                    className="shrink-0 text-text-primary print:text-black text-base sm:text-xl print:text-2xl text-right pr-3 sm:pr-4 flex items-center justify-end"
                     style={{ width: `${labelCh}ch` }}
                   >
                     {line.label ? `${line.label.charAt(0).toUpperCase()}${line.label.slice(1).toLowerCase()}:` : ''}
                   </div>
-                )}
 
-                {/* Content */}
-                <div className="flex items-center flex-nowrap shrink-0">
-                  {line.blocks.map((block, bIdx) => {
-                    const isFirst = bIdx === 0;
-                    let prefix = '';
-                    if (isFirst) {
-                      prefix = block.startRepeat ? '||:' : '||';
-                    } else {
-                      const prevBlock = line.blocks[bIdx - 1];
-                      if (prevBlock.endRepeat && block.startRepeat) {
-                        prefix = ':||:';
-                      } else if (prevBlock.endRepeat) {
-                        prefix = ':||';
-                      } else if (block.startRepeat) {
-                        prefix = '||:';
+                  {/* Chords Container */}
+                  <div className="flex items-center flex-nowrap shrink-0 text-lg sm:text-2xl print:text-3xl">
+                    {line.blocks.map((block, bIdx) => {
+                      const isFirst = bIdx === 0;
+                      let prefix = '';
+                      if (isFirst) {
+                        prefix = block.startRepeat ? '||:' : '||';
                       } else {
-                        prefix = '||';
+                        const prevBlock = line.blocks[bIdx - 1];
+                        if (prevBlock.endRepeat && block.startRepeat) {
+                          prefix = ':||:';
+                        } else if (prevBlock.endRepeat) {
+                          prefix = ':||';
+                        } else if (block.startRepeat) {
+                          prefix = '||:';
+                        } else {
+                          prefix = '||';
+                        }
                       }
-                    }
 
-                    const isLast = bIdx === line.blocks.length - 1;
-                    let suffix = '';
-                    if (isLast) {
-                      suffix = block.endRepeat ? ':||' : '||';
-                    }
+                      const isLast = bIdx === line.blocks.length - 1;
+                      let suffix = '';
+                      if (isLast) {
+                        suffix = block.endRepeat ? ':||' : '||';
+                      }
 
-                    return (
-                      <React.Fragment key={bIdx}>
-                        <span className={`inline-block w-[4ch] shrink-0 text-left font-semibold ${prefix.includes('||') ? 'text-accent-gradient' : 'text-text-secondary'}`}>{prefix}</span>
-                        {block.bars.map((bar, barIdx) => (
-                          <React.Fragment key={barIdx}>
-                            <span className="inline-block w-[5ch] shrink-0 text-center font-bold hover:text-accent-start transition-colors duration-150 text-text-primary">
-                              {parseChord(bar || '_')}
-                            </span>
-                            {barIdx < block.bars.length - 1 && (
-                              <span className="inline-block w-[2ch] shrink-0 text-center text-text-secondary font-light">|</span>
-                            )}
-                          </React.Fragment>
-                        ))}
-                      </React.Fragment>
-                    );
-                  })}
+                      return (
+                        <React.Fragment key={bIdx}>
+                          <span className={`inline-block pr-2 sm:pr-3 text-left font-semibold ${prefix.includes('||') ? 'text-accent-gradient print:text-black' : 'text-text-primary print:text-black'}`}>{prefix}</span>
+                          {block.bars.map((bar, barIdx) => (
+                            <React.Fragment key={barIdx}>
+                              <span className="inline-block px-1.5 sm:px-2.5 text-center font-bold hover:text-accent-start transition-colors duration-150 text-text-primary print:text-black">
+                                {parseChord(bar || '_')}
+                              </span>
+                              {barIdx < block.bars.length - 1 && (
+                                <span className="inline-block px-1.5 sm:px-2.5 text-center text-text-primary print:text-black">|</span>
+                              )}
+                            </React.Fragment>
+                          ))}
+                        </React.Fragment>
+                      );
+                    })}
 
-                  {/* Final Suffix */}
-                  {line.blocks.length > 0 && (() => {
-                    const lastBlock = line.blocks[line.blocks.length - 1];
-                    const suffix = lastBlock.endRepeat ? ':||' : '||';
-                    return (
-                      <span className={`inline-block w-auto shrink-0 text-left font-semibold ${suffix.includes('||') ? 'text-accent-gradient' : 'text-text-secondary'}`}>
-                        {suffix}
-                      </span>
-                    );
-                  })()}
-                </div>
-                
-                {/* Right Label */}
-                {maxLabelRightLen > 0 && (
-                  <div 
-                    className="shrink-0 text-accent-solid print:text-black font-sans font-black tracking-widest text-left pl-3"
-                    style={{ width: `${labelRightCh}ch` }}
-                  >
-                    {line.labelRight ? `${line.labelRight.charAt(0).toUpperCase()}${line.labelRight.slice(1).toLowerCase()}` : ''}
+                    {/* Final Suffix */}
+                    {line.blocks.length > 0 && (() => {
+                      const lastBlock = line.blocks[line.blocks.length - 1];
+                      const suffix = lastBlock.endRepeat ? ':||' : '||';
+                      return (
+                        <span className={`inline-block pl-2 sm:pl-3 text-left font-semibold ${suffix.includes('||') ? 'text-accent-gradient print:text-black' : 'text-text-primary print:text-black'}`}>
+                          {suffix}
+                        </span>
+                      );
+                    })()}
                   </div>
-                )}
-              </div>
-            );
-          })}
+                  
+                  {/* Right Label */}
+                  {maxLabelRightLen > 0 && (
+                    <div 
+                      className="shrink-0 text-text-primary print:text-black text-base sm:text-xl print:text-2xl text-left pl-3 sm:pl-6 flex items-center"
+                      style={{ width: `${labelRightCh}ch` }}
+                    >
+                      {line.labelRight}
+                    </div>
+                  )}
+                </div>
+              );
+            })}
+          </div>
         </div>
       </div>
     );
