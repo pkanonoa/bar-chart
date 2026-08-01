@@ -39,7 +39,7 @@ export default function AuthPage() {
   };
 
   return (
-    <div className="flex h-screen items-center justify-center bg-gray-950 px-4">
+    <div className="flex h-screen items-center justify-center px-4">
       <div className="w-full max-w-sm rounded-xl bg-gray-900 p-8 shadow-lg ring-1 ring-white/10">
         <div className="flex justify-center mb-4">
           <div className="bg-accent-solid p-1 rounded-2xl shadow-popover overflow-hidden flex items-center justify-center">

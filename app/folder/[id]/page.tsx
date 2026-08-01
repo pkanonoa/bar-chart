@@ -24,7 +24,7 @@ export default function FolderPage() {
   }, [folderId]);
 
   if (authLoading || loading) {
-    return <div className="flex h-screen items-center justify-center bg-gray-950 text-white">Loading...</div>;
+    return <div className="flex h-screen items-center justify-center text-white">Loading...</div>;
   }
 
   if (!user) {
@@ -32,7 +32,7 @@ export default function FolderPage() {
   }
 
   return (
-    <div className="min-h-screen bg-gray-950 flex flex-col">
+    <div className="min-h-screen flex flex-col">
       <main className="flex-1 overflow-y-auto">
         <FolderBrowser folderId={folderId} folderName={folder?.name || 'Unknown Folder'} />
       </main>

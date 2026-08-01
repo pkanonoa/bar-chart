@@ -201,12 +201,12 @@ export default function ChartViewer() {
   };
 
   if (authLoading || chartLoading) {
-    return <div className="flex h-screen items-center justify-center bg-gray-950 text-white">Loading...</div>;
+    return <div className="flex h-screen items-center justify-center text-white">Loading...</div>;
   }
 
   if (!user || !chart) {
     return (
-      <div className="flex h-screen flex-col items-center justify-center bg-gray-950 text-white">
+      <div className="flex h-screen flex-col items-center justify-center text-white">
         <p>Chart not found or access denied.</p>
         <button onClick={() => router.push('/')} className="mt-4 px-4 py-2 bg-indigo-600 rounded-md">Go Home</button>
       </div>
