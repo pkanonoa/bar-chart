@@ -15,15 +15,11 @@ export function Navigation() {
   
   const [showAddMenu, setShowAddMenu] = useState(false);
   const [showProfileMenu, setShowProfileMenu] = useState(false);
-  const [showFontMenu, setShowFontMenu] = useState(false);
   const [createFolderModal, setCreateFolderModal] = useState(false);
   const [hiddenBySelection, setHiddenBySelection] = useState(false);
-  const [currentFont, setCurrentFont] = useState('system');
   const [hiddenByChartUI, setHiddenByChartUI] = useState(false);
 
   React.useEffect(() => {
-    setCurrentFont(localStorage.getItem('chord-grid-font') || 'system');
-    
     const handleSelection = (e: any) => {
       setHiddenBySelection(e.detail > 0);
     };
@@ -86,7 +82,9 @@ export function Navigation() {
   };
 
   const handleLogout = async () => {
+    setShowProfileMenu(false);
     await supabase.auth.signOut();
+    router.push('/auth');
   };
 
   const fileInputRef = React.useRef<HTMLInputElement>(null);
@@ -107,13 +105,6 @@ export function Navigation() {
       onClick: () => setShowAddMenu(!showAddMenu),
     },
     {
-      id: 'fonts',
-      label: 'Fonts',
-      icon: <Type size={18} />,
-      isActive: showFontMenu,
-      onClick: () => setShowFontMenu(!showFontMenu),
-    },
-    {
       id: 'profile',
       label: 'Profile',
       icon: <User size={18} />,
@@ -125,11 +116,13 @@ export function Navigation() {
   if (hiddenBySelection) return null;
 
   return (
-    <div className={`fixed bottom-0 left-0 right-0 z-50 flex justify-center pb-6 sm:pb-8 pointer-events-none transition-all duration-300 ${hiddenByChartUI ? 'opacity-0 translate-y-4' : 'opacity-100 translate-y-0'}`}>
+    <div className={`fixed bottom-0 left-0 right-0 z-50 flex flex-col items-center justify-end pb-6 sm:pb-8 pointer-events-none transition-all duration-300 ${hiddenByChartUI ? 'opacity-0 translate-y-4' : 'opacity-100 translate-y-0'}`}>
       
-      {/* Menus popups */}
+      {/* Container for popups to share relative positioning with pill */}
+      <div className="relative pointer-events-none flex flex-col items-center">
+        {/* Menus popups */}
       {showAddMenu && (
-        <div className="absolute bottom-full left-1/2 -translate-x-1/2 mb-4 w-48 bg-surface-raised border border-border rounded-2xl shadow-popover overflow-hidden py-2 animate-in slide-in-from-bottom-2">
+        <div className="absolute bottom-full left-1/2 -translate-x-1/2 mb-4 w-48 bg-surface-raised border border-border rounded-2xl shadow-popover overflow-hidden py-2 animate-in slide-in-from-bottom-2 pointer-events-auto">
           <button onClick={handleCreateFolder} className="w-full px-4 py-3 flex items-center text-sm font-bold text-text-primary hover:bg-white/5 transition-colors">
             <FolderIcon size={16} className="mr-3 text-accent-start" /> New Folder
           </button>
@@ -143,35 +136,15 @@ export function Navigation() {
         </div>
       )}
 
-      {showFontMenu && (
-        <div className="absolute bottom-full left-1/2 -translate-x-1/2 mb-4 w-64 bg-surface-raised border border-border rounded-2xl shadow-popover overflow-hidden p-4 animate-in slide-in-from-bottom-2">
-          <h3 className="text-xs font-bold uppercase tracking-widest text-text-secondary mb-3">Chart Font</h3>
-          <select
-            value={currentFont}
-            onChange={(e) => {
-              const val = e.target.value;
-              setCurrentFont(val);
-              localStorage.setItem('chord-grid-font', val);
-              window.dispatchEvent(new Event('chord-grid-font-change'));
-            }}
-            className="w-full bg-surface text-sm font-bold tracking-wider text-text-primary rounded-xl border border-border p-3 focus:outline-none focus:border-accent-solid"
-          >
-            <option value="system">System Default</option>
-            <option value="'Courier New', Courier, monospace">Courier New</option>
-            <option value="Consolas, monospace">Consolas</option>
-            <option value="'Lucida Console', Monaco, monospace">Lucida Console</option>
-            <option value="'Cascadia Code', 'Cascadia Mono', monospace">Cascadia Code</option>
-            <option value="ui-monospace, SFMono-Regular, Menlo, Monaco, monospace">Apple / SF Mono</option>
-          </select>
-        </div>
-      )}
-
       {showProfileMenu && (
-        <div className="absolute bottom-full left-1/2 -translate-x-1/2 mb-4 w-56 bg-surface-raised border border-border rounded-2xl shadow-popover overflow-hidden py-2 animate-in slide-in-from-bottom-2">
+        <div className="absolute bottom-full left-1/2 -translate-x-1/2 mb-4 w-56 bg-surface-raised border border-border rounded-2xl shadow-popover overflow-hidden py-2 animate-in slide-in-from-bottom-2 pointer-events-auto">
           <div className="px-4 py-3 border-b border-border">
             <p className="text-xs font-bold text-text-primary truncate">{user?.email}</p>
             <p className="text-[10px] uppercase tracking-widest text-text-secondary font-bold mt-1">Free Plan</p>
           </div>
+          <button onClick={() => { setShowProfileMenu(false); router.push('/settings'); }} className="w-full px-4 py-3 flex items-center text-sm font-bold text-text-primary hover:bg-white/5 transition-colors border-b border-border">
+            <Settings size={16} className="mr-3 text-text-secondary" /> Settings
+          </button>
           <button onClick={handleLogout} className="w-full px-4 py-3 flex items-center text-sm font-bold text-red-400 hover:bg-white/5 transition-colors">
             <LogOut size={16} className="mr-3" /> Log Out
           </button>
@@ -186,7 +159,6 @@ export function Navigation() {
             onClick={() => {
               // Close others
               if (item.id !== 'add') setShowAddMenu(false);
-              if (item.id !== 'fonts') setShowFontMenu(false);
               if (item.id !== 'profile') setShowProfileMenu(false);
               
               item.onClick();
@@ -205,6 +177,7 @@ export function Navigation() {
             )}
           </button>
         ))}
+      </div>
       </div>
 
       {/* Create Folder Modal */}

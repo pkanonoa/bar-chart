@@ -1,6 +1,6 @@
 @import "tailwindcss";
 
-:root {
+:root, [data-theme="purple"] {
   --bg: #0d1117;
   --surface: #171c2b;
   --surface-raised: #1f2536;
@@ -12,6 +12,41 @@
   --accent-solid: #7c6cf0;
 }
 
+[data-theme="green"] {
+  --bg: #0d1511;
+  --surface: #16241a;
+  --surface-raised: #1d2c20;
+  --border: #2b3d30;
+  --text-primary: #f2f8f4;
+  --text-secondary: #9abba5;
+  --accent-start: #34d399;
+  --accent-end: #10b981;
+  --accent-solid: #059669;
+}
+
+[data-theme="blue"] {
+  --bg: #0d121a;
+  --surface: #151e2b;
+  --surface-raised: #1c2736;
+  --border: #28364a;
+  --text-primary: #f0f6fc;
+  --text-secondary: #94a3b8;
+  --accent-start: #60a5fa;
+  --accent-end: #3b82f6;
+  --accent-solid: #2563eb;
+}
+
+[data-theme="orange"] {
+  --bg: #1a120d;
+  --surface: #2b1b15;
+  --surface-raised: #36221c;
+  --border: #4a3028;
+  --text-primary: #fcf4f0;
+  --text-secondary: #b8a094;
+  --accent-start: #fb923c;
+  --accent-end: #f97316;
+  --accent-solid: #ea580c;
+}
 @theme inline {
   --color-bg: var(--bg);
   --color-surface: var(--surface);
@@ -59,7 +94,7 @@ body {
 
 @media print {
   @page {
-    margin: 1cm;
+    margin: 0;
     size: A4 portrait;
   }
   
@@ -89,13 +124,15 @@ body {
 
   /* Reset layout constraints to prevent text cutoff */
   main {
-    padding: 0 !important;
+    padding: 1.5cm !important;
     margin: 0 !important;
+    max-width: 100% !important;
+    overflow: hidden !important;
   }
   
   /* Reset dynamic scaling bounds for print so it fits page width */
   .print-reset-scale {
-    font-size: 14px !important;
+    font-size: min(1.8vw, 12px) !important;
     width: 100% !important;
     overflow: visible !important;
   }

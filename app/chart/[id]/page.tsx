@@ -83,10 +83,10 @@ export default function ChartViewer() {
                 {/* Label */}
                 {maxLabelLen > 0 && (
                   <div 
-                    className="shrink-0 text-text-secondary font-sans font-bold uppercase tracking-wider text-right pr-2"
+                    className="shrink-0 text-text-secondary font-sans font-bold tracking-wider text-right pr-2"
                     style={{ width: `${labelCh}ch` }}
                   >
-                    {line.label ? `${line.label}:` : ''}
+                    {line.label ? `${line.label.charAt(0).toUpperCase()}${line.label.slice(1).toLowerCase()}:` : ''}
                   </div>
                 )}
 
@@ -148,10 +148,10 @@ export default function ChartViewer() {
                 {/* Right Label */}
                 {maxLabelRightLen > 0 && (
                   <div 
-                    className="shrink-0 text-text-secondary font-sans font-bold uppercase tracking-wider text-left pl-2"
+                    className="shrink-0 text-text-secondary font-sans font-bold tracking-wider text-left pl-2"
                     style={{ width: `${labelRightCh}ch` }}
                   >
-                    {line.labelRight ? `${line.labelRight}` : ''}
+                    {line.labelRight ? `${line.labelRight.charAt(0).toUpperCase()}${line.labelRight.slice(1).toLowerCase()}` : ''}
                   </div>
                 )}
               </div>
@@ -256,12 +256,12 @@ export default function ChartViewer() {
         }}
       >
         <div 
-          className="w-full max-w-5xl p-6 sm:p-12 bg-surface border border-border shadow-card rounded-3xl overflow-x-auto min-h-[60vh] flex flex-col relative"
+          className="w-full max-w-5xl p-6 sm:p-12 print:p-0 bg-surface print:bg-transparent border border-border print:border-none shadow-card print:shadow-none rounded-3xl print:rounded-none overflow-x-auto print:overflow-visible min-h-[60vh] flex flex-col relative"
         >
           {renderTextFlow(chart)}
 
           {/* Footer Info */}
-          <div className={`mt-auto pt-6 border-t border-border flex flex-col sm:flex-row sm:items-center justify-between gap-3 text-[10px] text-text-secondary font-bold tracking-widest uppercase transition-opacity duration-300 ${showUI ? 'opacity-100' : 'opacity-0 pointer-events-none'}`}>
+          <div className={`print:hidden mt-auto pt-6 border-t border-border flex flex-col sm:flex-row sm:items-center justify-between gap-3 text-[10px] text-text-secondary font-bold tracking-widest uppercase transition-opacity duration-300 ${showUI ? 'opacity-100' : 'opacity-0 pointer-events-none'}`}>
             <div className="flex items-center space-x-4">
               <span className="flex items-center text-accent-start"><Cloud size={14} className="mr-2" /> Live Sync</span>
               {collaborators.length > 0 && (

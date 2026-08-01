@@ -3,7 +3,7 @@
 import { useState } from 'react';
 import { supabase } from '@/lib/supabase';
 import { useRouter } from 'next/navigation';
-import { Grid } from 'lucide-react';
+
 import { useAuth } from '@/components/AuthProvider';
 
 export default function AuthPage() {
@@ -42,8 +42,8 @@ export default function AuthPage() {
     <div className="flex h-screen items-center justify-center bg-gray-950 px-4">
       <div className="w-full max-w-sm rounded-xl bg-gray-900 p-8 shadow-lg ring-1 ring-white/10">
         <div className="flex justify-center mb-4">
-          <div className="bg-accent-solid p-3 rounded-xl shadow-popover">
-            <Grid size={32} className="text-white" />
+          <div className="bg-accent-solid p-1 rounded-2xl shadow-popover overflow-hidden flex items-center justify-center">
+            <img src="/icon.jpg" alt="ChordCraft Logo" className="w-16 h-16 object-cover rounded-xl" />
           </div>
         </div>
         <h2 className="mb-6 text-center text-2xl font-bold text-white tracking-tight">
