@@ -25,6 +25,13 @@ export default function ChartViewer() {
   const [showUI, setShowUI] = useState(false);
 
   React.useEffect(() => {
+    window.dispatchEvent(new CustomEvent('ui-visibility-change', { detail: showUI }));
+    return () => {
+      window.dispatchEvent(new CustomEvent('ui-visibility-change', { detail: true }));
+    };
+  }, [showUI]);
+
+  React.useEffect(() => {
     const updateFont = () => {
       const savedFont = localStorage.getItem('chord-grid-font');
       if (savedFont) setSelectedFont(savedFont);

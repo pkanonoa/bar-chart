@@ -19,6 +19,7 @@ export function Navigation() {
   const [createFolderModal, setCreateFolderModal] = useState(false);
   const [hiddenBySelection, setHiddenBySelection] = useState(false);
   const [currentFont, setCurrentFont] = useState('system');
+  const [hiddenByChartUI, setHiddenByChartUI] = useState(false);
 
   React.useEffect(() => {
     setCurrentFont(localStorage.getItem('chord-grid-font') || 'system');
@@ -26,8 +27,15 @@ export function Navigation() {
     const handleSelection = (e: any) => {
       setHiddenBySelection(e.detail > 0);
     };
+    const handleUIVisibility = (e: any) => {
+      setHiddenByChartUI(!e.detail);
+    };
     window.addEventListener('selection-change', handleSelection);
-    return () => window.removeEventListener('selection-change', handleSelection);
+    window.addEventListener('ui-visibility-change', handleUIVisibility);
+    return () => {
+      window.removeEventListener('selection-change', handleSelection);
+      window.removeEventListener('ui-visibility-change', handleUIVisibility);
+    };
   }, []);
 
   // Extract folder ID if we are in a folder
@@ -117,7 +125,7 @@ export function Navigation() {
   if (hiddenBySelection) return null;
 
   return (
-    <div className="fixed bottom-6 left-1/2 -translate-x-1/2 z-[100]">
+    <div className={`fixed bottom-0 left-0 right-0 z-50 flex justify-center pb-6 sm:pb-8 pointer-events-none transition-all duration-300 ${hiddenByChartUI ? 'opacity-0 translate-y-4' : 'opacity-100 translate-y-0'}`}>
       
       {/* Menus popups */}
       {showAddMenu && (
@@ -171,7 +179,7 @@ export function Navigation() {
       )}
 
       {/* Main Pill Nav */}
-      <div className="bg-surface-raised border border-border text-text-primary px-2 py-2 rounded-full shadow-popover flex items-center space-x-2">
+      <div className="bg-surface-raised border border-border text-text-primary px-2 py-2 rounded-full shadow-popover flex items-center space-x-2 pointer-events-auto">
         {navItems.map((item) => (
           <button
             key={item.id}
