@@ -95,25 +95,6 @@ export default function ChartViewer() {
 
   React.useEffect(() => {
     window.dispatchEvent(new CustomEvent('ui-visibility-change', { detail: showUI }));
-    
-    // Manage Fullscreen Mode to hide status/navigation bars on mobile
-    const manageFullscreen = async () => {
-      try {
-        if (!showUI) {
-          if (document.documentElement.requestFullscreen && !document.fullscreenElement) {
-            await document.documentElement.requestFullscreen();
-          }
-        } else {
-          if (document.exitFullscreen && document.fullscreenElement) {
-            await document.exitFullscreen();
-          }
-        }
-      } catch (err) {
-        console.log("Fullscreen API error (might not be supported on this device or needs user gesture):", err);
-      }
-    };
-    manageFullscreen();
-
     return () => {
       window.dispatchEvent(new CustomEvent('ui-visibility-change', { detail: true }));
     };
@@ -365,7 +346,23 @@ export default function ChartViewer() {
 
       <main 
         className="flex-1 w-full h-full min-h-screen overflow-hidden cursor-pointer"
-        onClick={(e) => setShowUI(!showUI)}
+        onClick={async (e) => {
+          const nextState = !showUI;
+          setShowUI(nextState);
+          try {
+            if (!nextState) {
+              if (document.documentElement.requestFullscreen && !document.fullscreenElement) {
+                await document.documentElement.requestFullscreen();
+              }
+            } else {
+              if (document.exitFullscreen && document.fullscreenElement) {
+                await document.exitFullscreen();
+              }
+            }
+          } catch (err) {
+            console.log("Fullscreen API error:", err);
+          }
+        }}
       >
         <TransformWrapper
           initialScale={1}
