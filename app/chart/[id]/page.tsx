@@ -18,11 +18,22 @@ function ChartContent({ chart, showUI, collaborators, renderTextFlow }: any) {
   const lastTap = React.useRef(0);
 
   React.useEffect(() => {
+    const fitToScreen = () => {
+      zoomToElement("chart-card", undefined, 0);
+    };
+
     // Auto-fit on load
-    const timer = setTimeout(() => {
-      zoomToElement("chart-card", undefined, 0); 
-    }, 100);
-    return () => clearTimeout(timer);
+    const timer = setTimeout(fitToScreen, 100);
+
+    // Re-fit when screen rotates or resizes
+    window.addEventListener('resize', fitToScreen);
+    window.addEventListener('orientationchange', fitToScreen);
+
+    return () => {
+      clearTimeout(timer);
+      window.removeEventListener('resize', fitToScreen);
+      window.removeEventListener('orientationchange', fitToScreen);
+    };
   }, [zoomToElement]);
 
   const handleTap = (e: React.MouseEvent) => {
