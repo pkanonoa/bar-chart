@@ -127,6 +127,11 @@ export default function ChartEditor() {
     for (const tLine of textLines) {
       if (!tLine.trim()) continue; 
       
+      // Skip the auto-generated header line so it doesn't become a text annotation
+      if (tLine.includes('t=') && !tLine.includes('|') && lines.length === 0) {
+        continue;
+      }
+      
       if (!tLine.includes('|')) {
         lines.push({
           id: Date.now().toString() + Math.random().toString(36).substring(2, 9),
