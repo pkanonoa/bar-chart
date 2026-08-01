@@ -61,7 +61,7 @@ export default function ChartViewer() {
 
     return (
       <div 
-        className="flex flex-col gap-4 font-sans w-full leading-relaxed text-text-primary print-reset-scale" 
+        className="flex flex-col gap-4 font-sans w-max min-w-full leading-relaxed text-text-primary print-reset-scale" 
         style={selectedFont !== 'system' ? { fontFamily: selectedFont } : {}}
       >
         {/* Header */}
