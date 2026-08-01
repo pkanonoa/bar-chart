@@ -48,6 +48,8 @@ function ChartContent({ chart, showUI, collaborators, renderTextFlow }: any) {
       // Double tap detected! Zoom back to fit screen
       zoomToElement("chart-card", undefined, 300);
       lastTap.current = 0;
+      // Stop bubbling so the double tap doesn't ALSO toggle the UI on the second tap
+      e.stopPropagation();
     } else {
       lastTap.current = now;
     }
@@ -93,6 +95,25 @@ export default function ChartViewer() {
 
   React.useEffect(() => {
     window.dispatchEvent(new CustomEvent('ui-visibility-change', { detail: showUI }));
+    
+    // Manage Fullscreen Mode to hide status/navigation bars on mobile
+    const manageFullscreen = async () => {
+      try {
+        if (!showUI) {
+          if (document.documentElement.requestFullscreen && !document.fullscreenElement) {
+            await document.documentElement.requestFullscreen();
+          }
+        } else {
+          if (document.exitFullscreen && document.fullscreenElement) {
+            await document.exitFullscreen();
+          }
+        }
+      } catch (err) {
+        console.log("Fullscreen API error (might not be supported on this device or needs user gesture):", err);
+      }
+    };
+    manageFullscreen();
+
     return () => {
       window.dispatchEvent(new CustomEvent('ui-visibility-change', { detail: true }));
     };
