@@ -75,21 +75,21 @@ export default function ChartViewer() {
         </div>
 
         {/* Lines */}
-        <div className="flex flex-col w-full items-center">
-          <div className="flex flex-col gap-4 sm:gap-6 print:gap-8 w-fit">
+        <div className="flex flex-col w-full">
+          <div className="flex flex-col gap-4 sm:gap-6 print:gap-6 w-fit max-w-full mx-auto overflow-x-visible">
             {chartData.lines.map((line, lIdx) => {
               return (
                 <div key={lIdx} className="flex flex-row items-center flex-nowrap whitespace-nowrap">
                   {/* Left Label */}
                   <div 
-                    className="shrink-0 text-text-primary print:text-black text-base sm:text-xl print:text-2xl text-right pr-3 sm:pr-4 flex items-center justify-end"
+                    className="shrink-0 text-text-primary print:text-black text-base sm:text-xl print:text-[1em] text-right pr-2 sm:pr-4 flex items-center justify-end"
                     style={{ width: `${labelCh}ch` }}
                   >
                     {line.label ? `${line.label.charAt(0).toUpperCase()}${line.label.slice(1).toLowerCase()}:` : ''}
                   </div>
 
                   {/* Chords Container */}
-                  <div className="flex items-center flex-nowrap shrink-0 text-lg sm:text-2xl print:text-3xl">
+                  <div className="flex items-center flex-nowrap shrink-0 text-lg sm:text-2xl print:text-[1.1em]">
                     {line.blocks.map((block, bIdx) => {
                       const isFirst = bIdx === 0;
                       let prefix = '';
@@ -116,7 +116,7 @@ export default function ChartViewer() {
 
                       return (
                         <React.Fragment key={bIdx}>
-                          <span className={`inline-block pr-2 sm:pr-3 text-left font-semibold ${prefix.includes('||') ? 'text-accent-gradient print:text-black' : 'text-text-primary print:text-black'}`}>{prefix}</span>
+                          <span className={`inline-block pr-2 sm:pr-3 text-left font-semibold tracking-tighter ${prefix.includes('||') ? 'text-accent-gradient print:text-black' : 'text-text-primary print:text-black'}`}>{prefix}</span>
                           {block.bars.map((bar, barIdx) => (
                             <React.Fragment key={barIdx}>
                               <span className="inline-block px-1.5 sm:px-2.5 text-center font-bold hover:text-accent-start transition-colors duration-150 text-text-primary print:text-black">
@@ -136,7 +136,7 @@ export default function ChartViewer() {
                       const lastBlock = line.blocks[line.blocks.length - 1];
                       const suffix = lastBlock.endRepeat ? ':||' : '||';
                       return (
-                        <span className={`inline-block pl-2 sm:pl-3 text-left font-semibold ${suffix.includes('||') ? 'text-accent-gradient print:text-black' : 'text-text-primary print:text-black'}`}>
+                        <span className={`inline-block pl-2 sm:pl-3 text-left font-semibold tracking-tighter ${suffix.includes('||') ? 'text-accent-gradient print:text-black' : 'text-text-primary print:text-black'}`}>
                           {suffix}
                         </span>
                       );
@@ -146,7 +146,7 @@ export default function ChartViewer() {
                   {/* Right Label */}
                   {maxLabelRightLen > 0 && (
                     <div 
-                      className="shrink-0 text-text-primary print:text-black text-base sm:text-xl print:text-2xl text-left pl-3 sm:pl-6 flex items-center"
+                      className="shrink-0 text-text-primary print:text-black text-base sm:text-xl print:text-[1em] text-left pl-3 sm:pl-6 flex items-center"
                       style={{ width: `${labelRightCh}ch` }}
                     >
                       {line.labelRight}
