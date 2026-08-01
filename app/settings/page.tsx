@@ -36,7 +36,8 @@ export default function SettingsPage() {
       };
       fetchUserCount();
     }
-  }, [activeTab, userCount, isLoadingCount]);
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [activeTab]);
 
   const handleFontChange = (val: string) => {
     setCurrentFont(val);
