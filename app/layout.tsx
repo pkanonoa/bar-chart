@@ -58,7 +58,7 @@ export default function RootLayout({
             className="fixed inset-0 pointer-events-none -z-10 no-print bg-[#080414]"
             style={{
               backgroundImage: 'url(/bg.png)',
-              backgroundSize: 'contain',
+              backgroundSize: '100% auto',
               backgroundPosition: 'center center',
               backgroundRepeat: 'no-repeat',
             }}
