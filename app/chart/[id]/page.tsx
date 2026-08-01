@@ -63,7 +63,7 @@ export default function ChartViewer() {
         className="flex flex-col gap-4 font-mono w-full leading-relaxed text-text-primary print-reset-scale" 
         style={{ 
           ...(selectedFont !== 'system' ? { fontFamily: selectedFont } : {}),
-          fontSize: 'clamp(0.5rem, 1.8vw, 1.25rem)' // Dynamic font scaling to fit screen!
+          fontSize: 'clamp(0.8rem, 2.5vw, 1.75rem)' // Increased font size for readability
         }}
       >
         {/* Header */}
@@ -83,7 +83,7 @@ export default function ChartViewer() {
                 {/* Label */}
                 {maxLabelLen > 0 && (
                   <div 
-                    className="shrink-0 text-text-secondary font-sans font-bold tracking-wider text-right pr-2"
+                    className="shrink-0 text-accent-solid print:text-black font-sans font-black tracking-widest text-right pr-3"
                     style={{ width: `${labelCh}ch` }}
                   >
                     {line.label ? `${line.label.charAt(0).toUpperCase()}${line.label.slice(1).toLowerCase()}:` : ''}
@@ -148,7 +148,7 @@ export default function ChartViewer() {
                 {/* Right Label */}
                 {maxLabelRightLen > 0 && (
                   <div 
-                    className="shrink-0 text-text-secondary font-sans font-bold tracking-wider text-left pl-2"
+                    className="shrink-0 text-accent-solid print:text-black font-sans font-black tracking-widest text-left pl-3"
                     style={{ width: `${labelRightCh}ch` }}
                   >
                     {line.labelRight ? `${line.labelRight.charAt(0).toUpperCase()}${line.labelRight.slice(1).toLowerCase()}` : ''}

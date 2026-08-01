@@ -132,7 +132,7 @@ body {
   
   /* Reset dynamic scaling bounds for print so it fits page width */
   .print-reset-scale {
-    font-size: min(2vw, 18px) !important;
+    font-size: min(2.5vw, 24px) !important;
     width: 100% !important;
     overflow: visible !important;
   }
