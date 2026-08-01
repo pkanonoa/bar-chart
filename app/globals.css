@@ -95,13 +95,13 @@ body {
 @media print {
   @page {
     margin: 0;
-    size: landscape;
+    size: portrait;
   }
   
   :root {
     --bg: #ffffff !important;
     --text-primary: #000000 !important;
-    --text-secondary: #444444 !important;
+    --text-secondary: #222222 !important;
     --border: #dddddd !important;
     --surface: #ffffff !important;
   }
@@ -124,7 +124,7 @@ body {
 
   /* Reset layout constraints to prevent text cutoff */
   main {
-    padding: 1cm 1cm !important;
+    padding: 1.5cm 0.75cm !important;
     margin: 0 auto !important;
     max-width: 100% !important;
     overflow: hidden !important;
@@ -132,7 +132,7 @@ body {
   
   /* Reset dynamic scaling bounds for print so it fits page width */
   .print-reset-scale {
-    font-size: min(2.5vw, 24px) !important;
+    font-size: min(1.9vw, 15px) !important;
     width: 100% !important;
     overflow: visible !important;
   }

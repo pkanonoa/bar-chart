@@ -76,10 +76,10 @@ export default function ChartViewer() {
         </div>
 
         {/* Lines */}
-        <div className="flex flex-col gap-3 sm:gap-4 w-full">
+        <div className="flex flex-col gap-3 sm:gap-4 print:gap-1 w-full items-center">
           {chartData.lines.map((line, lIdx) => {
             return (
-              <div key={lIdx} className="flex flex-row items-center w-full flex-nowrap whitespace-nowrap">
+              <div key={lIdx} className="flex flex-row items-center justify-center flex-nowrap whitespace-nowrap">
                 {/* Label */}
                 {maxLabelLen > 0 && (
                   <div 
