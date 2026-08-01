@@ -52,14 +52,14 @@ export default function RootLayout({
     >
       <head>
       </head>
-      <body className="min-h-full flex flex-col font-sans bg-bg text-text-primary selection:bg-accent-solid/30" suppressHydrationWarning>
+      <body className="min-h-[100dvh] flex flex-col font-sans bg-bg text-text-primary selection:bg-accent-solid/30" suppressHydrationWarning>
         <AuthProvider>
           {/* Glassmorphism Background Image */}
           <div 
             className="fixed inset-0 pointer-events-none -z-10 no-print bg-[#080414]"
             style={{
               backgroundImage: 'url(/bg.png)',
-              backgroundSize: 'contain',
+              backgroundSize: 'cover',
               backgroundPosition: 'center center',
               backgroundRepeat: 'no-repeat',
             }}
