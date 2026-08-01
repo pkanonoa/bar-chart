@@ -6,7 +6,8 @@ import { Header } from '@/components/Header';
 import { useChartSync } from '@/hooks/useChartSync';
 import { useParams, useRouter } from 'next/navigation';
 import { parseChord } from '@/lib/chord-parser';
-import { Cloud, CornerLeftUp, Edit2, Folder as FolderIcon, MoreVertical, Type, X, Printer } from 'lucide-react';
+import { X, Plus, LogOut, Download, Copy, RefreshCw, Cloud, CloudOff, Edit2, Folder as FolderIcon, MoreVertical, Printer, CornerLeftUp } from 'lucide-react';
+import { TransformWrapper, TransformComponent } from "react-zoom-pan-pinch";
 import { ChartData } from '@/lib/chart-types';
 import { transposeChart } from '@/lib/transpose';
 import { FolderPickerModal } from '@/components/FolderPickerModal';
@@ -282,26 +283,37 @@ export default function ChartViewer() {
           setShowUI(!showUI);
         }}
       >
-        <div 
-          className="w-full max-w-5xl p-6 sm:p-12 print:p-0 bg-surface print:bg-transparent border border-border print:border-none shadow-card print:shadow-none rounded-3xl print:rounded-none overflow-x-auto print:overflow-visible min-h-[60vh] flex flex-col relative"
+        <TransformWrapper
+          initialScale={1}
+          minScale={0.1}
+          maxScale={5}
+          centerOnInit
+          wheel={{ step: 0.1 }}
+          pinch={{ step: 5 }}
         >
-          {renderTextFlow(chart)}
+          <TransformComponent wrapperClass="!w-full !h-full" contentClass="!w-full !h-full flex items-center justify-center">
+            <div 
+              className="w-full max-w-5xl p-6 sm:p-12 print:p-0 bg-surface print:bg-transparent border border-border print:border-none shadow-card print:shadow-none rounded-3xl print:rounded-none overflow-visible print:overflow-visible min-h-[60vh] flex flex-col relative"
+            >
+              {renderTextFlow(chart)}
 
-          {/* Footer Info */}
-          <div className={`print:hidden mt-auto pt-6 border-t border-border flex flex-col sm:flex-row sm:items-center justify-between gap-3 text-[10px] text-text-secondary font-bold tracking-widest uppercase transition-opacity duration-300 ${showUI ? 'opacity-100' : 'opacity-0 pointer-events-none'}`}>
-            <div className="flex items-center space-x-4">
-              <span className="flex items-center text-accent-start"><Cloud size={14} className="mr-2" /> Live Sync</span>
-              {collaborators.length > 0 && (
-                <span className="text-accent-solid">
-                  {collaborators.length} viewing
+              {/* Footer Info */}
+              <div className={`print:hidden mt-auto pt-6 border-t border-border flex flex-col sm:flex-row sm:items-center justify-between gap-3 text-[10px] text-text-secondary font-bold tracking-widest uppercase transition-opacity duration-300 ${showUI ? 'opacity-100' : 'opacity-0 pointer-events-none'}`}>
+                <div className="flex items-center space-x-4">
+                  <span className="flex items-center text-accent-start"><Cloud size={14} className="mr-2" /> Live Sync</span>
+                  {collaborators.length > 0 && (
+                    <span className="text-accent-solid">
+                      {collaborators.length} viewing
+                    </span>
+                  )}
+                </div>
+                <span>
+                  {chart.lines.length} lines • {chart.lines.reduce((sum, line) => sum + line.blocks.reduce((bSum, block) => bSum + block.bars.length, 0), 0)} bars total
                 </span>
-              )}
+              </div>
             </div>
-            <span>
-              {chart.lines.length} lines • {chart.lines.reduce((sum, line) => sum + line.blocks.reduce((bSum, block) => bSum + block.bars.length, 0), 0)} bars total
-            </span>
-          </div>
-        </div>
+          </TransformComponent>
+        </TransformWrapper>
       </main>
 
       {isFolderPickerOpen && (
