@@ -16,17 +16,25 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
-  title: "Bar Chart",
-  description: "Chord progression notation tool",
+  title: "ChordCraft",
+  description: "A tool for creating and editing bar chart notations.",
+  generator: "Next.js",
   manifest: "/manifest.json",
-  appleWebApp: {
-    title: "Bar Chart",
-    statusBarStyle: "black-translucent",
-  },
+  keywords: ["music", "chord", "chart", "editor"],
+  authors: [
+    { name: "ChordCraft" }
+  ],
+  icons: [
+    { rel: "apple-touch-icon", url: "icon-192x192.png" },
+    { rel: "icon", url: "icon-192x192.png" },
+  ],
 };
 
 export const viewport: Viewport = {
-  themeColor: "#0d1117",
+  themeColor: "#17181c",
+  width: "device-width",
+  initialScale: 1,
+  maximumScale: 1,
 };
 
 export default function RootLayout({

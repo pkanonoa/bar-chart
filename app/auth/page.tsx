@@ -3,6 +3,7 @@
 import { useState } from 'react';
 import { supabase } from '@/lib/supabase';
 import { useRouter } from 'next/navigation';
+import { Grid } from 'lucide-react';
 import { useAuth } from '@/components/AuthProvider';
 
 export default function AuthPage() {
@@ -40,8 +41,13 @@ export default function AuthPage() {
   return (
     <div className="flex h-screen items-center justify-center bg-gray-950 px-4">
       <div className="w-full max-w-sm rounded-xl bg-gray-900 p-8 shadow-lg ring-1 ring-white/10">
-        <h2 className="mb-6 text-center text-2xl font-bold text-white">
-          {isSignUp ? 'Create an Account' : 'Welcome to Bar Chart'}
+        <div className="flex justify-center mb-4">
+          <div className="bg-accent-solid p-3 rounded-xl shadow-popover">
+            <Grid size={32} className="text-white" />
+          </div>
+        </div>
+        <h2 className="mb-6 text-center text-2xl font-bold text-white tracking-tight">
+          {isSignUp ? 'Create an Account' : 'Welcome to ChordCraft'}
         </h2>
         <form onSubmit={handleAuth} className="space-y-4">
           <div>

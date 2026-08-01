@@ -1,6 +1,7 @@
 {
-  "name": "Bar Chart",
-  "short_name": "Bar Chart",
+  "name": "ChordCraft",
+  "short_name": "ChordCraft",
+  "description": "Chord progression notation tool",
   "icons": [
     {
       "src": "/icon.jpg",
