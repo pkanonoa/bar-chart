@@ -293,7 +293,7 @@ export default function ChartViewer() {
         >
           <TransformComponent wrapperClass="!w-full !h-full" contentClass="!w-full !h-full flex items-center justify-center">
             <div 
-              className="w-full max-w-5xl p-6 sm:p-12 print:p-0 bg-surface print:bg-transparent border border-border print:border-none shadow-card print:shadow-none rounded-3xl print:rounded-none overflow-visible print:overflow-visible min-h-[60vh] flex flex-col relative"
+              className="min-w-full w-fit max-w-none p-6 sm:p-12 print:p-0 bg-surface print:bg-transparent border border-border print:border-none shadow-card print:shadow-none rounded-3xl print:rounded-none overflow-visible print:overflow-visible min-h-[60vh] flex flex-col relative"
             >
               {renderTextFlow(chart)}
 
