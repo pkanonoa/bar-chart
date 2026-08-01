@@ -74,7 +74,7 @@ function ChartContent({ chart, showUI, collaborators, renderTextFlow }: any) {
           )}
         </div>
         <span>
-          {chart.lines.length} lines • {chart.lines.reduce((sum, line) => sum + line.blocks.reduce((bSum, block) => bSum + block.bars.length, 0), 0)} bars total
+          {chart.lines.length} lines • {chart.lines.reduce((sum: number, line: any) => sum + line.blocks.reduce((bSum: number, block: any) => bSum + block.bars.length, 0), 0)} bars total
         </span>
       </div>
     </div>
