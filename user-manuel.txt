@@ -1,0 +1,12 @@
+jnwOcqAgVLNcx0us   :supabase pass
+Chord_grid         :user name
+
+
+Verification
+Start the server using npm run dev.
+Run schema.sql in Supabase SQL editor.
+Go to http://localhost:3000. You will be immediately redirected to the /auth page.
+Sign up with an email and password. (Check your email if Supabase email confirmation is required, or disable email confirmation in your Supabase Auth settings to log in immediately).
+Once logged in, click "Debug: Create Test Data" and inspect your browser DevTools Console to see the Data Access Layer correctly interfacing with Supabase and IDB.
+
+

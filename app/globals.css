@@ -1,0 +1,102 @@
+@import "tailwindcss";
+
+:root {
+  --bg: #0d1117;
+  --surface: #171c2b;
+  --surface-raised: #1f2536;
+  --border: #2a3145;
+  --text-primary: #f2f4f8;
+  --text-secondary: #9aa3bb;
+  --accent-start: #4f8ef7;
+  --accent-end: #a855f7;
+  --accent-solid: #7c6cf0;
+}
+
+@theme inline {
+  --color-bg: var(--bg);
+  --color-surface: var(--surface);
+  --color-surface-raised: var(--surface-raised);
+  --color-border: var(--border);
+  --color-text-primary: var(--text-primary);
+  --color-text-secondary: var(--text-secondary);
+  --color-accent-start: var(--accent-start);
+  --color-accent-end: var(--accent-end);
+  --color-accent-solid: var(--accent-solid);
+  
+  --font-sans: var(--font-inter);
+  --font-mono: var(--font-geist-mono);
+}
+
+body {
+  background-color: var(--bg);
+  color: var(--text-primary);
+}
+
+@layer utilities {
+  .shadow-card {
+    box-shadow: 0 4px 20px -2px rgba(0, 0, 0, 0.4);
+  }
+
+  .shadow-hover {
+    box-shadow: 0 8px 30px -4px rgba(0, 0, 0, 0.6);
+  }
+
+  .shadow-popover {
+    box-shadow: 0 20px 50px -10px rgba(0, 0, 0, 0.7);
+  }
+
+  .bg-accent-gradient {
+    background: linear-gradient(135deg, var(--accent-start), var(--accent-end));
+  }
+  
+  .text-accent-gradient {
+    background: linear-gradient(135deg, var(--accent-start), var(--accent-end));
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+  }
+}
+
+@media print {
+  @page {
+    margin: 1cm;
+    size: A4 portrait;
+  }
+  
+  :root {
+    --bg: #ffffff !important;
+    --text-primary: #000000 !important;
+    --text-secondary: #444444 !important;
+    --border: #dddddd !important;
+    --surface: #ffffff !important;
+  }
+  
+  body, main {
+    background-color: #ffffff !important;
+    color: #000000 !important;
+  }
+
+  /* Strip background styles and shadows from the chart container */
+  .shadow-card, .shadow-hover, .shadow-popover {
+    box-shadow: none !important;
+    background-color: transparent !important;
+  }
+
+  /* Hide UI elements that shouldn't be printed */
+  .fixed, button, .no-print {
+    display: none !important;
+  }
+
+  /* Reset layout constraints to prevent text cutoff */
+  main {
+    padding: 0 !important;
+    margin: 0 !important;
+  }
+  
+  /* Reset dynamic scaling bounds for print so it fits page width */
+  .print-reset-scale {
+    font-size: 14px !important;
+    width: 100% !important;
+    overflow: visible !important;
+  }
+}
