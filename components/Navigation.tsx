@@ -94,7 +94,7 @@ export function Navigation() {
       id: 'home',
       label: 'Home',
       icon: <Home size={18} />,
-      isActive: pathname === '/' || pathname.startsWith('/folder/'),
+      isActive: (pathname === '/' || pathname.startsWith('/folder/')) && !showProfileMenu && !showAddMenu,
       onClick: () => router.push('/'),
     },
     {
