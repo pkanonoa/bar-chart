@@ -428,8 +428,8 @@ export function FolderBrowser({ folderId, folderName }: Props) {
 
       {/* Inline Rename Modal */}
       {renameItem && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm p-4">
-          <div className="bg-surface rounded-2xl p-8 w-full max-w-sm shadow-popover border border-border">
+        <div className="fixed inset-0 z-50 flex items-start sm:items-center justify-center bg-black/60 backdrop-blur-sm p-4 pt-[20vh] sm:pt-4 overflow-y-auto">
+          <div className="bg-surface rounded-2xl p-8 w-full max-w-sm shadow-popover border border-border my-auto">
             <h3 className="text-xl font-bold text-text-primary mb-6 text-center">Rename {renameItem.type}</h3>
             <form onSubmit={(e) => {
               e.preventDefault();
@@ -453,8 +453,8 @@ export function FolderBrowser({ folderId, folderName }: Props) {
 
       {/* Inline Delete Confirmation */}
       {deleteItem && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm p-4">
-          <div className="bg-surface rounded-2xl p-8 w-full max-w-sm shadow-popover border border-border text-center">
+        <div className="fixed inset-0 z-50 flex items-start sm:items-center justify-center bg-black/60 backdrop-blur-sm p-4 pt-[20vh] sm:pt-4 overflow-y-auto">
+          <div className="bg-surface rounded-2xl p-8 w-full max-w-sm shadow-popover border border-border text-center my-auto">
             <div className="w-16 h-16 mx-auto bg-surface-raised shadow-inner border border-border rounded-full flex items-center justify-center mb-6">
               <Trash2 size={24} className="text-red-500" />
             </div>
@@ -473,8 +473,8 @@ export function FolderBrowser({ folderId, folderName }: Props) {
 
       {/* Create Folder Modal */}
       {createFolderModal && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm p-4">
-          <div className="bg-surface rounded-2xl p-8 w-full max-w-sm shadow-popover border border-border">
+        <div className="fixed inset-0 z-50 flex items-start sm:items-center justify-center bg-black/60 backdrop-blur-sm p-4 pt-[20vh] sm:pt-4 overflow-y-auto">
+          <div className="bg-surface rounded-2xl p-8 w-full max-w-sm shadow-popover border border-border my-auto">
             <h3 className="text-xl font-bold text-text-primary mb-6 text-center">New Folder</h3>
             <form onSubmit={async (e) => {
               e.preventDefault();

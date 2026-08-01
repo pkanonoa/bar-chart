@@ -93,21 +93,21 @@ export function Navigation() {
     {
       id: 'home',
       label: 'Home',
-      icon: <Home size={18} />,
+      icon: <Home size={32} />,
       isActive: (pathname === '/' || pathname.startsWith('/folder/')) && !showProfileMenu && !showAddMenu,
       onClick: () => router.push('/'),
     },
     {
       id: 'add',
       label: 'Create',
-      icon: <Plus size={18} />,
+      icon: <Plus size={32} />,
       isActive: showAddMenu,
       onClick: () => setShowAddMenu(!showAddMenu),
     },
     {
       id: 'profile',
       label: 'Profile',
-      icon: <User size={18} />,
+      icon: <User size={32} />,
       isActive: showProfileMenu,
       onClick: () => setShowProfileMenu(!showProfileMenu),
     }
@@ -117,8 +117,9 @@ export function Navigation() {
   if (hiddenBySelection || isEditingChart) return null;
 
   return (
-    <div className={`fixed bottom-0 left-0 right-0 z-50 flex flex-col items-center justify-end pb-6 sm:pb-8 pointer-events-none transition-all duration-300 ${hiddenByChartUI ? 'opacity-0 translate-y-4' : 'opacity-100 translate-y-0'}`}>
-      
+    <>
+      <div className={`fixed bottom-0 left-0 right-0 z-50 flex flex-col items-center justify-end pb-6 sm:pb-8 pointer-events-none transition-all duration-300 ${hiddenByChartUI ? 'opacity-0 translate-y-4' : 'opacity-100 translate-y-0'}`}>
+        
       {/* Container for popups to share relative positioning with pill */}
       <div className="relative pointer-events-none flex flex-col items-center">
         {/* Menus popups */}
@@ -153,7 +154,7 @@ export function Navigation() {
       )}
 
       {/* Main Pill Nav */}
-      <div className="bg-transparent border border-border text-text-primary px-2 py-2 rounded-full shadow-popover flex items-center space-x-2 pointer-events-auto">
+      <div className="bg-surface/80 backdrop-blur-md border border-border text-text-primary px-6 py-4 rounded-full shadow-popover flex items-center space-x-8 pointer-events-auto">
         {navItems.map((item) => (
           <button
             key={item.id}
@@ -166,13 +167,13 @@ export function Navigation() {
             }}
             className={`flex items-center transition-all duration-300 ease-in-out ${
               item.isActive 
-                ? 'bg-accent-solid px-4 py-2 rounded-full text-white' 
-                : 'p-2 text-text-secondary hover:text-text-primary hover:bg-white/5 rounded-full'
+                ? 'bg-accent-solid px-8 py-4 rounded-full text-white shadow-md' 
+                : 'p-4 text-text-secondary hover:text-white hover:bg-white/10 rounded-full'
             }`}
           >
             {item.icon}
             {item.isActive && (
-              <span className="ml-2 text-xs font-bold tracking-wider">
+              <span className="ml-4 text-base font-bold tracking-wider">
                 {item.label}
               </span>
             )}
@@ -183,8 +184,8 @@ export function Navigation() {
 
       {/* Create Folder Modal */}
       {createFolderModal && (
-        <div className="fixed inset-0 z-[110] flex items-center justify-center bg-black/60 backdrop-blur-sm p-4">
-          <div className="bg-surface rounded-2xl p-8 w-full max-w-sm shadow-popover border border-border">
+        <div className="fixed inset-0 z-[110] flex items-start sm:items-center justify-center bg-black/60 backdrop-blur-sm p-4 pt-[20vh] sm:pt-4 overflow-y-auto">
+          <div className="bg-surface rounded-2xl p-8 w-full max-w-sm shadow-popover border border-border my-auto">
             <h3 className="text-xl font-bold text-text-primary mb-6 text-center">New Folder</h3>
             <form onSubmit={async (e) => {
               e.preventDefault();
@@ -214,6 +215,6 @@ export function Navigation() {
           </div>
         </div>
       )}
-    </div>
+    </>
   );
 }
