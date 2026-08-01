@@ -12,9 +12,7 @@ export function Header() {
 
   return (
     <>
-      <header className="bg-bg border-b border-border sticky top-0 z-40 relative overflow-hidden">
-        {/* Soft radial glow mimicking the logo */}
-        <div className="absolute top-1/2 left-0 -translate-y-1/2 w-64 h-32 bg-accent-start/20 blur-3xl rounded-full pointer-events-none" />
+      <header className="bg-transparent sticky top-0 z-40 relative overflow-hidden">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
           <div className="flex justify-between items-center h-16">
             <div className="flex items-center space-x-4">

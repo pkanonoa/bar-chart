@@ -153,7 +153,7 @@ export function Navigation() {
       )}
 
       {/* Main Pill Nav */}
-      <div className="bg-surface-raised border border-border text-text-primary px-2 py-2 rounded-full shadow-popover flex items-center space-x-2 pointer-events-auto">
+      <div className="bg-transparent border border-border text-text-primary px-2 py-2 rounded-full shadow-popover flex items-center space-x-2 pointer-events-auto">
         {navItems.map((item) => (
           <button
             key={item.id}
