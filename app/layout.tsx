@@ -52,11 +52,18 @@ export default function RootLayout({
       </head>
       <body className="min-h-full flex flex-col font-sans bg-bg text-text-primary selection:bg-accent-solid/30" suppressHydrationWarning>
         <AuthProvider>
-          {/* Glassmorphism gradient mesh background */}
-          <div className="fixed inset-0 overflow-hidden pointer-events-none -z-10 no-print bg-[#080414]">
-            <div className="absolute top-[-20%] left-[-10%] w-[70%] h-[70%] rounded-full bg-[#4c28a4] blur-[150px] mix-blend-screen opacity-40 animate-pulse" style={{ animationDuration: '12s' }} />
-            <div className="absolute bottom-[-20%] right-[-10%] w-[80%] h-[80%] rounded-full bg-[#1b43b3] blur-[160px] mix-blend-screen opacity-30 animate-pulse" style={{ animationDuration: '18s' }} />
-            <div className="absolute top-[40%] left-[30%] w-[50%] h-[50%] rounded-full bg-[#7534ff] blur-[140px] mix-blend-screen opacity-20" />
+          {/* Glassmorphism Background Image */}
+          <div 
+            className="fixed inset-0 pointer-events-none -z-10 no-print bg-[#080414]"
+            style={{
+              backgroundImage: 'url(/bg.png)',
+              backgroundSize: 'cover',
+              backgroundPosition: 'center',
+              backgroundRepeat: 'no-repeat',
+            }}
+          >
+            {/* Dark overlay to ensure text remains readable over the image */}
+            <div className="absolute inset-0 bg-black/40 mix-blend-multiply" />
           </div>
           {children}
           <Navigation />
