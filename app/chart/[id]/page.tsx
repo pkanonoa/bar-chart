@@ -6,12 +6,12 @@ import { Header } from '@/components/Header';
 import { useChartSync } from '@/hooks/useChartSync';
 import { useParams, useRouter } from 'next/navigation';
 import { parseChord } from '@/lib/chord-parser';
-import { X, Plus, LogOut, Download, Copy, RefreshCw, Cloud, CloudOff, Edit2, Folder as FolderIcon, MoreVertical, Printer, CornerLeftUp } from 'lucide-react';
+import { X, Plus, LogOut, Download, Copy, RefreshCw, Cloud, CloudOff, Edit2, Folder as FolderIcon, MoreVertical, Printer, CornerLeftUp, Trash2 } from 'lucide-react';
 import { TransformWrapper, TransformComponent, useControls } from "react-zoom-pan-pinch";
 import { ChartData } from '@/lib/chart-types';
 import { transposeChart } from '@/lib/transpose';
 import { FolderPickerModal } from '@/components/FolderPickerModal';
-import { moveEntry } from '@/lib/storage';
+import { moveEntry, deleteEntry } from '@/lib/storage';
 
 function ChartContent({ chart, showUI, collaborators, renderTextFlow }: any) {
   const { zoomToElement } = useControls();
@@ -338,6 +338,18 @@ export default function ChartViewer() {
                 className="w-full flex items-center px-4 py-3 text-sm font-semibold text-text-secondary hover:bg-white/5 hover:text-white"
               >
                 <Printer size={16} className="mr-3" /> Export to PDF
+              </button>
+              <button
+                onClick={async () => {
+                  setIsMenuOpen(false);
+                  if (window.confirm("Are you sure you want to delete this chart?")) {
+                    await deleteEntry(chart.id, 'chart');
+                    router.push(chart.folder_id ? `/folder/${chart.folder_id}` : '/');
+                  }
+                }}
+                className="w-full flex items-center px-4 py-3 text-sm font-semibold text-red-400 hover:bg-red-500/10 hover:text-red-300"
+              >
+                <Trash2 size={16} className="mr-3" /> Delete Chart
               </button>
             </div>
           )}
