@@ -132,8 +132,15 @@ body {
   
   /* Reset dynamic scaling bounds for print so it fits page width */
   .print-reset-scale {
-    font-size: min(1.8vw, 12px) !important;
+    font-size: min(2.5vw, 18px) !important;
     width: 100% !important;
     overflow: visible !important;
+  }
+
+  /* Fix gradient text disappearing in print */
+  .text-accent-gradient {
+    -webkit-text-fill-color: #000000 !important;
+    color: #000000 !important;
+    background: none !important;
   }
 }
