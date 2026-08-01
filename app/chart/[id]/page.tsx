@@ -13,18 +13,53 @@ import { transposeChart } from '@/lib/transpose';
 import { FolderPickerModal } from '@/components/FolderPickerModal';
 import { moveEntry } from '@/lib/storage';
 
-function AutoFitChart() {
+function ChartContent({ chart, showUI, collaborators, renderTextFlow }: any) {
   const { zoomToElement } = useControls();
+  const lastTap = React.useRef(0);
 
   React.useEffect(() => {
-    // Give the DOM a tiny bit of time to render the full width before measuring
+    // Auto-fit on load
     const timer = setTimeout(() => {
       zoomToElement("chart-card", undefined, 0); 
     }, 100);
     return () => clearTimeout(timer);
   }, [zoomToElement]);
 
-  return null;
+  const handleTap = (e: React.MouseEvent) => {
+    const now = Date.now();
+    if (now - lastTap.current < 300) {
+      // Double tap detected! Zoom back to fit screen
+      zoomToElement("chart-card", undefined, 300);
+      lastTap.current = 0;
+    } else {
+      lastTap.current = now;
+    }
+  };
+
+  return (
+    <div 
+      id="chart-card"
+      onClick={handleTap}
+      className="inline-flex text-left flex-col w-max min-w-[min(100%,64rem)] max-w-none p-6 sm:p-12 print:p-0 bg-surface print:bg-transparent border border-border print:border-none shadow-card print:shadow-none rounded-3xl print:rounded-none relative"
+    >
+      {renderTextFlow(chart)}
+
+      {/* Footer Info */}
+      <div className={`print:hidden mt-auto pt-6 border-t border-border flex flex-col sm:flex-row sm:items-center justify-between gap-3 text-[10px] text-text-secondary font-bold tracking-widest uppercase transition-opacity duration-300 ${showUI ? 'opacity-100' : 'opacity-0 pointer-events-none'}`}>
+        <div className="flex items-center space-x-4">
+          <span className="flex items-center text-accent-start"><Cloud size={14} className="mr-2" /> Live Sync</span>
+          {collaborators.length > 0 && (
+            <span className="text-accent-solid">
+              {collaborators.length} viewing
+            </span>
+          )}
+        </div>
+        <span>
+          {chart.lines.length} lines • {chart.lines.reduce((sum, line) => sum + line.blocks.reduce((bSum, block) => bSum + block.bars.length, 0), 0)} bars total
+        </span>
+      </div>
+    </div>
+  );
 }
 
 export default function ChartViewer() {
@@ -302,33 +337,13 @@ export default function ChartViewer() {
           centerZoomedOut={true}
           wheel={{ step: 0.1 }}
           pinch={{ step: 5 }}
+          doubleClick={{ disabled: true }}
         >
-          <AutoFitChart />
           <TransformComponent 
             wrapperClass="!w-full !h-screen" 
             contentClass="w-max min-w-full min-h-screen flex items-center justify-center p-4 sm:p-12 pt-24 pb-24"
           >
-            <div 
-              id="chart-card"
-              className="inline-flex text-left flex-col w-max min-w-[min(100%,64rem)] max-w-none p-6 sm:p-12 print:p-0 bg-surface print:bg-transparent border border-border print:border-none shadow-card print:shadow-none rounded-3xl print:rounded-none relative"
-            >
-              {renderTextFlow(chart)}
-
-              {/* Footer Info */}
-              <div className={`print:hidden mt-auto pt-6 border-t border-border flex flex-col sm:flex-row sm:items-center justify-between gap-3 text-[10px] text-text-secondary font-bold tracking-widest uppercase transition-opacity duration-300 ${showUI ? 'opacity-100' : 'opacity-0 pointer-events-none'}`}>
-                <div className="flex items-center space-x-4">
-                  <span className="flex items-center text-accent-start"><Cloud size={14} className="mr-2" /> Live Sync</span>
-                  {collaborators.length > 0 && (
-                    <span className="text-accent-solid">
-                      {collaborators.length} viewing
-                    </span>
-                  )}
-                </div>
-                <span>
-                  {chart.lines.length} lines • {chart.lines.reduce((sum, line) => sum + line.blocks.reduce((bSum, block) => bSum + block.bars.length, 0), 0)} bars total
-                </span>
-              </div>
-            </div>
+            <ChartContent chart={chart} showUI={showUI} collaborators={collaborators} renderTextFlow={renderTextFlow} />
           </TransformComponent>
         </TransformWrapper>
       </main>
