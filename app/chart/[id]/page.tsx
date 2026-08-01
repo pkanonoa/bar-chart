@@ -76,7 +76,7 @@ export default function ChartViewer() {
 
         {/* Lines */}
         <div className="flex flex-col w-full">
-          <div className="flex flex-col gap-4 sm:gap-6 print:gap-6 w-fit max-w-full mx-auto overflow-x-visible">
+          <div className="flex flex-col gap-4 sm:gap-6 print:gap-[2em] w-fit max-w-full mx-auto overflow-x-visible">
             {chartData.lines.map((line, lIdx) => {
               return (
                 <div key={lIdx} className="flex flex-row items-center flex-nowrap whitespace-nowrap">
