@@ -45,35 +45,37 @@ export default function ChartEditor() {
         }
       }
       
-      line.blocks.forEach((block, bIdx) => {
-        const isFirst = bIdx === 0;
-        
-        if (isFirst) {
-          lineTxt += block.startRepeat ? '||: ' : '|| ';
-        } else {
-          const prevBlock = line.blocks[bIdx - 1];
-          if (prevBlock.endRepeat && block.startRepeat) {
-            lineTxt += ' :||: ';
-          } else if (prevBlock.endRepeat) {
-            lineTxt += ' :|| ';
-          } else if (block.startRepeat) {
-            lineTxt += ' ||: ';
+      if (line.blocks.length > 0) {
+        line.blocks.forEach((block, bIdx) => {
+          const isFirst = bIdx === 0;
+          
+          if (isFirst) {
+            lineTxt += block.startRepeat ? '||: ' : '|| ';
           } else {
-            lineTxt += ' || ';
+            const prevBlock = line.blocks[bIdx - 1];
+            if (prevBlock.endRepeat && block.startRepeat) {
+              lineTxt += ' :||: ';
+            } else if (prevBlock.endRepeat) {
+              lineTxt += ' :|| ';
+            } else if (block.startRepeat) {
+              lineTxt += ' ||: ';
+            } else {
+              lineTxt += ' || ';
+            }
           }
-        }
+          
+          lineTxt += block.bars.map(b => (b ? parseChordToText(b) : '_')).join(' | ');
+        });
         
-        lineTxt += block.bars.map(b => (b ? parseChordToText(b) : '_')).join(' | ');
-      });
-      
-      const lastBlock = line.blocks[line.blocks.length - 1];
-      if (lastBlock && lastBlock.endRepeat) {
-        lineTxt += ' :||';
-      } else {
-        lineTxt += ' ||';
+        const lastBlock = line.blocks[line.blocks.length - 1];
+        if (lastBlock && lastBlock.endRepeat) {
+          lineTxt += ' :||';
+        } else {
+          lineTxt += ' ||';
+        }
       }
       if (line.labelRight) {
-        lineTxt += ` ${line.labelRight}`;
+        lineTxt += line.blocks.length > 0 ? ` ${line.labelRight}` : line.labelRight;
       }
       lineTxt += '\n\n';
       bodyLines.push(lineTxt);
@@ -123,7 +125,17 @@ export default function ChartEditor() {
     const textLines = text.split('\n');
     
     for (const tLine of textLines) {
-      if (!tLine.trim() || !tLine.includes('|')) continue; 
+      if (!tLine.trim()) continue; 
+      
+      if (!tLine.includes('|')) {
+        lines.push({
+          id: Date.now().toString() + Math.random().toString(36).substring(2, 9),
+          label: '',
+          labelRight: tLine.trim(),
+          blocks: []
+        });
+        continue;
+      }
       
       let label = '';
       let labelRight = '';

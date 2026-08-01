@@ -78,6 +78,34 @@ export default function ChartViewer() {
         <div className="flex flex-col w-full">
           <div className="flex flex-col gap-4 sm:gap-6 print:gap-[2em] w-fit max-w-full mx-auto overflow-x-visible">
             {chartData.lines.map((line, lIdx) => {
+              if (line.blocks.length === 0) {
+                return (
+                  <div key={lIdx} className="flex flex-row items-center w-full flex-nowrap whitespace-nowrap">
+                    {/* Left Label */}
+                    {line.label ? (
+                      <div 
+                        className="shrink-0 text-text-primary print:text-black text-base sm:text-xl print:text-[1em] text-right pr-2 sm:pr-4 flex items-center justify-end"
+                        style={{ width: `${labelCh}ch` }}
+                      >
+                        {line.label.charAt(0).toUpperCase()}{line.label.slice(1).toLowerCase()}:
+                      </div>
+                    ) : (
+                      <div className="shrink-0" style={{ width: `${labelCh}ch` }}></div>
+                    )}
+
+                    {/* Right Label (Annotation) */}
+                    {line.labelRight && (
+                      <div 
+                        className="shrink-0 text-text-primary print:text-black text-base sm:text-xl print:text-[1em] text-left pl-3 sm:pl-6 flex items-center ml-auto"
+                        style={{ width: `${labelRightCh}ch` }}
+                      >
+                        {line.labelRight}
+                      </div>
+                    )}
+                  </div>
+                );
+              }
+
               return (
                 <div key={lIdx} className="flex flex-row items-center flex-nowrap whitespace-nowrap">
                   {/* Left Label */}

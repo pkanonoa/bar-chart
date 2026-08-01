@@ -127,7 +127,7 @@ body {
     padding: 1.5cm 0.75cm !important;
     margin: 0 auto !important;
     max-width: 100% !important;
-    overflow: hidden !important;
+    overflow: visible !important;
   }
   
   /* Reset dynamic scaling bounds for print so it fits page width */
