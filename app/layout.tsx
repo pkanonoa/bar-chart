@@ -25,8 +25,8 @@ export const metadata: Metadata = {
     { name: "ChordCraft" }
   ],
   icons: [
-    { rel: "apple-touch-icon", url: "/icon.jpg" },
-    { rel: "icon", url: "/icon.jpg" },
+    { rel: "apple-touch-icon", url: "icon-192x192.png" },
+    { rel: "icon", url: "icon-192x192.png" },
   ],
 };
 
@@ -54,30 +54,18 @@ export default function RootLayout({
       </head>
       <body className="min-h-[100dvh] flex flex-col font-sans bg-bg text-text-primary selection:bg-accent-solid/30" suppressHydrationWarning>
         <AuthProvider>
-          {/* Background Layer 1: Blurred Cover for wide screens */}
+          {/* Glassmorphism Background Image */}
           <div 
-            className="fixed inset-0 pointer-events-none -z-20 no-print bg-[#080414] opacity-50"
+            className="fixed inset-0 pointer-events-none -z-10 no-print bg-[#080414]"
             style={{
               backgroundImage: 'url(/bg.png)',
               backgroundSize: 'cover',
-              backgroundPosition: 'center center',
-              filter: 'blur(40px)',
-              transform: 'scale(1.1)',
-            }}
-          />
-          {/* Background Layer 2: Contained Logo */}
-          <div 
-            className="fixed inset-0 pointer-events-none -z-10 no-print"
-            style={{
-              backgroundImage: 'url(/bg.png)',
-              backgroundSize: 'contain',
               backgroundPosition: 'center center',
               backgroundRepeat: 'no-repeat',
             }}
           >
             {/* Dark overlay to ensure text remains readable over the image */}
             <div className="absolute inset-0 bg-black/60 mix-blend-multiply" />
-            <div className="absolute inset-0 bg-gradient-to-b from-[#080414]/40 via-transparent to-[#080414]/80" />
           </div>
           {children}
           <Navigation />
