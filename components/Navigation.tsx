@@ -113,7 +113,8 @@ export function Navigation() {
     }
   ];
 
-  if (hiddenBySelection) return null;
+  const isEditingChart = pathname.startsWith('/chart/') && pathname.endsWith('/edit');
+  if (hiddenBySelection || isEditingChart) return null;
 
   return (
     <div className={`fixed bottom-0 left-0 right-0 z-50 flex flex-col items-center justify-end pb-6 sm:pb-8 pointer-events-none transition-all duration-300 ${hiddenByChartUI ? 'opacity-0 translate-y-4' : 'opacity-100 translate-y-0'}`}>
