@@ -56,7 +56,7 @@ export default function RootLayout({
         <AuthProvider>
           {/* Responsive Background Image */}
           <div 
-            className="fixed inset-0 pointer-events-none -z-10 no-print bg-[#080414] bg-cover md:bg-contain bg-center bg-no-repeat transform scale-[1.15] md:scale-100"
+            className="fixed inset-0 pointer-events-none -z-10 no-print bg-[#080414] bg-cover bg-center bg-no-repeat transform scale-[1.15] md:scale-100"
             style={{
               backgroundImage: 'url(/bg.png)',
             }}

@@ -1,19 +1,21 @@
 'use client';
 
 import React, { useState, useEffect } from 'react';
-import { X, Type, Palette, Users, Info, Terminal, BookOpen } from 'lucide-react';
+import { X, Type, Palette, Users, Info, Terminal, BookOpen, Droplet } from 'lucide-react';
 
 import { useRouter } from 'next/navigation';
 
 export default function SettingsPage() {
   const router = useRouter();
-  const [activeTab, setActiveTab] = useState<'font' | 'stats' | 'about'>('font');
+  const [activeTab, setActiveTab] = useState<'font' | 'watermark' | 'stats' | 'about'>('font');
   const [currentFont, setCurrentFont] = useState('system');
+  const [watermark, setWatermark] = useState('');
   const [userCount, setUserCount] = useState<number | null>(null);
   const [isLoadingCount, setIsLoadingCount] = useState(false);
 
   useEffect(() => {
     setCurrentFont(localStorage.getItem('chord-grid-font') || 'system');
+    setWatermark(localStorage.getItem('chord-grid-watermark') || '');
   }, []);
 
   // Fetch users when the stats tab is opened
@@ -45,6 +47,12 @@ export default function SettingsPage() {
     window.dispatchEvent(new Event('chord-grid-font-change'));
   };
 
+  const handleWatermarkChange = (val: string) => {
+    setWatermark(val);
+    localStorage.setItem('chord-grid-watermark', val);
+    window.dispatchEvent(new Event('chord-grid-watermark-change'));
+  };
+
 
 
   return (
@@ -67,6 +75,13 @@ export default function SettingsPage() {
               className={`flex items-center px-4 py-2.5 rounded-lg text-sm font-bold transition-all ${activeTab === 'font' ? 'bg-accent-solid text-white' : 'text-text-secondary hover:bg-white/5 hover:text-text-primary'}`}
             >
               <Type size={16} className="mr-3" /> Font
+            </button>
+            
+            <button 
+              onClick={() => setActiveTab('watermark')}
+              className={`flex items-center px-4 py-2.5 rounded-lg text-sm font-bold transition-all ${activeTab === 'watermark' ? 'bg-accent-solid text-white' : 'text-text-secondary hover:bg-white/5 hover:text-text-primary'}`}
+            >
+              <Droplet size={16} className="mr-3" /> Watermark
             </button>
 
             <button 
@@ -111,6 +126,27 @@ export default function SettingsPage() {
                         {currentFont === font.id && <div className="w-2 h-2 rounded-full bg-accent-solid" />}
                       </button>
                     ))}
+                  </div>
+                </div>
+              </div>
+            )}
+
+            {/* Watermark Tab */}
+            {activeTab === 'watermark' && (
+              <div className="space-y-6 animate-in fade-in slide-in-from-right-4">
+                <div>
+                  <h3 className="text-sm font-bold uppercase tracking-widest text-text-secondary mb-4">Print Watermark</h3>
+                  <p className="text-sm text-text-primary mb-6">Set a custom watermark text (e.g. "Draft", "Confidential", or your band name) that will appear diagonally across your printed PDF charts.</p>
+                  
+                  <div className="space-y-3">
+                    <input
+                      type="text"
+                      placeholder="e.g. DRAFT"
+                      value={watermark}
+                      onChange={(e) => handleWatermarkChange(e.target.value)}
+                      className="w-full px-4 py-3 bg-surface-raised border border-border rounded-xl text-text-primary focus:outline-none focus:border-accent-solid transition-colors"
+                    />
+                    <p className="text-xs text-text-secondary">Leave blank for no watermark.</p>
                   </div>
                 </div>
               </div>

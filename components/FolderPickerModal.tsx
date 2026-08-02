@@ -53,8 +53,8 @@ export function FolderPickerModal({ isOpen, onClose, onMoveHere, title = "Move t
   };
 
   return (
-    <div className="fixed inset-0 z-50 flex items-start sm:items-center justify-center bg-black/60 backdrop-blur-sm p-4 pt-[15vh] sm:pt-4 overflow-y-auto">
-      <div className="bg-surface w-full max-w-md rounded-3xl shadow-popover border border-border overflow-hidden flex flex-col max-h-[70vh] sm:max-h-[80vh] my-auto">
+    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm p-4 sm:p-0">
+      <div className="bg-surface w-full max-w-md rounded-3xl shadow-popover border border-border overflow-hidden flex flex-col max-h-[80vh]">
         <div className="flex justify-between items-center p-6 border-b border-border">
           <h2 className="text-xl font-bold text-text-primary">{title}</h2>
           <button onClick={onClose} className="p-2 text-text-secondary bg-surface-raised border border-border shadow-inner rounded-full hover:text-white transition-all">

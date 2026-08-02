@@ -4,7 +4,7 @@ import { useState, useEffect, useRef } from 'react';
 import { useRouter } from 'next/navigation';
 import {
   Folder, Chart, listFolder, createFolder, renameEntry,
-  deleteEntry, moveEntry, saveChart, searchAll, exportChart, importChart
+  deleteEntry, moveToTrash, moveEntry, saveChart, searchAll, exportChart, importChart
 } from '@/lib/storage';
 import { FolderPickerModal } from './FolderPickerModal';
 import { useAuth } from '@/components/AuthProvider';
@@ -36,6 +36,8 @@ export function FolderBrowser({ folderId, folderName }: Props) {
   const [isBulkMove, setIsBulkMove] = useState(false);
   const [renameItem, setRenameItem] = useState<{ id: string, type: 'folder' | 'chart', currentName: string } | null>(null);
   const [deleteItem, setDeleteItem] = useState<{ id: string, type: 'folder' | 'chart', name: string } | null>(null);
+  const [deleteConfirmText, setDeleteConfirmText] = useState('');
+  const [bulkDeleteModal, setBulkDeleteModal] = useState(false);
   const [createFolderModal, setCreateFolderModal] = useState(false);
 
   // Selection state
@@ -132,12 +134,17 @@ export function FolderBrowser({ folderId, folderName }: Props) {
     router.push(`/chart/${chart.id}/edit`);
   };
 
-  const executeDelete = async () => {
+  const executeDelete = async (permanent: boolean = false) => {
     if (deleteItem) {
-      await deleteEntry(deleteItem.id, deleteItem.type);
+      if (permanent) {
+        await deleteEntry(deleteItem.id, deleteItem.type);
+      } else {
+        await moveToTrash(deleteItem.id, deleteItem.type);
+      }
       loadContents();
     }
     setDeleteItem(null);
+    setDeleteConfirmText('');
   };
 
   const executeMove = async (targetFolderId: string | null) => {
@@ -153,12 +160,16 @@ export function FolderBrowser({ folderId, folderName }: Props) {
     setMoveItem(null);
   };
 
-  const handleBulkDelete = async () => {
-    if (confirm(`Are you sure you want to delete ${selectedItems.length} items?`)) {
+  const handleBulkDelete = async (permanent: boolean = false) => {
+    if (permanent) {
       await Promise.all(selectedItems.map(item => deleteEntry(item.id, item.type)));
-      setSelectedItems([]);
-      loadContents();
+    } else {
+      await Promise.all(selectedItems.map(item => moveToTrash(item.id, item.type)));
     }
+    setSelectedItems([]);
+    setBulkDeleteModal(false);
+    setDeleteConfirmText('');
+    loadContents();
   };
 
   const toggleSelection = (id: string, type: 'folder' | 'chart', e: React.MouseEvent) => {
@@ -222,7 +233,7 @@ export function FolderBrowser({ folderId, folderName }: Props) {
               </button>
             )}
             <button
-              onClick={(e) => { e.stopPropagation(); setActiveDropdown(null); setDeleteItem({ id, type, name }); }}
+              onClick={(e) => { e.stopPropagation(); setActiveDropdown(null); setDeleteItem({ id, type, name }); setDeleteConfirmText(''); }}
               className="flex items-center w-full px-4 py-2 text-xs uppercase tracking-widest font-bold text-red-400 hover:bg-red-500/10 hover:text-red-300"
             >
               <Trash2 size={14} className="mr-2" /> Delete
@@ -403,7 +414,7 @@ export function FolderBrowser({ folderId, folderName }: Props) {
               Move
             </button>
             <button
-              onClick={handleBulkDelete}
+              onClick={() => { setBulkDeleteModal(true); setDeleteConfirmText(''); }}
               className="px-4 py-1.5 text-xs font-bold text-white bg-red-600/90 rounded-full hover:bg-red-600 shadow-md transition-all"
             >
               Delete
@@ -428,8 +439,8 @@ export function FolderBrowser({ folderId, folderName }: Props) {
 
       {/* Inline Rename Modal */}
       {renameItem && (
-        <div className="fixed inset-0 z-50 flex items-start sm:items-center justify-center bg-black/60 backdrop-blur-sm p-4 pt-[20vh] sm:pt-4 overflow-y-auto">
-          <div className="bg-surface rounded-2xl p-8 w-full max-w-sm shadow-popover border border-border my-auto">
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm p-4">
+          <div className="bg-surface rounded-2xl p-8 w-full max-w-sm shadow-popover border border-border">
             <h3 className="text-xl font-bold text-text-primary mb-6 text-center">Rename {renameItem.type}</h3>
             <form onSubmit={(e) => {
               e.preventDefault();
@@ -453,19 +464,84 @@ export function FolderBrowser({ folderId, folderName }: Props) {
 
       {/* Inline Delete Confirmation */}
       {deleteItem && (
-        <div className="fixed inset-0 z-50 flex items-start sm:items-center justify-center bg-black/60 backdrop-blur-sm p-4 pt-[20vh] sm:pt-4 overflow-y-auto">
-          <div className="bg-surface rounded-2xl p-8 w-full max-w-sm shadow-popover border border-border text-center my-auto">
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm p-4">
+          <div className="bg-surface rounded-2xl p-8 w-full max-w-sm shadow-popover border border-border text-center">
             <div className="w-16 h-16 mx-auto bg-surface-raised shadow-inner border border-border rounded-full flex items-center justify-center mb-6">
               <Trash2 size={24} className="text-red-500" />
             </div>
             <h3 className="text-xl font-bold text-text-primary mb-3">Delete {deleteItem.type}?</h3>
-            <p className="text-sm text-text-secondary mb-8 font-medium px-4">
+            <p className="text-sm text-text-secondary mb-4 font-medium px-4">
               Are you sure you want to delete "{deleteItem.name}"?
               {deleteItem.type === 'folder' && " All nested folders and charts will also be permanently deleted."}
             </p>
+            <p className="text-xs text-text-secondary mb-4">
+              Type <strong className="text-text-primary select-all">delete {deleteItem.name}</strong> to confirm.
+            </p>
+            <input
+              autoFocus
+              placeholder={`delete ${deleteItem.name}`}
+              value={deleteConfirmText}
+              onChange={(e) => setDeleteConfirmText(e.target.value)}
+              className="w-full px-4 py-3 bg-surface-raised border border-border shadow-inner rounded-xl text-text-primary focus:outline-none focus:border-red-500 transition-colors mb-6 font-medium text-center"
+            />
             <div className="flex justify-center space-x-4">
-              <button onClick={() => setDeleteItem(null)} className="px-6 py-2.5 text-sm font-bold text-text-secondary bg-surface border border-border rounded-xl hover:text-white hover:bg-surface-raised transition-all">Cancel</button>
-              <button onClick={executeDelete} className="px-6 py-2.5 text-sm font-bold text-white bg-red-600 rounded-xl shadow-md hover:bg-red-500 transition-all">Delete</button>
+              <button onClick={() => { setDeleteItem(null); setDeleteConfirmText(''); }} className="px-6 py-2.5 text-sm font-bold text-text-secondary bg-surface border border-border rounded-xl hover:text-white hover:bg-surface-raised transition-all">Cancel</button>
+              <button 
+                onClick={() => executeDelete(false)} 
+                disabled={deleteConfirmText !== `delete ${deleteItem.name}`}
+                className="px-4 py-2.5 text-sm font-bold text-white bg-accent-gradient rounded-xl shadow-md hover:brightness-110 transition-all disabled:opacity-50 disabled:cursor-not-allowed"
+              >
+                Move to Trash
+              </button>
+              <button 
+                onClick={() => executeDelete(true)} 
+                disabled={deleteConfirmText !== `delete ${deleteItem.name}`}
+                className="px-4 py-2.5 text-sm font-bold text-red-500 bg-red-500/10 border border-red-500/20 rounded-xl shadow-md hover:bg-red-500 hover:text-white transition-all disabled:opacity-50 disabled:cursor-not-allowed"
+              >
+                Delete Permanently
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Bulk Delete Confirmation */}
+      {bulkDeleteModal && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm p-4">
+          <div className="bg-surface rounded-2xl p-8 w-full max-w-lg shadow-popover border border-border text-center">
+            <div className="w-16 h-16 mx-auto bg-surface-raised shadow-inner border border-border rounded-full flex items-center justify-center mb-6">
+              <Trash2 size={24} className="text-red-500" />
+            </div>
+            <h3 className="text-xl font-bold text-text-primary mb-3">Delete {selectedItems.length} items?</h3>
+            <p className="text-sm text-text-secondary mb-4 font-medium px-4">
+              Are you sure you want to delete {selectedItems.length} items? All nested folders and charts will also be affected.
+            </p>
+            <p className="text-xs text-text-secondary mb-4">
+              Type <strong className="text-text-primary select-all">delete {selectedItems.length} items</strong> to confirm.
+            </p>
+            <input
+              autoFocus
+              placeholder={`delete ${selectedItems.length} items`}
+              value={deleteConfirmText}
+              onChange={(e) => setDeleteConfirmText(e.target.value)}
+              className="w-full px-4 py-3 bg-surface-raised border border-border shadow-inner rounded-xl text-text-primary focus:outline-none focus:border-red-500 transition-colors mb-6 font-medium text-center"
+            />
+            <div className="flex justify-center space-x-3">
+              <button onClick={() => { setBulkDeleteModal(false); setDeleteConfirmText(''); }} className="px-6 py-2.5 text-sm font-bold text-text-secondary bg-surface border border-border rounded-xl hover:text-white hover:bg-surface-raised transition-all">Cancel</button>
+              <button 
+                onClick={() => handleBulkDelete(false)} 
+                disabled={deleteConfirmText !== `delete ${selectedItems.length} items`}
+                className="px-4 py-2.5 text-sm font-bold text-white bg-accent-gradient rounded-xl shadow-md hover:brightness-110 transition-all disabled:opacity-50 disabled:cursor-not-allowed"
+              >
+                Move to Trash
+              </button>
+              <button 
+                onClick={() => handleBulkDelete(true)} 
+                disabled={deleteConfirmText !== `delete ${selectedItems.length} items`}
+                className="px-4 py-2.5 text-sm font-bold text-red-500 bg-red-500/10 border border-red-500/20 rounded-xl shadow-md hover:bg-red-500 hover:text-white transition-all disabled:opacity-50 disabled:cursor-not-allowed"
+              >
+                Delete Permanently
+              </button>
             </div>
           </div>
         </div>
@@ -473,8 +549,8 @@ export function FolderBrowser({ folderId, folderName }: Props) {
 
       {/* Create Folder Modal */}
       {createFolderModal && (
-        <div className="fixed inset-0 z-50 flex items-start sm:items-center justify-center bg-black/60 backdrop-blur-sm p-4 pt-[20vh] sm:pt-4 overflow-y-auto">
-          <div className="bg-surface rounded-2xl p-8 w-full max-w-sm shadow-popover border border-border my-auto">
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm p-4">
+          <div className="bg-surface rounded-2xl p-8 w-full max-w-sm shadow-popover border border-border">
             <h3 className="text-xl font-bold text-text-primary mb-6 text-center">New Folder</h3>
             <form onSubmit={async (e) => {
               e.preventDefault();

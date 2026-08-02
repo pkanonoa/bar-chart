@@ -94,7 +94,7 @@ async function cacheFolder(folder: Folder) {
 
 export async function listFolder(folderId: string | null) {
   if (isOnline()) {
-    let foldersQuery = supabase.from('folders').select('*').order('updated_at', { ascending: false });
+    let foldersQuery = supabase.from('folders').select('*').order('updated_at', { ascending: false }).not('name', 'like', '__TRASH__:%');
     if (folderId) {
       foldersQuery = foldersQuery.eq('parent_id', folderId);
     } else {
@@ -102,7 +102,7 @@ export async function listFolder(folderId: string | null) {
     }
     const foldersRes = await foldersQuery;
 
-    let chartsQuery = supabase.from('charts').select('id, title, updated_at').order('updated_at', { ascending: false });
+    let chartsQuery = supabase.from('charts').select('id, title, updated_at').order('updated_at', { ascending: false }).not('title', 'like', '__TRASH__:%');
     if (folderId) {
       chartsQuery = chartsQuery.eq('folder_id', folderId);
     } else {
@@ -124,8 +124,8 @@ export async function listFolder(folderId: string | null) {
     const db = await dbPromise;
     const allFolders = await db.getAll('folders');
     const allCharts = await db.getAll('charts');
-    const folders = allFolders.filter((f) => f.parent_id === folderId);
-    const charts = allCharts.filter((c) => c.folder_id === folderId);
+    const folders = allFolders.filter((f) => f.parent_id === folderId && !f.name.startsWith('__TRASH__:'));
+    const charts = allCharts.filter((c) => c.folder_id === folderId && !c.title.startsWith('__TRASH__:'));
     return {
       folders,
       charts: charts.map((c) => ({ id: c.id, title: c.title, updated_at: c.updated_at, type: 'chart' })),
@@ -189,6 +189,108 @@ export async function deleteEntry(id: string, type: 'folder' | 'chart') {
   }
 }
 
+export async function moveToTrash(id: string, type: 'folder' | 'chart') {
+  const updated_at = new Date().toISOString();
+  
+  // First, get the current entry to know its name and parent
+  let existingName = '';
+  let existingParentId: string | null = null;
+  
+  if (isOnline()) {
+    if (type === 'folder') {
+      const { data } = await supabase.from('folders').select('name, parent_id').eq('id', id).single();
+      if (data) { existingName = data.name; existingParentId = data.parent_id; }
+    } else {
+      const { data } = await supabase.from('charts').select('title, folder_id').eq('id', id).single();
+      if (data) { existingName = data.title; existingParentId = data.folder_id; }
+    }
+  } else if (dbPromise) {
+    const db = await dbPromise;
+    const storeName = type === 'folder' ? 'folders' : 'charts';
+    const existing = await db.get(storeName, id);
+    if (existing) {
+      if (type === 'folder') { existingName = (existing as Folder).name; existingParentId = (existing as Folder).parent_id; }
+      else { existingName = (existing as Chart).title; existingParentId = (existing as Chart).folder_id; }
+    }
+  }
+  
+  if (!existingName) return;
+  
+  const trashedName = `__TRASH__:${existingParentId || 'root'}:${existingName}`;
+  
+  if (isOnline()) {
+    if (type === 'folder') {
+      await supabase.from('folders').update({ name: trashedName, parent_id: null, updated_at }).eq('id', id);
+    } else {
+      await supabase.from('charts').update({ title: trashedName, folder_id: null, updated_at }).eq('id', id);
+    }
+  } else if (dbPromise) {
+    const db = await dbPromise;
+    const storeName = type === 'folder' ? 'folders' : 'charts';
+    const existing = await db.get(storeName, id);
+    if (existing) {
+      const updated: any = { ...existing, updated_at };
+      if (type === 'folder') { updated.name = trashedName; updated.parent_id = null; }
+      else { updated.title = trashedName; updated.folder_id = null; }
+      await db.put(storeName, updated);
+      await db.put('pending_saves', { id, type, data: updated, action: 'upsert' });
+    }
+  }
+}
+
+export async function restoreFromTrash(id: string, type: 'folder' | 'chart', trashedName: string) {
+  const updated_at = new Date().toISOString();
+  
+  // Parse the trashed name: __TRASH__:{original_parent_id}:{original_name}
+  const parts = trashedName.split(':');
+  if (parts.length < 3 || parts[0] !== '__TRASH__') return;
+  
+  const originalParentIdRaw = parts[1];
+  const originalParentId = originalParentIdRaw === 'root' ? null : originalParentIdRaw;
+  const originalName = parts.slice(2).join(':');
+  
+  if (isOnline()) {
+    if (type === 'folder') {
+      await supabase.from('folders').update({ name: originalName, parent_id: originalParentId, updated_at }).eq('id', id);
+    } else {
+      await supabase.from('charts').update({ title: originalName, folder_id: originalParentId, updated_at }).eq('id', id);
+    }
+  } else if (dbPromise) {
+    const db = await dbPromise;
+    const storeName = type === 'folder' ? 'folders' : 'charts';
+    const existing = await db.get(storeName, id);
+    if (existing) {
+      const updated: any = { ...existing, updated_at };
+      if (type === 'folder') { updated.name = originalName; updated.parent_id = originalParentId; }
+      else { updated.title = originalName; updated.folder_id = originalParentId; }
+      await db.put(storeName, updated);
+      await db.put('pending_saves', { id, type, data: updated, action: 'upsert' });
+    }
+  }
+}
+
+export async function listTrash() {
+  if (isOnline()) {
+    const foldersRes = await supabase.from('folders').select('*').like('name', '__TRASH__:%').order('updated_at', { ascending: false });
+    const chartsRes = await supabase.from('charts').select('id, title, updated_at').like('title', '__TRASH__:%').order('updated_at', { ascending: false });
+    return {
+      folders: foldersRes.data || [],
+      charts: (chartsRes.data || []).map((c) => ({ ...c, type: 'chart' })),
+    };
+  } else if (dbPromise) {
+    const db = await dbPromise;
+    const allFolders = await db.getAll('folders');
+    const allCharts = await db.getAll('charts');
+    const folders = allFolders.filter((f) => f.name.startsWith('__TRASH__:'));
+    const charts = allCharts.filter((c) => c.title.startsWith('__TRASH__:'));
+    return {
+      folders,
+      charts: charts.map((c) => ({ id: c.id, title: c.title, updated_at: c.updated_at, type: 'chart' })),
+    };
+  }
+  return { folders: [], charts: [] };
+}
+
 export async function moveEntry(id: string, type: 'folder' | 'chart', newParentId: string | null) {
   const updated_at = new Date().toISOString();
   if (isOnline()) {
@@ -241,12 +343,13 @@ export async function readChart(id: string): Promise<Chart | null> {
 
 export async function getRecentCharts(limit: number = 5) {
   if (isOnline()) {
-    const { data } = await supabase.from('charts').select('id, title, updated_at').order('updated_at', { ascending: false }).limit(limit);
+    const { data } = await supabase.from('charts').select('id, title, updated_at').not('title', 'like', '__TRASH__:%').order('updated_at', { ascending: false }).limit(limit);
     return data || [];
   } else if (dbPromise) {
     const db = await dbPromise;
     const allCharts = await db.getAll('charts');
-    return allCharts.sort((a, b) => new Date(b.updated_at).getTime() - new Date(a.updated_at).getTime()).slice(0, limit);
+    return allCharts.filter(c => !c.title.startsWith('__TRASH__:'))
+      .sort((a, b) => new Date(b.updated_at).getTime() - new Date(a.updated_at).getTime()).slice(0, limit);
   }
   return [];
 }
@@ -280,12 +383,12 @@ export async function getFolder(id: string): Promise<Folder | null> {
 export async function searchAll(query: string, rootFolderId: string | null = null) {
   let charts: any[] = [];
   if (isOnline()) {
-    const { data } = await supabase.from('charts').select('id, title, updated_at, folder_id').ilike('title', `%${query}%`);
+    const { data } = await supabase.from('charts').select('id, title, updated_at, folder_id').ilike('title', `%${query}%`).not('title', 'like', '__TRASH__:%');
     charts = data || [];
   } else if (dbPromise) {
     const db = await dbPromise;
     const all = await db.getAll('charts');
-    charts = all.filter((c) => c.title.toLowerCase().includes(query.toLowerCase()));
+    charts = all.filter((c) => !c.title.startsWith('__TRASH__:') && c.title.toLowerCase().includes(query.toLowerCase()));
   }
 
   const folders = await getAllFolders();

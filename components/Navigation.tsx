@@ -1,7 +1,7 @@
 'use client';
 
 import React, { useState } from 'react';
-import { Home, Folder as FolderIcon, Plus, User, Type, FileText, Upload, LogOut, Settings } from 'lucide-react';
+import { Home, Folder as FolderIcon, Plus, User, Type, FileText, Upload, LogOut, Settings, Trash2 } from 'lucide-react';
 import Link from 'next/link';
 import { usePathname, useRouter } from 'next/navigation';
 import { useAuth } from '@/components/AuthProvider';
@@ -147,6 +147,9 @@ export function Navigation() {
           <button onClick={() => { setShowProfileMenu(false); router.push('/settings'); }} className="w-full px-4 py-3 flex items-center text-sm font-bold text-text-primary hover:bg-white/5 transition-colors border-b border-border">
             <Settings size={16} className="mr-3 text-text-secondary" /> Settings
           </button>
+          <button onClick={() => { setShowProfileMenu(false); router.push('/trash'); }} className="w-full px-4 py-3 flex items-center text-sm font-bold text-text-primary hover:bg-white/5 transition-colors border-b border-border">
+            <Trash2 size={16} className="mr-3 text-text-secondary" /> Trash
+          </button>
           <button onClick={handleLogout} className="w-full px-4 py-3 flex items-center text-sm font-bold text-red-400 hover:bg-white/5 transition-colors">
             <LogOut size={16} className="mr-3" /> Log Out
           </button>
@@ -154,7 +157,7 @@ export function Navigation() {
       )}
 
       {/* Main Pill Nav */}
-      <div className="bg-surface/80 backdrop-blur-md border border-border text-text-primary px-6 py-4 rounded-full shadow-popover flex items-center space-x-8 pointer-events-auto">
+      <div className="bg-surface/80 backdrop-blur-md border border-border text-text-primary px-6 py-4 md:px-4 md:py-2 rounded-full shadow-popover flex items-center space-x-8 md:space-x-4 pointer-events-auto">
         {navItems.map((item) => (
           <button
             key={item.id}
@@ -167,8 +170,8 @@ export function Navigation() {
             }}
             className={`flex items-center transition-all duration-300 ease-in-out ${
               item.isActive 
-                ? 'bg-accent-solid px-8 py-4 rounded-full text-white shadow-md' 
-                : 'p-4 text-text-secondary hover:text-white hover:bg-white/10 rounded-full'
+                ? 'bg-accent-solid px-8 py-4 md:px-6 md:py-2.5 rounded-full text-white shadow-md' 
+                : 'p-4 md:p-3 text-text-secondary hover:text-white hover:bg-white/10 rounded-full'
             }`}
           >
             {item.icon}
@@ -184,8 +187,8 @@ export function Navigation() {
 
       {/* Create Folder Modal */}
       {createFolderModal && (
-        <div className="fixed inset-0 z-[110] flex items-start sm:items-center justify-center bg-black/60 backdrop-blur-sm p-4 pt-[20vh] sm:pt-4 overflow-y-auto">
-          <div className="bg-surface rounded-2xl p-8 w-full max-w-sm shadow-popover border border-border my-auto">
+        <div className="fixed inset-0 z-[110] flex items-center justify-center bg-black/60 backdrop-blur-sm p-4">
+          <div className="bg-surface rounded-2xl p-8 w-full max-w-sm shadow-popover border border-border">
             <h3 className="text-xl font-bold text-text-primary mb-6 text-center">New Folder</h3>
             <form onSubmit={async (e) => {
               e.preventDefault();
@@ -215,6 +218,7 @@ export function Navigation() {
           </div>
         </div>
       )}
+      </div>
     </>
   );
 }
