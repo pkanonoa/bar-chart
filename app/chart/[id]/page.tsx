@@ -154,7 +154,7 @@ export default function ChartViewer() {
         style={selectedFont !== 'system' ? { fontFamily: selectedFont } : {}}
       >
         {/* Header */}
-        <div className="relative flex items-center justify-center mb-6 sm:mb-10 pb-4 border-b border-border print:border-none w-full text-text-primary print:text-black print:pt-32">
+        <div className="relative flex items-center justify-center mb-6 sm:mb-10 pb-4 border-b border-border print:border-none w-full text-text-primary print:text-black print:pt-24">
           <div className="flex items-baseline gap-4 sm:gap-6">
             <h1 className="text-2xl sm:text-4xl print:text-4xl font-bold print:!font-bold tracking-wide print:!tracking-normal">{chartData.title || 'Untitled Chart'}</h1>
             <span className="font-semibold print:!font-normal text-lg sm:text-2xl print:text-2xl">{chartData.time_sig || '4/4'}</span>
@@ -166,7 +166,7 @@ export default function ChartViewer() {
 
         {/* Lines */}
         <div className="flex flex-col w-full">
-          <div className="flex flex-col gap-4 sm:gap-6 print:gap-[2em] w-fit mx-auto print:mx-0 overflow-x-visible">
+          <div className="flex flex-col gap-4 sm:gap-6 print:gap-8 w-fit mx-auto print:mx-0 overflow-x-visible">
             {chartData.lines.map((line, lIdx) => {
               if (line.blocks.length === 0) {
                 return (
