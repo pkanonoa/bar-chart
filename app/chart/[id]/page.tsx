@@ -166,7 +166,7 @@ export default function ChartViewer() {
 
         {/* Lines */}
         <div className="flex flex-col w-full">
-          <div className="flex flex-col gap-4 sm:gap-6 print:gap-[2em] w-fit mx-auto overflow-x-visible">
+          <div className="flex flex-col gap-4 sm:gap-6 print:gap-[2em] w-full overflow-x-visible">
             {chartData.lines.map((line, lIdx) => {
               if (line.blocks.length === 0) {
                 return (
@@ -197,7 +197,7 @@ export default function ChartViewer() {
               }
 
               return (
-                <div key={lIdx} className="flex flex-row items-center flex-nowrap whitespace-nowrap">
+                <div key={lIdx} className="flex flex-row items-center flex-nowrap whitespace-nowrap w-full print:pr-12">
                   {/* Left Label */}
                   <div 
                     className="shrink-0 text-text-primary print:text-black text-base sm:text-xl print:text-[1em] text-right pr-2 sm:pr-4 flex items-center justify-end"
@@ -207,7 +207,7 @@ export default function ChartViewer() {
                   </div>
 
                   {/* Chords Container */}
-                  <div className="flex items-center flex-nowrap shrink-0 text-lg sm:text-2xl print:text-[1.1em]">
+                  <div className="flex-1 flex items-center flex-nowrap w-full text-lg sm:text-2xl print:text-[1.1em]">
                     {line.blocks.map((block, bIdx) => {
                       const isFirst = bIdx === 0;
                       let prefix = '';
@@ -254,9 +254,12 @@ export default function ChartViewer() {
                       const lastBlock = line.blocks[line.blocks.length - 1];
                       const suffix = lastBlock.endRepeat ? ':||' : '||';
                       return (
-                        <span className={`inline-block pl-2 sm:pl-3 text-left tracking-tighter print:!tracking-normal print:!font-normal print:!text-[1em] ${suffix.includes('||') ? 'text-cyan-400 font-black text-[1.2em] print:text-black' : 'text-text-primary font-semibold print:text-black'}`}>
-                          {suffix}
-                        </span>
+                        <>
+                          <div className="flex-1 min-w-[2rem]"></div>
+                          <span className={`inline-block pl-2 sm:pl-3 text-right tracking-tighter print:!tracking-normal print:!font-normal print:!text-[1em] ${suffix.includes('||') ? 'text-cyan-400 font-black text-[1.2em] print:text-black' : 'text-text-primary font-semibold print:text-black'}`}>
+                            {suffix}
+                          </span>
+                        </>
                       );
                     })()}
                   </div>
@@ -407,7 +410,7 @@ export default function ChartViewer() {
         >
           <TransformComponent 
             wrapperClass="!w-full !h-screen print:!h-auto" 
-            contentClass="w-max min-w-full min-h-screen print:min-h-0 flex items-start justify-center p-4 sm:p-12 pt-16 sm:pt-24 print:pt-12 pb-24"
+            contentClass="w-max min-w-full min-h-screen print:min-h-0 flex items-start justify-center p-4 sm:p-12 pt-16 sm:pt-24 print:pt-32 pb-24"
           >
             <ChartContent chart={chart} showUI={showUI} collaborators={collaborators} renderTextFlow={renderTextFlow} watermark={watermark} />
           </TransformComponent>
