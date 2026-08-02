@@ -218,11 +218,11 @@ export default function ChartViewer() {
                           <span className={`inline-block pr-2 sm:pr-3 text-left tracking-tighter print:!tracking-normal print:!font-normal print:!text-[1em] ${prefix.includes('||') ? 'text-cyan-400 font-black text-[1.2em] print:text-black' : 'text-text-primary font-semibold print:text-black'}`}>{prefix}</span>
                           {block.bars.map((bar, barIdx) => (
                             <React.Fragment key={barIdx}>
-                              <span className="inline-block px-1.5 sm:px-2.5 text-center font-bold print:!font-semibold hover:text-accent-start transition-colors duration-150 text-text-primary print:text-black">
+                              <span className="inline-block px-1.5 sm:px-2.5 text-center font-bold print:!font-bold hover:text-accent-start transition-colors duration-150 text-text-primary print:text-black">
                                 {parseChord(bar || '_')}
                               </span>
                               {barIdx < block.bars.length - 1 && (
-                                <span className="inline-block px-1.5 sm:px-2.5 text-center text-text-primary print:text-black print:!font-normal print:!tracking-normal">|</span>
+                                <span className="inline-block px-1.5 sm:px-2.5 text-center text-text-primary print:text-black print:!font-bold print:!tracking-normal">|</span>
                               )}
                             </React.Fragment>
                           ))}
@@ -387,8 +387,8 @@ export default function ChartViewer() {
           doubleClick={{ disabled: true }}
         >
           <TransformComponent 
-            wrapperClass="!w-full !h-screen" 
-            contentClass="w-max min-w-full min-h-screen flex items-center justify-center p-4 sm:p-12 pt-24 pb-24"
+            wrapperClass="!w-full !h-screen print:!h-auto" 
+            contentClass="w-max min-w-full min-h-screen print:min-h-0 flex items-start justify-center p-4 sm:p-12 pt-16 sm:pt-24 print:pt-12 pb-24"
           >
             <ChartContent chart={chart} showUI={showUI} collaborators={collaborators} renderTextFlow={renderTextFlow} />
           </TransformComponent>
