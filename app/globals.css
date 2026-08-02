@@ -104,17 +104,31 @@ body {
 
   /* Reset layout constraints to prevent text cutoff */
   main {
-    padding: 1.5cm 0.75cm !important;
-    margin: 0 auto !important;
-    max-width: 100% !important;
+    padding: 0 !important;
+    margin: 0 !important;
+    max-width: none !important;
+    width: max-content !important;
     overflow: visible !important;
   }
   
   /* Reset dynamic scaling bounds for print so it fits page width */
   .print-reset-scale {
-    font-size: min(2vw, 15px) !important;
-    width: 100% !important;
+    font-size: min(2.5vw, calc(85vw / max(25, var(--max-bars, 8) * 5))) !important;
+    width: max-content !important;
+    margin: 0 auto !important;
+    padding: 0 !important;
     overflow: visible !important;
+  }
+
+  /* Disable zoom/pan transforms in print */
+  .react-transform-component,
+  .react-transform-element,
+  .react-transform-wrapper,
+  #chart-card,
+  [style*="transform"] {
+    transform: none !important;
+    padding: 0 !important;
+    margin: 0 !important;
   }
 
   /* Fix gradient text disappearing in print */

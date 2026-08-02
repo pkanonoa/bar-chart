@@ -13,7 +13,7 @@ import { transposeChart } from '@/lib/transpose';
 import { FolderPickerModal } from '@/components/FolderPickerModal';
 import { moveEntry, deleteEntry, moveToTrash } from '@/lib/storage';
 
-function ChartContent({ chart, showUI, collaborators, renderTextFlow }: any) {
+function ChartContent({ chart, showUI, collaborators, renderTextFlow, watermark }: any) {
   const { zoomToElement } = useControls();
   const lastTap = React.useRef(0);
 
@@ -61,6 +61,13 @@ function ChartContent({ chart, showUI, collaborators, renderTextFlow }: any) {
       onClick={handleTap}
       className="inline-flex text-left flex-col w-max min-w-[min(100%,64rem)] max-w-none p-6 sm:p-12 print:p-0 bg-surface print:bg-transparent border border-border print:border-none shadow-card print:shadow-none rounded-3xl print:rounded-none relative"
     >
+      {watermark && (
+        <div className="hidden print:flex absolute inset-0 items-center justify-center pointer-events-none overflow-hidden z-[-1] opacity-10">
+          <span className="text-[10vw] font-black uppercase tracking-widest text-black rotate-[-45deg] whitespace-nowrap">
+            {watermark}
+          </span>
+        </div>
+      )}
       {renderTextFlow(chart)}
 
       {/* Footer Info */}
@@ -93,6 +100,7 @@ export default function ChartViewer() {
   const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
   const [deleteConfirmText, setDeleteConfirmText] = useState('');
   const [selectedFont, setSelectedFont] = useState('system');
+  const [watermark, setWatermark] = useState('');
   const [showUI, setShowUI] = useState(false);
 
   React.useEffect(() => {
@@ -112,6 +120,17 @@ export default function ChartViewer() {
     return () => window.removeEventListener('chord-grid-font-change', updateFont);
   }, []);
 
+  React.useEffect(() => {
+    const updateWatermark = () => {
+      const savedWatermark = localStorage.getItem('chord-grid-watermark');
+      if (savedWatermark) setWatermark(savedWatermark);
+      else setWatermark('');
+    };
+    updateWatermark();
+    window.addEventListener('chord-grid-watermark-change', updateWatermark);
+    return () => window.removeEventListener('chord-grid-watermark-change', updateWatermark);
+  }, []);
+
 
   const renderTextFlow = React.useCallback((chartData: ChartData) => {
     if (!chartData) return null;
@@ -129,10 +148,18 @@ export default function ChartViewer() {
     const maxLabelRightLen = Math.max(...chartData.lines.map(l => l.labelRight ? l.labelRight.length : 0));
     const labelRightCh = Math.max(4, maxLabelRightLen) + 2;
 
+    const maxBars = chartData.lines.length > 0 
+      ? Math.max(...chartData.lines.map(l => l.blocks.reduce((sum, b) => sum + b.bars.length, 0))) 
+      : 4;
+
+    const containerStyle = selectedFont !== 'system' 
+      ? { fontFamily: selectedFont, '--max-bars': maxBars } as React.CSSProperties
+      : { '--max-bars': maxBars } as React.CSSProperties;
+
     return (
       <div 
         className="flex flex-col gap-4 font-sans print:!font-mono w-max min-w-full leading-relaxed text-text-primary print-reset-scale print:text-black" 
-        style={selectedFont !== 'system' ? { fontFamily: selectedFont } : {}}
+        style={containerStyle}
       >
         {/* Header */}
         <div className="relative flex items-center justify-center mb-6 sm:mb-10 pb-4 border-b border-border print:border-none w-full text-text-primary print:text-black">
@@ -390,7 +417,7 @@ export default function ChartViewer() {
             wrapperClass="!w-full !h-screen print:!h-auto" 
             contentClass="w-max min-w-full min-h-screen print:min-h-0 flex items-start justify-center p-4 sm:p-12 pt-16 sm:pt-24 print:pt-12 pb-24"
           >
-            <ChartContent chart={chart} showUI={showUI} collaborators={collaborators} renderTextFlow={renderTextFlow} />
+            <ChartContent chart={chart} showUI={showUI} collaborators={collaborators} renderTextFlow={renderTextFlow} watermark={watermark} />
           </TransformComponent>
         </TransformWrapper>
       </main>
