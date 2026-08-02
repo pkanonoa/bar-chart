@@ -28,6 +28,11 @@ export const metadata: Metadata = {
     { rel: "apple-touch-icon", url: "icon-192x192.png" },
     { rel: "icon", url: "icon-192x192.png" },
   ],
+  appleWebApp: {
+    capable: true,
+    statusBarStyle: "black-translucent",
+    title: "Clypto UI",
+  },
 };
 
 export const viewport: Viewport = {
