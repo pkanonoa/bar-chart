@@ -118,6 +118,13 @@ export function Navigation() {
 
   return (
     <>
+      {/* Invisible overlay to close popups when clicking outside */}
+      {(showAddMenu || showProfileMenu) && (
+        <div 
+          className="fixed inset-0 z-40 cursor-default" 
+          onClick={() => { setShowAddMenu(false); setShowProfileMenu(false); }}
+        />
+      )}
       <div className={`fixed bottom-0 left-0 right-0 z-50 flex flex-col items-center justify-end pb-6 sm:pb-8 pointer-events-none transition-all duration-300 ${hiddenByChartUI ? 'opacity-0 translate-y-4' : 'opacity-100 translate-y-0'}`}>
         
       {/* Container for popups to share relative positioning with pill */}
