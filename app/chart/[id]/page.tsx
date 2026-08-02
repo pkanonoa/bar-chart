@@ -148,18 +148,10 @@ export default function ChartViewer() {
     const maxLabelRightLen = Math.max(...chartData.lines.map(l => l.labelRight ? l.labelRight.length : 0));
     const labelRightCh = Math.max(4, maxLabelRightLen) + 2;
 
-    const maxBars = chartData.lines.length > 0 
-      ? Math.max(...chartData.lines.map(l => l.blocks.reduce((sum, b) => sum + b.bars.length, 0))) 
-      : 4;
-
-    const containerStyle = selectedFont !== 'system' 
-      ? { fontFamily: selectedFont, '--max-bars': maxBars } as React.CSSProperties
-      : { '--max-bars': maxBars } as React.CSSProperties;
-
     return (
       <div 
         className="flex flex-col gap-4 font-sans print:!font-mono w-max min-w-full leading-relaxed text-text-primary print-reset-scale print:text-black" 
-        style={containerStyle}
+        style={selectedFont !== 'system' ? { fontFamily: selectedFont } : {}}
       >
         {/* Header */}
         <div className="relative flex items-center justify-center mb-6 sm:mb-10 pb-4 border-b border-border print:border-none w-full text-text-primary print:text-black">
@@ -174,7 +166,7 @@ export default function ChartViewer() {
 
         {/* Lines */}
         <div className="flex flex-col w-full">
-          <div className="flex flex-col gap-4 sm:gap-6 print:gap-[2em] w-fit mx-auto print:mx-0 overflow-x-visible">
+          <div className="flex flex-col gap-4 sm:gap-6 print:gap-[2em] w-fit mx-auto overflow-x-visible">
             {chartData.lines.map((line, lIdx) => {
               if (line.blocks.length === 0) {
                 return (
@@ -405,7 +397,7 @@ export default function ChartViewer() {
       >
         <TransformWrapper
           initialScale={1}
-          minScale={1}
+          minScale={0.1}
           maxScale={5}
           centerOnInit={true}
           centerZoomedOut={true}
