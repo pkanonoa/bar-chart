@@ -11,7 +11,7 @@ import { TransformWrapper, TransformComponent, useControls } from "react-zoom-pa
 import { ChartData } from '@/lib/chart-types';
 import { transposeChart } from '@/lib/transpose';
 import { FolderPickerModal } from '@/components/FolderPickerModal';
-import { moveEntry, deleteEntry } from '@/lib/storage';
+import { moveEntry, deleteEntry, moveToTrash } from '@/lib/storage';
 
 function ChartContent({ chart, showUI, collaborators, renderTextFlow }: any) {
   const { zoomToElement } = useControls();
@@ -90,6 +90,8 @@ export default function ChartViewer() {
   const { chart, loading: chartLoading, collaborators, updateChart } = useChartSync(chartId);
   const [isFolderPickerOpen, setIsFolderPickerOpen] = useState(false);
   const [isMenuOpen, setIsMenuOpen] = useState(false);
+  const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
+  const [deleteConfirmText, setDeleteConfirmText] = useState('');
   const [selectedFont, setSelectedFont] = useState('system');
   const [showUI, setShowUI] = useState(false);
 
@@ -122,30 +124,30 @@ export default function ChartViewer() {
     }
 
     const maxLabelLen = Math.max(...chartData.lines.map(l => l.label ? l.label.length : 0));
-    const labelCh = Math.max(4, maxLabelLen) + 2; 
+    const labelCh = Math.max(4, maxLabelLen) + 4; 
     
     const maxLabelRightLen = Math.max(...chartData.lines.map(l => l.labelRight ? l.labelRight.length : 0));
     const labelRightCh = Math.max(4, maxLabelRightLen) + 2;
 
     return (
       <div 
-        className="flex flex-col gap-4 font-sans w-max min-w-full leading-relaxed text-text-primary print-reset-scale" 
+        className="flex flex-col gap-4 font-sans print:!font-mono w-max min-w-full leading-relaxed text-text-primary print-reset-scale print:text-black" 
         style={selectedFont !== 'system' ? { fontFamily: selectedFont } : {}}
       >
         {/* Header */}
-        <div className="relative flex items-center justify-center mb-6 sm:mb-10 pb-4 border-b border-border print:border-none w-full text-text-primary">
+        <div className="relative flex items-center justify-center mb-6 sm:mb-10 pb-4 border-b border-border print:border-none w-full text-text-primary print:text-black">
           <div className="flex items-baseline gap-4 sm:gap-6">
-            <h1 className="text-2xl sm:text-4xl print:text-5xl font-bold tracking-wide">{chartData.title || 'Untitled Chart'}</h1>
-            <span className="font-semibold text-lg sm:text-2xl print:text-3xl">{chartData.time_sig || '4/4'}</span>
+            <h1 className="text-2xl sm:text-4xl print:text-4xl font-bold print:!font-bold tracking-wide print:!tracking-normal">{chartData.title || 'Untitled Chart'}</h1>
+            <span className="font-semibold print:!font-normal text-lg sm:text-2xl print:text-2xl">{chartData.time_sig || '4/4'}</span>
           </div>
-          <div className="absolute right-0 font-semibold text-base sm:text-xl print:text-2xl">
+          <div className="absolute right-0 font-semibold print:!font-normal text-base sm:text-xl print:text-xl">
             t={chartData.tempo || 120}
           </div>
         </div>
 
         {/* Lines */}
         <div className="flex flex-col w-full">
-          <div className="flex flex-col gap-4 sm:gap-6 print:gap-[2em] w-fit mx-auto overflow-x-visible">
+          <div className="flex flex-col gap-4 sm:gap-6 print:gap-[2em] w-fit mx-auto print:mx-0 overflow-x-visible">
             {chartData.lines.map((line, lIdx) => {
               if (line.blocks.length === 0) {
                 return (
@@ -213,14 +215,14 @@ export default function ChartViewer() {
 
                       return (
                         <React.Fragment key={bIdx}>
-                          <span className={`inline-block pr-2 sm:pr-3 text-left font-semibold tracking-tighter ${prefix.includes('||') ? 'text-accent-gradient print:text-black' : 'text-text-primary print:text-black'}`}>{prefix}</span>
+                          <span className={`inline-block pr-2 sm:pr-3 text-left tracking-tighter print:!tracking-normal print:!font-normal print:!text-[1em] ${prefix.includes('||') ? 'text-cyan-400 font-black text-[1.2em] print:text-black' : 'text-text-primary font-semibold print:text-black'}`}>{prefix}</span>
                           {block.bars.map((bar, barIdx) => (
                             <React.Fragment key={barIdx}>
-                              <span className="inline-block px-1.5 sm:px-2.5 text-center font-bold hover:text-accent-start transition-colors duration-150 text-text-primary print:text-black">
+                              <span className="inline-block px-1.5 sm:px-2.5 text-center font-bold print:!font-semibold hover:text-accent-start transition-colors duration-150 text-text-primary print:text-black">
                                 {parseChord(bar || '_')}
                               </span>
                               {barIdx < block.bars.length - 1 && (
-                                <span className="inline-block px-1.5 sm:px-2.5 text-center text-text-primary print:text-black">|</span>
+                                <span className="inline-block px-1.5 sm:px-2.5 text-center text-text-primary print:text-black print:!font-normal print:!tracking-normal">|</span>
                               )}
                             </React.Fragment>
                           ))}
@@ -233,7 +235,7 @@ export default function ChartViewer() {
                       const lastBlock = line.blocks[line.blocks.length - 1];
                       const suffix = lastBlock.endRepeat ? ':||' : '||';
                       return (
-                        <span className={`inline-block pl-2 sm:pl-3 text-left font-semibold tracking-tighter ${suffix.includes('||') ? 'text-accent-gradient print:text-black' : 'text-text-primary print:text-black'}`}>
+                        <span className={`inline-block pl-2 sm:pl-3 text-left tracking-tighter print:!tracking-normal print:!font-normal print:!text-[1em] ${suffix.includes('||') ? 'text-cyan-400 font-black text-[1.2em] print:text-black' : 'text-text-primary font-semibold print:text-black'}`}>
                           {suffix}
                         </span>
                       );
@@ -342,10 +344,8 @@ export default function ChartViewer() {
               <button
                 onClick={async () => {
                   setIsMenuOpen(false);
-                  if (window.confirm("Are you sure you want to delete this chart?")) {
-                    await deleteEntry(chart.id, 'chart');
-                    router.push(chart.folder_id ? `/folder/${chart.folder_id}` : '/');
-                  }
+                  setIsDeleteModalOpen(true);
+                  setDeleteConfirmText('');
                 }}
                 className="w-full flex items-center px-4 py-3 text-sm font-semibold text-red-400 hover:bg-red-500/10 hover:text-red-300"
               >
@@ -405,6 +405,53 @@ export default function ChartViewer() {
           }}
           title="Move Chart to..."
         />
+      )}
+
+      {isDeleteModalOpen && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm p-4">
+          <div className="bg-surface rounded-2xl p-8 w-full max-w-sm shadow-popover border border-border text-center">
+            <div className="w-16 h-16 mx-auto bg-surface-raised shadow-inner border border-border rounded-full flex items-center justify-center mb-6">
+              <Trash2 size={24} className="text-red-500" />
+            </div>
+            <h3 className="text-xl font-bold text-text-primary mb-3">Delete Chart?</h3>
+            <p className="text-sm text-text-secondary mb-4 font-medium px-4">
+              Are you sure you want to delete "{chart.title || 'Untitled Chart'}"?
+            </p>
+            <p className="text-xs text-text-secondary mb-4">
+              Type <strong className="text-text-primary select-all">delete {chart.title || 'Untitled Chart'}</strong> to confirm.
+            </p>
+            <input
+              autoFocus
+              placeholder={`delete ${chart.title || 'Untitled Chart'}`}
+              value={deleteConfirmText}
+              onChange={(e) => setDeleteConfirmText(e.target.value)}
+              className="w-full px-4 py-3 bg-surface-raised border border-border shadow-inner rounded-xl text-text-primary focus:outline-none focus:border-red-500 transition-colors mb-6 font-medium text-center"
+            />
+            <div className="flex justify-center space-x-3">
+              <button onClick={() => { setIsDeleteModalOpen(false); setDeleteConfirmText(''); }} className="px-6 py-2.5 text-sm font-bold text-text-secondary bg-surface border border-border rounded-xl hover:text-white hover:bg-surface-raised transition-all">Cancel</button>
+              <button 
+                onClick={async () => {
+                  await moveToTrash(chart.id, 'chart');
+                  router.push(chart.folder_id ? `/folder/${chart.folder_id}` : '/');
+                }}
+                disabled={deleteConfirmText !== `delete ${chart.title || 'Untitled Chart'}`}
+                className="px-4 py-2.5 text-sm font-bold text-white bg-accent-gradient rounded-xl shadow-md hover:brightness-110 transition-all disabled:opacity-50 disabled:cursor-not-allowed"
+              >
+                Move to Trash
+              </button>
+              <button 
+                onClick={async () => {
+                  await deleteEntry(chart.id, 'chart');
+                  router.push(chart.folder_id ? `/folder/${chart.folder_id}` : '/');
+                }}
+                disabled={deleteConfirmText !== `delete ${chart.title || 'Untitled Chart'}`}
+                className="px-4 py-2.5 text-sm font-bold text-red-500 bg-red-500/10 border border-red-500/20 rounded-xl shadow-md hover:bg-red-500 hover:text-white transition-all disabled:opacity-50 disabled:cursor-not-allowed"
+              >
+                Delete Permanently
+              </button>
+            </div>
+          </div>
+        </div>
       )}
     </div>
   );
