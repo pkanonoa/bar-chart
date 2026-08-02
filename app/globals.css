@@ -106,15 +106,15 @@ body {
   main {
     padding: 0 !important;
     margin: 0 !important;
-    max-width: 100% !important;
+    width: max-content !important;
     overflow: visible !important;
   }
   
   /* Reset dynamic scaling bounds for print so it fits page width */
   .print-reset-scale {
-    font-size: 1.8vw !important;
-    width: 100% !important;
-    margin: 0 !important;
+    font-size: 28px !important;
+    width: max-content !important;
+    margin: 0 auto !important;
     padding: 0 !important;
     overflow: visible !important;
   }

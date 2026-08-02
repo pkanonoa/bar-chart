@@ -164,7 +164,7 @@ export default function SettingsPage() {
                       <div className="w-8 h-8 rounded-full border-2 border-accent-solid border-t-transparent animate-spin mb-4" />
                     ) : userCount !== null ? (
                       <>
-                        <span className="text-5xl font-black text-transparent bg-clip-text bg-accent-gradient mb-2">{userCount}</span>
+                        <span className="text-7xl font-bold font-mono text-transparent bg-clip-text bg-accent-gradient mb-2">{userCount}</span>
                         <span className="text-sm font-bold text-text-secondary uppercase tracking-widest">Registered Users</span>
                       </>
                     ) : (

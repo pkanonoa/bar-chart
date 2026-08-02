@@ -154,19 +154,19 @@ export default function ChartViewer() {
         style={selectedFont !== 'system' ? { fontFamily: selectedFont } : {}}
       >
         {/* Header */}
-        <div className="relative flex items-center justify-center mb-6 sm:mb-10 pb-4 border-b border-border print:border-none w-full text-text-primary print:text-black">
+        <div className="relative flex items-center justify-center mb-6 sm:mb-10 pb-4 border-b border-border print:border-none w-full text-text-primary print:text-black print:pt-32">
           <div className="flex items-baseline gap-4 sm:gap-6">
             <h1 className="text-2xl sm:text-4xl print:text-4xl font-bold print:!font-bold tracking-wide print:!tracking-normal">{chartData.title || 'Untitled Chart'}</h1>
             <span className="font-semibold print:!font-normal text-lg sm:text-2xl print:text-2xl">{chartData.time_sig || '4/4'}</span>
           </div>
-          <div className="absolute right-0 font-semibold print:!font-normal text-base sm:text-xl print:text-xl">
+          <div className="absolute right-0 print:right-6 font-semibold print:!font-normal text-base sm:text-xl print:text-xl">
             t={chartData.tempo || 120}
           </div>
         </div>
 
         {/* Lines */}
         <div className="flex flex-col w-full">
-          <div className="flex flex-col gap-4 sm:gap-6 print:gap-[2em] w-full overflow-x-visible">
+          <div className="flex flex-col gap-4 sm:gap-6 print:gap-[2em] w-fit mx-auto print:mx-0 overflow-x-visible">
             {chartData.lines.map((line, lIdx) => {
               if (line.blocks.length === 0) {
                 return (
@@ -197,7 +197,7 @@ export default function ChartViewer() {
               }
 
               return (
-                <div key={lIdx} className="flex flex-row items-center flex-nowrap whitespace-nowrap w-full print:pr-12">
+                <div key={lIdx} className="flex flex-row items-center flex-nowrap whitespace-nowrap">
                   {/* Left Label */}
                   <div 
                     className="shrink-0 text-text-primary print:text-black text-base sm:text-xl print:text-[1em] text-right pr-2 sm:pr-4 flex items-center justify-end"
@@ -207,7 +207,7 @@ export default function ChartViewer() {
                   </div>
 
                   {/* Chords Container */}
-                  <div className="flex-1 flex items-center flex-nowrap w-full text-lg sm:text-2xl print:text-[1.1em]">
+                  <div className="flex items-center flex-nowrap shrink-0 text-lg sm:text-2xl print:text-[1.1em]">
                     {line.blocks.map((block, bIdx) => {
                       const isFirst = bIdx === 0;
                       let prefix = '';
@@ -234,14 +234,14 @@ export default function ChartViewer() {
 
                       return (
                         <React.Fragment key={bIdx}>
-                          <span className={`inline-block pr-2 sm:pr-3 text-left tracking-tighter print:!tracking-normal print:!font-normal print:!text-[1em] ${prefix.includes('||') ? 'text-cyan-400 font-black text-[1.2em] print:text-black' : 'text-text-primary font-semibold print:text-black'}`}>{prefix}</span>
+                          <span className={`inline-block pr-2 sm:pr-3 print:pr-1 text-left tracking-tighter print:!tracking-normal print:!font-normal print:!text-[1em] ${prefix.includes('||') ? 'text-cyan-400 font-black text-[1.2em] print:text-black' : 'text-text-primary font-semibold print:text-black'}`}>{prefix}</span>
                           {block.bars.map((bar, barIdx) => (
                             <React.Fragment key={barIdx}>
-                              <span className="inline-block px-1.5 sm:px-2.5 text-center font-bold print:!font-bold hover:text-accent-start transition-colors duration-150 text-text-primary print:text-black">
+                              <span className="inline-block px-1.5 sm:px-2.5 print:px-1 text-center font-bold print:!font-bold hover:text-accent-start transition-colors duration-150 text-text-primary print:text-black">
                                 {parseChord(bar || '_')}
                               </span>
                               {barIdx < block.bars.length - 1 && (
-                                <span className="inline-block px-1.5 sm:px-2.5 text-center text-text-primary print:text-black print:!font-bold print:!tracking-normal">|</span>
+                                <span className="inline-block px-1.5 sm:px-2.5 print:px-1 text-center text-text-primary print:text-black print:!font-bold print:!tracking-normal">|</span>
                               )}
                             </React.Fragment>
                           ))}
@@ -254,12 +254,9 @@ export default function ChartViewer() {
                       const lastBlock = line.blocks[line.blocks.length - 1];
                       const suffix = lastBlock.endRepeat ? ':||' : '||';
                       return (
-                        <>
-                          <div className="flex-1 min-w-[2rem]"></div>
-                          <span className={`inline-block pl-2 sm:pl-3 text-right tracking-tighter print:!tracking-normal print:!font-normal print:!text-[1em] ${suffix.includes('||') ? 'text-cyan-400 font-black text-[1.2em] print:text-black' : 'text-text-primary font-semibold print:text-black'}`}>
-                            {suffix}
-                          </span>
-                        </>
+                        <span className={`inline-block pl-2 sm:pl-3 print:pl-1 text-left tracking-tighter print:!tracking-normal print:!font-normal print:!text-[1em] ${suffix.includes('||') ? 'text-cyan-400 font-black text-[1.2em] print:text-black' : 'text-text-primary font-semibold print:text-black'}`}>
+                          {suffix}
+                        </span>
                       );
                     })()}
                   </div>
