@@ -93,21 +93,21 @@ export function Navigation() {
     {
       id: 'home',
       label: 'Home',
-      icon: <Home size={32} />,
+      icon: <Home className="w-6 h-6 sm:w-7 sm:h-7" />,
       isActive: (pathname === '/' || pathname.startsWith('/folder/')) && !showProfileMenu && !showAddMenu,
       onClick: () => router.push('/'),
     },
     {
       id: 'add',
       label: 'Create',
-      icon: <Plus size={32} />,
+      icon: <Plus className="w-6 h-6 sm:w-7 sm:h-7" />,
       isActive: showAddMenu,
       onClick: () => setShowAddMenu(!showAddMenu),
     },
     {
       id: 'profile',
       label: 'Profile',
-      icon: <User size={32} />,
+      icon: <User className="w-6 h-6 sm:w-7 sm:h-7" />,
       isActive: showProfileMenu,
       onClick: () => setShowProfileMenu(!showProfileMenu),
     }
@@ -125,7 +125,7 @@ export function Navigation() {
           onClick={() => { setShowAddMenu(false); setShowProfileMenu(false); }}
         />
       )}
-      <div className={`fixed bottom-0 left-0 right-0 z-50 flex flex-col items-center justify-end pb-6 sm:pb-8 pointer-events-none transition-all duration-300 ${hiddenByChartUI ? 'opacity-0 translate-y-4' : 'opacity-100 translate-y-0'}`}>
+      <div className={`fixed bottom-0 left-0 right-0 z-50 flex flex-col items-center justify-end pb-4 sm:pb-8 pointer-events-none transition-all duration-300 ${hiddenByChartUI ? 'opacity-0 translate-y-4' : 'opacity-100 translate-y-0'}`}>
         
       {/* Container for popups to share relative positioning with pill */}
       <div className="relative pointer-events-none flex flex-col items-center">
@@ -164,7 +164,7 @@ export function Navigation() {
       )}
 
       {/* Main Pill Nav */}
-      <div className="bg-surface/80 backdrop-blur-md border border-border text-text-primary px-6 py-4 md:px-4 md:py-2 rounded-full shadow-popover flex items-center space-x-8 md:space-x-4 pointer-events-auto">
+      <div className="bg-transparent text-text-primary px-4 py-2 rounded-full flex items-center space-x-4 pointer-events-auto">
         {navItems.map((item) => (
           <button
             key={item.id}
@@ -177,13 +177,13 @@ export function Navigation() {
             }}
             className={`flex items-center transition-all duration-300 ease-in-out ${
               item.isActive 
-                ? 'bg-accent-solid px-8 py-4 md:px-6 md:py-2.5 rounded-full text-white shadow-md' 
-                : 'p-4 md:p-3 text-text-secondary hover:text-white hover:bg-white/10 rounded-full'
+                ? 'bg-accent-solid px-5 py-2.5 sm:px-6 sm:py-3 rounded-full text-white shadow-md' 
+                : 'p-2.5 sm:p-3 text-text-secondary hover:text-white hover:bg-white/10 rounded-full'
             }`}
           >
             {item.icon}
             {item.isActive && (
-              <span className="ml-4 text-base font-bold tracking-wider">
+              <span className="ml-3 sm:ml-4 text-sm sm:text-base font-bold tracking-wider">
                 {item.label}
               </span>
             )}
