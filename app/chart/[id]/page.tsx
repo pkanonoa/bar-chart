@@ -405,7 +405,7 @@ export default function ChartViewer() {
       >
         <TransformWrapper
           initialScale={1}
-          minScale={0.1}
+          minScale={1}
           maxScale={5}
           centerOnInit={true}
           centerZoomedOut={true}
