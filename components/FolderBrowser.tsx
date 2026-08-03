@@ -280,7 +280,7 @@ export function FolderBrowser({ folderId, folderName, kind = 'chart' }: Props) {
   return (
     <div className="w-full max-w-7xl mx-auto px-4 pt-[max(env(safe-area-inset-top,2rem),2rem)] pb-8">
       {/* Header Actions */}
-      <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-10 space-y-4 sm:space-y-0">
+      <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-8 space-y-4 sm:space-y-0">
         <div className="flex items-center space-x-4">
           {folderId && (
             <button
@@ -294,16 +294,6 @@ export function FolderBrowser({ folderId, folderName, kind = 'chart' }: Props) {
           <h1 className="text-3xl font-bold text-text-primary tracking-tight">
             {folderName || (kind === 'lyrics' ? 'Lyrics' : 'Chords')}
           </h1>
-        </div>
-        <div className="flex items-center space-x-3 w-full sm:w-auto justify-end">
-          <button onClick={handleCreateFolder} className="p-3 bg-surface border border-border rounded-xl text-text-secondary hover:text-white hover:bg-surface-raised transition-all flex items-center justify-center font-bold text-sm" title="New Folder">
-            <FolderPlus size={18} className="mr-2 sm:mr-0" />
-            <span className="sm:hidden">New Folder</span>
-          </button>
-          <button onClick={handleCreateChart} className="p-3 bg-accent-gradient rounded-xl text-white shadow-md hover:brightness-110 transition-all flex items-center justify-center font-bold text-sm" title={kind === 'lyrics' ? "New Lyrics" : "New Chart"}>
-            <FilePlus size={18} className="mr-2 sm:mr-0" />
-            <span className="sm:hidden">{kind === 'lyrics' ? 'New Lyrics' : 'New Chart'}</span>
-          </button>
         </div>
       </div>
 
