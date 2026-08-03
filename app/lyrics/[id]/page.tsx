@@ -47,7 +47,7 @@ function LyricsContentWrapper({ lyric, showUI, selectedFont }: any) {
     <div 
       id="lyrics-card"
       onClick={handleTap}
-      className={`inline-flex text-left flex-col w-max min-w-[min(100%,48rem)] max-w-none p-6 sm:p-12 print:p-0 print:ml-12 print:w-full bg-surface print:bg-transparent border border-border print:border-none shadow-card print:shadow-none rounded-3xl print:rounded-none relative select-none`}
+      className={`inline-flex text-left flex-col w-max min-w-[min(100%,48rem)] max-w-none p-6 sm:p-12 print:p-0 print:ml-24 print:w-full bg-surface print:bg-transparent border border-border print:border-none shadow-card print:shadow-none rounded-3xl print:rounded-none relative select-none`}
       style={{
         fontFamily: selectedFont === 'serif' ? 'Georgia, serif' : 
                     selectedFont === 'mono' ? 'monospace' : 
