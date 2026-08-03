@@ -26,7 +26,7 @@ export default function PrinterPage() {
   const [searchResults, setSearchResults] = useState<any[]>([]);
   const [isSearching, setIsSearching] = useState(false);
   const [font, setFont] = useState('system');
-  const [setlistName, setlistName] = useState('My Setlist');
+  const [setlistName, setSetlistName] = useState('My Setlist');
 
   useEffect(() => {
     const q = JSON.parse(localStorage.getItem('chord-grid-print-queue') || '[]');
