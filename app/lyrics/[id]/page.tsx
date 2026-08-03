@@ -54,14 +54,16 @@ function LyricsContentWrapper({ lyric, showUI, selectedFont }: any) {
                     'system-ui, -apple-system, sans-serif'
       }}
     >
-      <div className="relative flex items-center justify-center mb-6 sm:mb-10 pb-4 border-b border-border print:border-none w-full text-text-primary print:text-black print:pt-24">
-        <h1 className="text-3xl sm:text-4xl print:text-4xl font-bold tracking-wide print:!tracking-normal text-center w-full">
-          {lyric?.title || 'Untitled Lyrics'}
-        </h1>
-      </div>
-      <div className="flex flex-col w-full">
-        <div className="flex flex-col w-fit mx-auto print:mx-0 overflow-x-visible whitespace-pre-wrap text-lg leading-relaxed print:text-[1.3rem] print:leading-[2] text-left text-text-primary print:text-black">
-          {lyric?.body}
+      <div className="flex flex-col gap-4 w-max min-w-full leading-relaxed text-text-primary print-reset-scale print:text-black">
+        <div className="relative flex items-center justify-center mb-6 sm:mb-10 pb-4 border-b border-border print:border-none w-full text-text-primary print:text-black print:pt-24">
+          <h1 className="text-3xl sm:text-4xl print:text-4xl font-bold tracking-wide print:!tracking-normal text-center w-full">
+            {lyric?.title || 'Untitled Lyrics'}
+          </h1>
+        </div>
+        <div className="flex flex-col w-full">
+          <div className="flex flex-col w-fit mx-auto print:mx-0 overflow-x-visible whitespace-pre-wrap text-lg leading-relaxed print:text-[1.3rem] print:leading-[2] text-left text-text-primary print:text-black">
+            {lyric?.body}
+          </div>
         </div>
       </div>
     </div>

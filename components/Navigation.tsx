@@ -6,7 +6,7 @@ import Link from 'next/link';
 import { usePathname, useRouter } from 'next/navigation';
 import { useAuth } from '@/components/AuthProvider';
 import { supabase } from '@/lib/supabase';
-import { createFolder, saveChart, importChart } from '@/lib/storage';
+import { createFolder, saveChart, importChart, saveLyrics } from '@/lib/storage';
 
 export function Navigation() {
   const pathname = usePathname();
@@ -18,6 +18,7 @@ export function Navigation() {
   const [createFolderModal, setCreateFolderModal] = useState(false);
   const [hiddenBySelection, setHiddenBySelection] = useState(false);
   const [hiddenByChartUI, setHiddenByChartUI] = useState(false);
+  const [folderKind, setFolderKind] = useState<'chart' | 'lyrics'>('chart');
 
   React.useEffect(() => {
     const handleSelection = (e: any) => {
@@ -38,10 +39,17 @@ export function Navigation() {
   let currentFolderId: string | null = null;
   if (pathname.startsWith('/folder/')) {
     currentFolderId = pathname.split('/')[2];
+  } else if (pathname.startsWith('/lyrics/folder/')) {
+    currentFolderId = pathname.split('/')[3];
   }
 
   const handleCreateFolder = () => {
     setShowAddMenu(false);
+    if (pathname.startsWith('/lyrics')) {
+      setFolderKind('lyrics');
+    } else {
+      setFolderKind('chart');
+    }
     setCreateFolderModal(true);
   };
 
@@ -56,12 +64,27 @@ export function Navigation() {
       lines: [],
       semitone_offset: 0,
       prefer_flats: false,
-      folder_id: currentFolderId,
+      folder_id: pathname.startsWith('/lyrics') ? null : currentFolderId,
       created_by: user.id,
       updated_at: new Date().toISOString(),
     };
     await saveChart(chart);
     router.push(`/chart/${chart.id}/edit`);
+  };
+
+  const handleCreateLyrics = async () => {
+    setShowAddMenu(false);
+    if (!user) return;
+    const lyrics = {
+      id: crypto.randomUUID(),
+      title: 'Untitled lyrics',
+      body: '',
+      folder_id: pathname.startsWith('/lyrics') ? currentFolderId : null,
+      created_by: user.id,
+      updated_at: new Date().toISOString(),
+    };
+    await saveLyrics(lyrics);
+    router.push(`/lyrics/${lyrics.id}/edit`);
   };
 
   const handleImport = async (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -98,10 +121,17 @@ export function Navigation() {
       onClick: () => router.push('/'),
     },
     {
+      id: 'lyrics',
+      label: 'Lyrics',
+      icon: <Type className="w-6 h-6 sm:w-7 sm:h-7" />,
+      isActive: pathname.startsWith('/lyrics') && !pathname.includes('/printer') && !showProfileMenu && !showAddMenu,
+      onClick: () => router.push('/lyrics'),
+    },
+    {
       id: 'printer',
       label: 'Printer',
       icon: <Printer className="w-6 h-6 sm:w-7 sm:h-7" />,
-      isActive: pathname.startsWith('/printer'),
+      isActive: pathname.startsWith('/printer') && !showProfileMenu && !showAddMenu,
       onClick: () => router.push('/printer'),
     },
     {
@@ -144,6 +174,9 @@ export function Navigation() {
           </button>
           <button onClick={handleCreateChart} className="w-full px-4 py-3 flex items-center text-sm font-bold text-text-primary hover:bg-white/5 transition-colors">
             <FileText size={16} className="mr-3 text-accent-solid" /> New Chart
+          </button>
+          <button onClick={handleCreateLyrics} className="w-full px-4 py-3 flex items-center text-sm font-bold text-text-primary hover:bg-white/5 transition-colors">
+            <Type size={16} className="mr-3 text-accent-solid" /> New Lyrics
           </button>
           <button onClick={() => fileInputRef.current?.click()} className="w-full px-4 py-3 flex items-center text-sm font-bold text-text-primary hover:bg-white/5 transition-colors">
             <Upload size={16} className="mr-3 text-text-secondary" /> Import Chart
@@ -198,10 +231,11 @@ export function Navigation() {
         ))}
       </div>
       </div>
+      </div>
 
       {/* Create Folder Modal */}
       {createFolderModal && (
-        <div className="fixed inset-0 z-[110] flex items-center justify-center bg-black/60 backdrop-blur-sm p-4">
+        <div className="fixed inset-0 z-[110] flex items-center justify-center bg-black/60 backdrop-blur-sm p-4 pointer-events-auto">
           <div className="bg-surface rounded-2xl p-8 w-full max-w-sm shadow-popover border border-border">
             <h3 className="text-xl font-bold text-text-primary mb-6 text-center">New Folder</h3>
             <form onSubmit={async (e) => {
@@ -209,11 +243,11 @@ export function Navigation() {
               const input = e.currentTarget.elements.namedItem('folderName') as HTMLInputElement;
               const name = input.value;
               if (name.trim()) {
-                await createFolder(currentFolderId, name.trim());
-                if (pathname === '/' || pathname.startsWith('/folder/')) {
+                await createFolder(currentFolderId, name.trim(), folderKind);
+                if (pathname === '/' || pathname.startsWith('/folder/') || pathname.startsWith('/lyrics')) {
                   window.dispatchEvent(new Event('refresh-folder'));
                 } else {
-                  router.push(currentFolderId ? `/folder/${currentFolderId}` : '/');
+                  router.push(currentFolderId ? (folderKind === 'lyrics' ? `/lyrics/folder/${currentFolderId}` : `/folder/${currentFolderId}`) : (folderKind === 'lyrics' ? '/lyrics' : '/'));
                 }
               }
               setCreateFolderModal(false);
@@ -232,7 +266,6 @@ export function Navigation() {
           </div>
         </div>
       )}
-      </div>
     </>
   );
 }
