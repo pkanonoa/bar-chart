@@ -84,6 +84,7 @@ export default function PrinterPage() {
   const [setlistName, setSetlistName] = useState('My Setlist');
   const [isPrintModalOpen, setIsPrintModalOpen] = useState(false);
   const [watermark, setWatermark] = useState('');
+  const [isSearchFocused, setIsSearchFocused] = useState(false);
 
   const sensors = useSensors(
     useSensor(PointerSensor, {
@@ -191,74 +192,82 @@ export default function PrinterPage() {
               Printer (Setlist)
             </h1>
           </div>
-          <div className="flex items-center space-x-4 w-full sm:w-auto mt-4 sm:mt-0">
-            <button 
-              onClick={() => setIsPrintModalOpen(true)}
-              disabled={queue.length === 0}
-              className="px-6 py-2.5 bg-accent-gradient rounded-xl text-white shadow-md hover:brightness-110 transition-all flex items-center justify-center font-bold text-sm disabled:opacity-50 whitespace-nowrap"
-            >
-              <Printer size={18} className="mr-2" />
-              Print Options...
-            </button>
-          </div>
         </div>
 
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
-          {/* Left: Search and Add */}
-          <div className="order-first lg:order-first">
-            <h2 className="text-lg font-bold text-text-primary mb-4 flex items-center">
-              <Search size={18} className="mr-2 text-text-secondary" /> Add to Queue
-            </h2>
-            <div className="relative mb-6">
-              <div className="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none">
-                <Search className="h-5 w-5 text-text-secondary" />
-              </div>
-              <input
-                type="text"
-                className="block w-full pl-12 pr-4 py-3 bg-surface border border-border rounded-xl leading-5 text-text-primary placeholder-text-secondary focus:outline-none focus:border-accent-solid transition-all font-medium shadow-inner"
-                placeholder="Search all charts..."
-                value={searchQuery}
-                onChange={(e) => setSearchQuery(e.target.value)}
-              />
+        {/* Search bar and print options button side-by-side */}
+        <div className="relative flex items-center gap-3 w-full mb-8 z-20">
+          <div className="relative flex-1">
+            <div className="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none">
+              <Search className="h-5 w-5 text-text-secondary" />
             </div>
-            
-            <div className="space-y-3">
-              {isSearching && searchResults.length === 0 && (
-                <div className="p-4 text-center text-text-secondary text-sm">No charts found.</div>
-              )}
-              {searchResults.map((chart) => {
-                const inQueue = queue.includes(chart.id);
-                return (
-                  <div 
-                    key={chart.id} 
-                    onClick={() => !inQueue && addChart(chart.id)}
-                    className={`flex items-center justify-between p-3 bg-surface border rounded-xl transition-all group ${!inQueue ? 'cursor-pointer hover:border-accent-solid hover:shadow-sm border-border' : 'opacity-70 border-border'}`}
-                  >
-                    <div className="truncate pr-4">
-                      <p className="text-sm font-bold text-text-primary truncate group-hover:text-accent-start transition-colors">{chart.title}</p>
-                      <p className="text-[10px] text-text-secondary truncate">{chart.path}</p>
-                    </div>
-                    <button
-                      disabled={inQueue}
-                      className={`shrink-0 p-2 rounded-lg flex items-center text-xs font-bold transition-colors ${inQueue ? 'text-text-secondary bg-surface-raised cursor-not-allowed' : 'text-accent-start hover:bg-accent-start/10'}`}
-                    >
-                      {inQueue ? 'Added' : <><Plus size={14} className="mr-1" /> Add</>}
-                    </button>
-                  </div>
-                );
-              })}
-            </div>
-          </div>
+            <input
+              type="text"
+              className="block w-full pl-12 pr-4 py-3 bg-surface border border-border rounded-xl leading-5 text-text-primary placeholder-text-secondary focus:outline-none focus:border-accent-solid transition-all font-medium shadow-inner"
+              placeholder="Search all charts..."
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
+              onFocus={() => setIsSearchFocused(true)}
+            />
 
-          {/* Right: Queue Management */}
-          <div className="order-last lg:order-last">
-            <h2 className="text-lg font-bold text-text-primary mb-4 flex items-center">
-              <FileText size={18} className="mr-2 text-accent-start" /> Your Print Queue ({queue.length})
+            {/* Floating Dropdown Results */}
+            {isSearchFocused && searchQuery.trim() && (
+              <div className="absolute top-full left-0 right-0 mt-2 bg-surface-raised border border-border rounded-2xl shadow-popover max-h-72 overflow-y-auto p-2 space-y-1 z-30">
+                {isSearching && searchResults.length === 0 && (
+                  <div className="p-4 text-center text-text-secondary text-sm">Searching...</div>
+                )}
+                {!isSearching && searchResults.length === 0 && (
+                  <div className="p-4 text-center text-text-secondary text-sm">No charts found.</div>
+                )}
+                {searchResults.map((chart) => {
+                  const inQueue = queue.includes(chart.id);
+                  return (
+                    <div 
+                      key={chart.id} 
+                      onClick={() => !inQueue && addChart(chart.id)}
+                      className={`flex items-center justify-between p-3 rounded-xl transition-all group ${!inQueue ? 'cursor-pointer hover:bg-white/5 border border-transparent' : 'opacity-70'}`}
+                    >
+                      <div className="truncate pr-4">
+                        <p className="text-sm font-bold text-text-primary truncate group-hover:text-accent-start transition-colors">{chart.title}</p>
+                        <p className="text-[10px] text-text-secondary truncate">{chart.path}</p>
+                      </div>
+                      <button
+                        disabled={inQueue}
+                        onClick={(e) => { e.stopPropagation(); if (!inQueue) addChart(chart.id); }}
+                        className={`shrink-0 p-2 rounded-lg flex items-center text-xs font-bold transition-colors ${inQueue ? 'text-text-secondary bg-surface cursor-not-allowed' : 'text-accent-start hover:bg-accent-start/10'}`}
+                      >
+                        {inQueue ? 'Added' : <><Plus size={14} className="mr-1" /> Add</>}
+                      </button>
+                    </div>
+                  );
+                })}
+              </div>
+            )}
+          </div>
+          <button 
+            onClick={() => setIsPrintModalOpen(true)}
+            disabled={queue.length === 0}
+            className="px-4 sm:px-6 py-3 bg-accent-gradient rounded-xl text-white shadow-md hover:brightness-110 transition-all flex items-center justify-center font-bold text-sm disabled:opacity-50 whitespace-nowrap h-[46px]"
+          >
+            <Printer size={18} className="sm:mr-2" />
+            <span className="hidden sm:inline">Print Options...</span>
+          </button>
+        </div>
+
+        {/* Click-away overlay to dismiss search popup */}
+        {isSearchFocused && searchQuery.trim() && (
+          <div className="fixed inset-0 z-10" onClick={() => setIsSearchFocused(false)} />
+        )}
+
+        <div className="w-full">
+          {/* Queue Management */}
+          <div className="bg-surface border border-border rounded-3xl p-6 sm:p-8 shadow-card">
+            <h2 className="text-xl font-bold text-text-primary mb-6 flex items-center pb-4 border-b border-border">
+              <FileText size={20} className="mr-3 text-accent-start" /> Your Print Queue ({queue.length})
             </h2>
             
             {queue.length === 0 ? (
-              <div className="p-8 bg-surface border border-border rounded-xl text-center">
-                <p className="text-text-secondary text-sm">Your queue is empty. Search for charts to add them.</p>
+              <div className="p-8 text-center bg-surface-raised border border-dashed border-border rounded-2xl">
+                <p className="text-text-secondary text-sm">Your queue is empty. Search for charts above to build your setlist.</p>
               </div>
             ) : (
               <DndContext 
