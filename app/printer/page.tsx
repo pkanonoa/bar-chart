@@ -129,7 +129,7 @@ export default function PrinterPage() {
       }
       setIsSearching(true);
       const results = await searchAll(searchQuery);
-      const chartResults = results.filter(r => r.kind === 'chart');
+      const chartResults = results.filter(r => r.type === 'chart');
       setSearchResults(chartResults);
     };
     const t = setTimeout(doSearch, 300);
