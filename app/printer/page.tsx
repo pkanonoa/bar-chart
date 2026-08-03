@@ -135,13 +135,7 @@ export default function PrinterPage() {
                         </div>
                       </div>
                       <div className="flex items-center space-x-2 shrink-0">
-                        <button onClick={() => moveUp(idx)} disabled={idx === 0} className="p-2 text-text-secondary hover:text-white disabled:opacity-30 disabled:hover:text-text-secondary">
-                          <ArrowUp size={16} />
-                        </button>
-                        <button onClick={() => moveDown(idx)} disabled={idx === queue.length - 1} className="p-2 text-text-secondary hover:text-white disabled:opacity-30 disabled:hover:text-text-secondary">
-                          <ArrowDown size={16} />
-                        </button>
-                        <button onClick={() => removeChart(id)} className="p-2 text-red-400 hover:text-red-300">
+                        <button onClick={() => removeChart(id)} className="p-2 text-red-400 hover:text-red-300 z-10 relative">
                           <Trash2 size={16} />
                         </button>
                       </div>

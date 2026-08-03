@@ -492,29 +492,17 @@ export function FolderBrowser({ folderId, folderName }: Props) {
               Are you sure you want to delete "{deleteItem.name}"?
               {deleteItem.type === 'folder' && " All nested folders and charts will also be permanently deleted."}
             </p>
-            <p className="text-xs text-text-secondary mb-4">
-              Type <strong className="text-text-primary select-all">delete {deleteItem.name}</strong> to confirm.
-            </p>
-            <input
-              autoFocus
-              placeholder={`delete ${deleteItem.name}`}
-              value={deleteConfirmText}
-              onChange={(e) => setDeleteConfirmText(e.target.value)}
-              className="w-full px-4 py-3 bg-surface-raised border border-border shadow-inner rounded-xl text-text-primary focus:outline-none focus:border-red-500 transition-colors mb-6 font-medium text-center"
-            />
             <div className="flex justify-center space-x-4">
               <button onClick={() => { setDeleteItem(null); setDeleteConfirmText(''); }} className="px-6 py-2.5 text-sm font-bold text-text-secondary bg-surface border border-border rounded-xl hover:text-white hover:bg-surface-raised transition-all">Cancel</button>
               <button 
                 onClick={() => executeDelete(false)} 
-                disabled={deleteConfirmText !== `delete ${deleteItem.name}`}
-                className="px-4 py-2.5 text-sm font-bold text-white bg-accent-gradient rounded-xl shadow-md hover:brightness-110 transition-all disabled:opacity-50 disabled:cursor-not-allowed"
+                className="px-4 py-2.5 text-sm font-bold text-white bg-accent-gradient rounded-xl shadow-md hover:brightness-110 transition-all"
               >
                 Move to Trash
               </button>
               <button 
                 onClick={() => executeDelete(true)} 
-                disabled={deleteConfirmText !== `delete ${deleteItem.name}`}
-                className="px-4 py-2.5 text-sm font-bold text-red-500 bg-red-500/10 border border-red-500/20 rounded-xl shadow-md hover:bg-red-500 hover:text-white transition-all disabled:opacity-50 disabled:cursor-not-allowed"
+                className="px-4 py-2.5 text-sm font-bold text-red-500 bg-red-500/10 border border-red-500/20 rounded-xl shadow-md hover:bg-red-500 hover:text-white transition-all"
               >
                 Delete Permanently
               </button>
@@ -534,29 +522,17 @@ export function FolderBrowser({ folderId, folderName }: Props) {
             <p className="text-sm text-text-secondary mb-4 font-medium px-4">
               Are you sure you want to delete {selectedItems.length} items? All nested folders and charts will also be affected.
             </p>
-            <p className="text-xs text-text-secondary mb-4">
-              Type <strong className="text-text-primary select-all">delete {selectedItems.length} items</strong> to confirm.
-            </p>
-            <input
-              autoFocus
-              placeholder={`delete ${selectedItems.length} items`}
-              value={deleteConfirmText}
-              onChange={(e) => setDeleteConfirmText(e.target.value)}
-              className="w-full px-4 py-3 bg-surface-raised border border-border shadow-inner rounded-xl text-text-primary focus:outline-none focus:border-red-500 transition-colors mb-6 font-medium text-center"
-            />
             <div className="flex justify-center space-x-3">
               <button onClick={() => { setBulkDeleteModal(false); setDeleteConfirmText(''); }} className="px-6 py-2.5 text-sm font-bold text-text-secondary bg-surface border border-border rounded-xl hover:text-white hover:bg-surface-raised transition-all">Cancel</button>
               <button 
                 onClick={() => handleBulkDelete(false)} 
-                disabled={deleteConfirmText !== `delete ${selectedItems.length} items`}
-                className="px-4 py-2.5 text-sm font-bold text-white bg-accent-gradient rounded-xl shadow-md hover:brightness-110 transition-all disabled:opacity-50 disabled:cursor-not-allowed"
+                className="px-4 py-2.5 text-sm font-bold text-white bg-accent-gradient rounded-xl shadow-md hover:brightness-110 transition-all"
               >
                 Move to Trash
               </button>
               <button 
                 onClick={() => handleBulkDelete(true)} 
-                disabled={deleteConfirmText !== `delete ${selectedItems.length} items`}
-                className="px-4 py-2.5 text-sm font-bold text-red-500 bg-red-500/10 border border-red-500/20 rounded-xl shadow-md hover:bg-red-500 hover:text-white transition-all disabled:opacity-50 disabled:cursor-not-allowed"
+                className="px-4 py-2.5 text-sm font-bold text-red-500 bg-red-500/10 border border-red-500/20 rounded-xl shadow-md hover:bg-red-500 hover:text-white transition-all"
               >
                 Delete Permanently
               </button>
