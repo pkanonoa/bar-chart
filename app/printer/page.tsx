@@ -3,18 +3,72 @@
 import React, { useState, useEffect } from 'react';
 import { readChart, searchAll, Chart } from '@/lib/storage';
 import { ChartRenderer } from '@/components/ChartRenderer';
-import { Printer, Search, Plus, Trash2, ArrowUp, ArrowDown, FileText, CornerLeftUp } from 'lucide-react';
+import { Printer, Search, Plus, Trash2, ArrowUp, ArrowDown, FileText, CornerLeftUp, GripVertical } from 'lucide-react';
 import { useRouter } from 'next/navigation';
-import { polyfill } from 'mobile-drag-drop';
-import { scrollBehaviourDragImageTranslateOverride } from "mobile-drag-drop/scroll-behaviour";
+import {
+  DndContext,
+  closestCenter,
+  KeyboardSensor,
+  PointerSensor,
+  useSensor,
+  useSensors,
+} from '@dnd-kit/core';
+import {
+  arrayMove,
+  SortableContext,
+  sortableKeyboardCoordinates,
+  verticalListSortingStrategy,
+  useSortable,
+} from '@dnd-kit/sortable';
+import { CSS } from '@dnd-kit/utilities';
 
-let polyfillLoaded = false;
-if (typeof window !== 'undefined' && !polyfillLoaded) {
-  polyfillLoaded = true;
-  polyfill({
-    dragImageTranslateOverride: scrollBehaviourDragImageTranslateOverride
-  });
-  window.addEventListener('touchmove', function() {}, {passive: false});
+function SortableItem({ id, idx, chart, onRemove }: { id: string, idx: number, chart: Chart | undefined, onRemove: (id: string) => void }) {
+  const {
+    attributes,
+    listeners,
+    setNodeRef,
+    transform,
+    transition,
+    isDragging,
+  } = useSortable({ id });
+
+  const style = {
+    transform: CSS.Transform.toString(transform),
+    transition,
+    zIndex: isDragging ? 50 : 'auto',
+    opacity: isDragging ? 0.8 : 1,
+  };
+
+  return (
+    <div 
+      ref={setNodeRef} 
+      style={style} 
+      className="flex items-center justify-between p-3 sm:p-4 bg-surface border border-border rounded-xl shadow-sm hover:shadow-md transition-shadow group"
+    >
+      <div className="flex items-center space-x-3 overflow-hidden flex-1">
+        {/* Drag handle */}
+        <div {...attributes} {...listeners} className="p-2 -ml-2 text-text-secondary cursor-grab active:cursor-grabbing hover:text-white shrink-0 touch-none">
+          <GripVertical size={20} />
+        </div>
+        <div className="w-10 h-10 bg-surface-raised rounded-full flex items-center justify-center shadow-inner border border-border shrink-0">
+          <span className="text-accent-start font-bold text-xs">{idx + 1}</span>
+        </div>
+        <div className="truncate">
+          <p className="text-sm font-bold text-text-primary truncate">{chart ? chart.title : 'Loading...'}</p>
+          <p className="text-[10px] text-text-secondary">{chart ? chart.time_sig + ' • t=' + chart.tempo : '...'}</p>
+        </div>
+      </div>
+      <div className="flex items-center space-x-2 shrink-0 pl-2">
+        <button 
+          onPointerDown={(e) => e.stopPropagation()}
+          onClick={(e) => { e.stopPropagation(); onRemove(id); }} 
+          className="p-2 text-red-400 hover:text-red-300 z-10 relative"
+        >
+          <Trash2 size={18} />
+        </button>
+      </div>
+    </div>
+  );
 }
 
 export default function PrinterPage() {
@@ -27,6 +81,17 @@ export default function PrinterPage() {
   const [isSearching, setIsSearching] = useState(false);
   const [font, setFont] = useState('system');
   const [setlistName, setSetlistName] = useState('My Setlist');
+
+  const sensors = useSensors(
+    useSensor(PointerSensor, {
+      activationConstraint: {
+        distance: 5,
+      },
+    }),
+    useSensor(KeyboardSensor, {
+      coordinateGetter: sortableKeyboardCoordinates,
+    })
+  );
 
   useEffect(() => {
     const q = JSON.parse(localStorage.getItem('chord-grid-print-queue') || '[]');
@@ -79,19 +144,15 @@ export default function PrinterPage() {
     updateQueue(queue.filter(item => item !== id));
   };
 
-  const moveUp = (index: number) => {
-    if (index === 0) return;
-    const newQueue = [...queue];
-    [newQueue[index - 1], newQueue[index]] = [newQueue[index], newQueue[index - 1]];
-    updateQueue(newQueue);
-  };
+  function handleDragEnd(event: any) {
+    const { active, over } = event;
 
-  const moveDown = (index: number) => {
-    if (index === queue.length - 1) return;
-    const newQueue = [...queue];
-    [newQueue[index + 1], newQueue[index]] = [newQueue[index], newQueue[index + 1]];
-    updateQueue(newQueue);
-  };
+    if (over && active.id !== over.id) {
+      const oldIndex = queue.indexOf(active.id);
+      const newIndex = queue.indexOf(over.id);
+      updateQueue(arrayMove(queue, oldIndex, newIndex));
+    }
+  }
 
   return (
     <div className="w-full max-w-7xl mx-auto px-4 pt-[max(env(safe-area-inset-top,2rem),2rem)] pb-24 min-h-screen">
@@ -148,29 +209,22 @@ export default function PrinterPage() {
                 <p className="text-text-secondary text-sm">Your queue is empty. Search for charts to add them.</p>
               </div>
             ) : (
-              <div className="space-y-3">
-                {queue.map((id, idx) => {
-                  const chart = charts[id];
-                  return (
-                    <div key={id} className="flex items-center justify-between p-4 bg-surface border border-border rounded-xl shadow-sm hover:shadow-md transition-shadow group">
-                      <div className="flex items-center space-x-3 overflow-hidden">
-                        <div className="w-10 h-10 bg-surface-raised rounded-full flex items-center justify-center shadow-inner border border-border shrink-0">
-                          <span className="text-accent-start font-bold text-xs">{idx + 1}</span>
-                        </div>
-                        <div className="truncate">
-                          <p className="text-sm font-bold text-text-primary truncate">{chart ? chart.title : 'Loading...'}</p>
-                          <p className="text-[10px] text-text-secondary">{chart ? chart.time_sig + ' • t=' + chart.tempo : '...'}</p>
-                        </div>
-                      </div>
-                      <div className="flex items-center space-x-2 shrink-0">
-                        <button onClick={() => removeChart(id)} className="p-2 text-red-400 hover:text-red-300 z-10 relative">
-                          <Trash2 size={16} />
-                        </button>
-                      </div>
-                    </div>
-                  );
-                })}
-              </div>
+              <DndContext 
+                sensors={sensors}
+                collisionDetection={closestCenter}
+                onDragEnd={handleDragEnd}
+              >
+                <SortableContext 
+                  items={queue}
+                  strategy={verticalListSortingStrategy}
+                >
+                  <div className="space-y-3">
+                    {queue.map((id, idx) => (
+                      <SortableItem key={id} id={id} idx={idx} chart={charts[id]} onRemove={removeChart} />
+                    ))}
+                  </div>
+                </SortableContext>
+              </DndContext>
             )}
           </div>
 
