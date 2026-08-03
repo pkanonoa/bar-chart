@@ -114,7 +114,7 @@ export default function PrinterPage() {
             <input 
               type="text" 
               value={setlistName}
-              onChange={(e) => setlistName(e.target.value)}
+              onChange={(e) => setSetlistName(e.target.value)}
               placeholder="Setlist Name"
               className="px-4 py-2.5 bg-surface border border-border rounded-xl text-text-primary text-sm focus:outline-none focus:border-accent-solid transition-colors w-full sm:w-48"
             />
