@@ -49,7 +49,7 @@ export function ChartRenderer({
             <h1 className="text-2xl sm:text-4xl print:text-4xl font-bold print:!font-bold tracking-wide print:!tracking-normal">{chartData.title || 'Untitled Chart'}</h1>
             <span className="font-semibold print:!font-normal text-lg sm:text-2xl print:text-2xl">{chartData.time_sig || '4/4'}</span>
           </div>
-          <div className="absolute right-0 print:right-6 font-semibold print:!font-normal text-base sm:text-xl print:text-xl">
+          <div className="absolute right-0 print:right-24 font-semibold print:!font-normal text-base sm:text-xl print:text-xl">
             t={chartData.tempo || 120}
           </div>
         </div>
