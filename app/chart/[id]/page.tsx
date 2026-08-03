@@ -241,7 +241,7 @@ export default function ChartViewer() {
                                 {parseChord(bar || '_')}
                               </span>
                               {barIdx < block.bars.length - 1 && (
-                                <span className="inline-block px-1.5 sm:px-2.5 print:px-1 text-center text-text-primary print:text-black print:!font-bold print:!tracking-normal">|</span>
+                                <span className="inline-block px-1.5 sm:px-2.5 print:px-1 text-center text-text-primary print:text-black print:!font-normal print:!tracking-normal">|</span>
                               )}
                             </React.Fragment>
                           ))}
