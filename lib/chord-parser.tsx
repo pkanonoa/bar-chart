@@ -30,8 +30,8 @@ function parseSingleChord(raw: string) {
   
   nodes.push(<span key="root">{root}</span>);
   
-  if (accidental === '#') nodes.push(<sup key="acc" className="relative -top-[0.4em] text-[0.65em] -ml-[0.1em] -mr-[0.3em]">♯</sup>);
-  else if (accidental === 'b') nodes.push(<sup key="acc" className="relative -top-[0.4em] text-[0.65em] -ml-[0.1em] -mr-[0.3em]">♭</sup>);
+  if (accidental === '#') nodes.push(<sup key="acc" className="relative -top-[0.4em] text-[0.65em]">♯</sup>);
+  else if (accidental === 'b') nodes.push(<sup key="acc" className="relative -top-[0.4em] text-[0.65em]">♭</sup>);
   
   if (rest) {
     const regex = /(maj7|major7|M7|dim|aug|sus|add|m|b|#|\d+|.)/gi;
@@ -62,7 +62,7 @@ function parseSingleChord(raw: string) {
       }
       
       if (isSuper) {
-        nodes.push(<sup key={`mod-${i}`} className="relative -top-[0.4em] text-[0.65em] -ml-[0.1em]">{content}</sup>);
+        nodes.push(<sup key={`mod-${i}`} className="relative -top-[0.4em] text-[0.65em]">{content}</sup>);
       } else {
         nodes.push(<span key={`mod-${i}`}>{content}</span>);
       }
