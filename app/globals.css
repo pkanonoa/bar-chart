@@ -112,7 +112,7 @@ body {
   
   /* Reset dynamic scaling bounds for print so it fits page width */
   .print-reset-scale {
-    font-size: 28px !important;
+    font-size: 34px !important;
     width: max-content !important;
     margin: 0 auto !important;
     padding: 0 !important;
