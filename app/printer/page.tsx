@@ -5,6 +5,17 @@ import { readChart, searchAll, Chart } from '@/lib/storage';
 import { ChartRenderer } from '@/components/ChartRenderer';
 import { Printer, Search, Plus, Trash2, ArrowUp, ArrowDown, FileText, CornerLeftUp } from 'lucide-react';
 import { useRouter } from 'next/navigation';
+import { polyfill } from 'mobile-drag-drop';
+import { scrollBehaviourDragImageTranslateOverride } from "mobile-drag-drop/scroll-behaviour";
+
+let polyfillLoaded = false;
+if (typeof window !== 'undefined' && !polyfillLoaded) {
+  polyfillLoaded = true;
+  polyfill({
+    dragImageTranslateOverride: scrollBehaviourDragImageTranslateOverride
+  });
+  window.addEventListener('touchmove', function() {}, {passive: false});
+}
 
 export default function PrinterPage() {
   const router = useRouter();
@@ -15,6 +26,7 @@ export default function PrinterPage() {
   const [searchResults, setSearchResults] = useState<any[]>([]);
   const [isSearching, setIsSearching] = useState(false);
   const [font, setFont] = useState('system');
+  const [setlistName, setlistName] = useState('My Setlist');
 
   useEffect(() => {
     const q = JSON.parse(localStorage.getItem('chord-grid-print-queue') || '[]');
@@ -98,14 +110,30 @@ export default function PrinterPage() {
               Printer (Setlist)
             </h1>
           </div>
-          <button 
-            onClick={() => window.print()}
-            disabled={queue.length === 0}
-            className="px-6 py-3 bg-accent-gradient rounded-xl text-white shadow-md hover:brightness-110 transition-all flex items-center justify-center font-bold text-sm disabled:opacity-50"
-          >
-            <Printer size={18} className="mr-2" />
-            Print Setlist
-          </button>
+          <div className="flex items-center space-x-4 w-full sm:w-auto mt-4 sm:mt-0">
+            <input 
+              type="text" 
+              value={setlistName}
+              onChange={(e) => setlistName(e.target.value)}
+              placeholder="Setlist Name"
+              className="px-4 py-2.5 bg-surface border border-border rounded-xl text-text-primary text-sm focus:outline-none focus:border-accent-solid transition-colors w-full sm:w-48"
+            />
+            <button 
+              onClick={() => {
+                const originalTitle = document.title;
+                document.title = setlistName || 'Setlist';
+                window.print();
+                setTimeout(() => {
+                  document.title = originalTitle;
+                }, 1000);
+              }}
+              disabled={queue.length === 0}
+              className="px-6 py-2.5 bg-accent-gradient rounded-xl text-white shadow-md hover:brightness-110 transition-all flex items-center justify-center font-bold text-sm disabled:opacity-50 whitespace-nowrap"
+            >
+              <Printer size={18} className="mr-2" />
+              Print
+            </button>
+          </div>
         </div>
 
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
@@ -171,13 +199,16 @@ export default function PrinterPage() {
               {searchResults.map((chart) => {
                 const inQueue = queue.includes(chart.id);
                 return (
-                  <div key={chart.id} className="flex items-center justify-between p-3 bg-surface border border-border rounded-xl">
+                  <div 
+                    key={chart.id} 
+                    onClick={() => !inQueue && addChart(chart.id)}
+                    className={`flex items-center justify-between p-3 bg-surface border rounded-xl transition-all group ${!inQueue ? 'cursor-pointer hover:border-accent-solid hover:shadow-sm border-border' : 'opacity-70 border-border'}`}
+                  >
                     <div className="truncate pr-4">
-                      <p className="text-sm font-bold text-text-primary truncate">{chart.title}</p>
+                      <p className="text-sm font-bold text-text-primary truncate group-hover:text-accent-start transition-colors">{chart.title}</p>
                       <p className="text-[10px] text-text-secondary truncate">{chart.path}</p>
                     </div>
                     <button
-                      onClick={() => addChart(chart.id)}
                       disabled={inQueue}
                       className={`shrink-0 p-2 rounded-lg flex items-center text-xs font-bold transition-colors ${inQueue ? 'text-text-secondary bg-surface-raised cursor-not-allowed' : 'text-accent-start hover:bg-accent-start/10'}`}
                     >

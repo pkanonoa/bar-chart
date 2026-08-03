@@ -1,4 +1,5 @@
 @import "tailwindcss";
+@import "mobile-drag-drop/default.css";
 
 :root {
   --bg: transparent;
