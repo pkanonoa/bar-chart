@@ -120,7 +120,7 @@ export function Sidebar({ isOpen, onClose }: { isOpen: boolean; onClose: () => v
               onClick={() => { router.push('/'); onClose(); }}
               className="w-full flex items-center px-4 py-3 bg-surface border border-border shadow-md rounded-xl text-sm font-bold text-text-primary hover:text-accent-start hover:bg-surface-raised transition-all group mb-3"
             >
-              <FolderIcon size={18} className="mr-3 text-text-secondary group-hover:text-accent-start" /> My Library
+              <FolderIcon size={18} className="mr-3 text-text-secondary group-hover:text-accent-start" /> Chords
             </button>
             <button 
               onClick={() => { router.push('/printer'); onClose(); }}

@@ -292,7 +292,7 @@ export function FolderBrowser({ folderId, folderName, kind = 'chart' }: Props) {
             </button>
           )}
           <h1 className="text-3xl font-bold text-text-primary tracking-tight">
-            {folderName || 'My Library'}
+            {folderName || (kind === 'lyrics' ? 'Lyrics' : 'Chords')}
           </h1>
         </div>
         <div className="flex items-center space-x-3 w-full sm:w-auto justify-end">

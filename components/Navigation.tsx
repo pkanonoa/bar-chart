@@ -115,7 +115,7 @@ export function Navigation() {
   const navItems = [
     {
       id: 'home',
-      label: 'Home',
+      label: 'Chords',
       icon: <Home className="w-6 h-6 sm:w-7 sm:h-7" />,
       isActive: (pathname === '/' || pathname.startsWith('/folder/')) && !showProfileMenu && !showAddMenu,
       onClick: () => router.push('/'),
