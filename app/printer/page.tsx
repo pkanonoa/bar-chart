@@ -3,7 +3,7 @@
 import React, { useState, useEffect } from 'react';
 import { readChart, searchAll, Chart } from '@/lib/storage';
 import { ChartRenderer } from '@/components/ChartRenderer';
-import { Printer, Search, Plus, Trash2, ArrowUp, ArrowDown, FileText, CornerLeftUp, GripVertical } from 'lucide-react';
+import { Printer, Search, Plus, Trash2, ArrowUp, ArrowDown, FileText, CornerLeftUp, GripVertical, X } from 'lucide-react';
 import { useRouter } from 'next/navigation';
 import {
   DndContext,
@@ -81,6 +81,7 @@ export default function PrinterPage() {
   const [isSearching, setIsSearching] = useState(false);
   const [font, setFont] = useState('system');
   const [setlistName, setSetlistName] = useState('My Setlist');
+  const [isPrintModalOpen, setIsPrintModalOpen] = useState(false);
 
   const sensors = useSensors(
     useSensor(PointerSensor, {
@@ -116,28 +117,29 @@ export default function PrinterPage() {
   }, [queue]);
 
   useEffect(() => {
-    if (searchQuery.trim().length === 0) {
-      setIsSearching(false);
-      setSearchResults([]);
-      return;
-    }
-    const delayDebounceFn = setTimeout(async () => {
+    const doSearch = async () => {
+      if (!searchQuery.trim()) {
+        setSearchResults([]);
+        setIsSearching(false);
+        return;
+      }
       setIsSearching(true);
       const results = await searchAll(searchQuery);
-      setSearchResults(results);
-    }, 300);
-    return () => clearTimeout(delayDebounceFn);
+      const chartResults = results.filter(r => r.kind === 'chart');
+      setSearchResults(chartResults);
+    };
+    const t = setTimeout(doSearch, 300);
+    return () => clearTimeout(t);
   }, [searchQuery]);
 
-  const updateQueue = (newQueue: string[]) => {
-    setQueue(newQueue);
-    localStorage.setItem('chord-grid-print-queue', JSON.stringify(newQueue));
+  const updateQueue = (newQ: string[]) => {
+    setQueue(newQ);
+    localStorage.setItem('chord-grid-print-queue', JSON.stringify(newQ));
   };
 
   const addChart = (id: string) => {
-    if (!queue.includes(id)) {
-      updateQueue([...queue, id]);
-    }
+    if (queue.includes(id)) return;
+    updateQueue([...queue, id]);
   };
 
   const removeChart = (id: string) => {
@@ -154,15 +156,24 @@ export default function PrinterPage() {
     }
   }
 
+  const handlePrint = () => {
+    const originalTitle = document.title;
+    document.title = setlistName || 'Setlist';
+    window.print();
+    setTimeout(() => {
+      document.title = originalTitle;
+    }, 1000);
+    setIsPrintModalOpen(false);
+  };
+
   return (
     <div className="w-full max-w-7xl mx-auto px-4 pt-[max(env(safe-area-inset-top,2rem),2rem)] pb-24 min-h-screen">
-      <div className="print:hidden">
-        {/* Header Actions */}
-        <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-10 space-y-4 sm:space-y-0">
-          <div className="flex items-center space-x-4">
-            <button
+      <div className="print:hidden mb-8">
+        <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-8 gap-4">
+          <div className="flex items-center">
+            <button 
               onClick={() => router.push('/')}
-              className="p-3 text-text-secondary bg-surface border border-border rounded-xl hover:text-white hover:bg-surface-raised transition-all"
+              className="p-3 mr-4 text-text-secondary bg-surface border border-border rounded-xl hover:text-white hover:bg-surface-raised transition-all"
               title="Back"
             >
               <CornerLeftUp size={20} />
@@ -172,64 +183,20 @@ export default function PrinterPage() {
             </h1>
           </div>
           <div className="flex items-center space-x-4 w-full sm:w-auto mt-4 sm:mt-0">
-            <input 
-              type="text" 
-              value={setlistName}
-              onChange={(e) => setSetlistName(e.target.value)}
-              placeholder="Setlist Name"
-              className="px-4 py-2.5 bg-surface border border-border rounded-xl text-text-primary text-sm focus:outline-none focus:border-accent-solid transition-colors w-full sm:w-48"
-            />
             <button 
-              onClick={() => {
-                const originalTitle = document.title;
-                document.title = setlistName || 'Setlist';
-                window.print();
-                setTimeout(() => {
-                  document.title = originalTitle;
-                }, 1000);
-              }}
+              onClick={() => setIsPrintModalOpen(true)}
               disabled={queue.length === 0}
               className="px-6 py-2.5 bg-accent-gradient rounded-xl text-white shadow-md hover:brightness-110 transition-all flex items-center justify-center font-bold text-sm disabled:opacity-50 whitespace-nowrap"
             >
               <Printer size={18} className="mr-2" />
-              Print
+              Print Options...
             </button>
           </div>
         </div>
 
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
-          {/* Left: Queue Management */}
-          <div>
-            <h2 className="text-lg font-bold text-text-primary mb-4 flex items-center">
-              <FileText size={18} className="mr-2 text-accent-start" /> Your Print Queue ({queue.length})
-            </h2>
-            
-            {queue.length === 0 ? (
-              <div className="p-8 bg-surface border border-border rounded-xl text-center">
-                <p className="text-text-secondary text-sm">Your queue is empty. Search for charts to add them.</p>
-              </div>
-            ) : (
-              <DndContext 
-                sensors={sensors}
-                collisionDetection={closestCenter}
-                onDragEnd={handleDragEnd}
-              >
-                <SortableContext 
-                  items={queue}
-                  strategy={verticalListSortingStrategy}
-                >
-                  <div className="space-y-3">
-                    {queue.map((id, idx) => (
-                      <SortableItem key={id} id={id} idx={idx} chart={charts[id]} onRemove={removeChart} />
-                    ))}
-                  </div>
-                </SortableContext>
-              </DndContext>
-            )}
-          </div>
-
-          {/* Right: Search and Add */}
-          <div>
+          {/* Left: Search and Add */}
+          <div className="order-first lg:order-first">
             <h2 className="text-lg font-bold text-text-primary mb-4 flex items-center">
               <Search size={18} className="mr-2 text-text-secondary" /> Add to Queue
             </h2>
@@ -273,8 +240,61 @@ export default function PrinterPage() {
               })}
             </div>
           </div>
+
+          {/* Right: Queue Management */}
+          <div className="order-last lg:order-last">
+            <h2 className="text-lg font-bold text-text-primary mb-4 flex items-center">
+              <FileText size={18} className="mr-2 text-accent-start" /> Your Print Queue ({queue.length})
+            </h2>
+            
+            {queue.length === 0 ? (
+              <div className="p-8 bg-surface border border-border rounded-xl text-center">
+                <p className="text-text-secondary text-sm">Your queue is empty. Search for charts to add them.</p>
+              </div>
+            ) : (
+              <DndContext 
+                sensors={sensors}
+                collisionDetection={closestCenter}
+                onDragEnd={handleDragEnd}
+              >
+                <SortableContext 
+                  items={queue}
+                  strategy={verticalListSortingStrategy}
+                >
+                  <div className="space-y-3">
+                    {queue.map((id, idx) => (
+                      <SortableItem key={id} id={id} idx={idx} chart={charts[id]} onRemove={removeChart} />
+                    ))}
+                  </div>
+                </SortableContext>
+              </DndContext>
+            )}
+          </div>
         </div>
       </div>
+
+      {isPrintModalOpen && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50 backdrop-blur-sm print:hidden">
+          <div className="bg-surface border border-border p-6 rounded-2xl w-full max-w-sm shadow-xl animate-in fade-in zoom-in duration-200">
+            <div className="flex justify-between items-center mb-6">
+              <h3 className="font-bold text-lg">Print Options</h3>
+              <button onClick={() => setIsPrintModalOpen(false)} className="text-text-secondary hover:text-white"><X size={20} /></button>
+            </div>
+            <label className="block text-xs font-bold text-text-secondary mb-2 uppercase tracking-wider">Setlist Name</label>
+            <input 
+              value={setlistName}
+              onChange={(e) => setSetlistName(e.target.value)}
+              className="w-full mb-6 p-3 bg-surface-raised border border-border rounded-xl outline-none focus:border-accent-solid"
+            />
+            <button 
+              onClick={handlePrint}
+              className="w-full py-3 bg-accent-gradient rounded-xl text-white font-bold hover:brightness-110 transition-all"
+            >
+              Print
+            </button>
+          </div>
+        </div>
+      )}
 
       {/* Hidden Print Container */}
       <div className="hidden print:block w-full">

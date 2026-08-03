@@ -128,18 +128,18 @@ export function Navigation() {
       onClick: () => router.push('/lyrics'),
     },
     {
-      id: 'printer',
-      label: 'Printer',
-      icon: <Printer className="w-6 h-6 sm:w-7 sm:h-7" />,
-      isActive: pathname.startsWith('/printer') && !showProfileMenu && !showAddMenu,
-      onClick: () => router.push('/printer'),
-    },
-    {
       id: 'add',
       label: 'Create',
       icon: <Plus className="w-6 h-6 sm:w-7 sm:h-7" />,
       isActive: showAddMenu,
       onClick: () => setShowAddMenu(!showAddMenu),
+    },
+    {
+      id: 'printer',
+      label: 'Printer',
+      icon: <Printer className="w-6 h-6 sm:w-7 sm:h-7" />,
+      isActive: pathname.startsWith('/printer') && !showProfileMenu && !showAddMenu,
+      onClick: () => router.push('/printer'),
     },
     {
       id: 'profile',
