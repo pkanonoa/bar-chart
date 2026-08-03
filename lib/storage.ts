@@ -44,7 +44,7 @@ interface BarChartDB extends DBSchema {
 
 let dbPromise: Promise<IDBPDatabase<BarChartDB>> | null = null;
 if (typeof window !== 'undefined') {
-  dbPromise = openDB<BarChartDB>('bar-chart-db', 2, {
+  dbPromise = openDB<BarChartDB>('bar-chart-db', 3, {
     upgrade(db, oldVersion) {
       if (oldVersion < 1) {
         db.createObjectStore('charts', { keyPath: 'id' });
@@ -56,9 +56,17 @@ if (typeof window !== 'undefined') {
           db.createObjectStore('lyrics', { keyPath: 'id' });
         }
       }
+      // Add version 3 catch-all just in case
+      if (oldVersion < 3) {
+        if (!db.objectStoreNames.contains('lyrics')) {
+          db.createObjectStore('lyrics', { keyPath: 'id' });
+        }
+      }
     },
   });
 }
+
+export const getDBPromise = () => dbPromise;
 
 // Utility to check network
 const isOnline = () => typeof navigator !== 'undefined' && navigator.onLine;

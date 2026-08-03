@@ -17,9 +17,10 @@ import {
 interface Props {
   folderId: string | null;
   folderName?: string; // Passed if inside a subfolder
+  kind?: 'chart' | 'lyrics';
 }
 
-export function FolderBrowser({ folderId, folderName }: Props) {
+export function FolderBrowser({ folderId, folderName, kind = 'chart' }: Props) {
   const router = useRouter();
   const { user } = useAuth();
   const [folders, setFolders] = useState<Folder[]>([]);
@@ -32,16 +33,16 @@ export function FolderBrowser({ folderId, folderName }: Props) {
   const [isSearching, setIsSearching] = useState(false);
 
   // Modals state
-  const [moveItem, setMoveItem] = useState<{ id: string, type: 'folder' | 'chart' } | null>(null);
+  const [moveItem, setMoveItem] = useState<{ id: string, type: 'folder' | 'chart' | 'lyrics' } | null>(null);
   const [isBulkMove, setIsBulkMove] = useState(false);
-  const [renameItem, setRenameItem] = useState<{ id: string, type: 'folder' | 'chart', currentName: string } | null>(null);
-  const [deleteItem, setDeleteItem] = useState<{ id: string, type: 'folder' | 'chart', name: string } | null>(null);
+  const [renameItem, setRenameItem] = useState<{ id: string, type: 'folder' | 'chart' | 'lyrics', currentName: string } | null>(null);
+  const [deleteItem, setDeleteItem] = useState<{ id: string, type: 'folder' | 'chart' | 'lyrics', name: string } | null>(null);
   const [deleteConfirmText, setDeleteConfirmText] = useState('');
   const [bulkDeleteModal, setBulkDeleteModal] = useState(false);
   const [createFolderModal, setCreateFolderModal] = useState(false);
 
   // Selection state
-  const [selectedItems, setSelectedItems] = useState<{ id: string, type: 'folder' | 'chart' }[]>([]);
+  const [selectedItems, setSelectedItems] = useState<{ id: string, type: 'folder' | 'chart' | 'lyrics' }[]>([]);
 
   useEffect(() => {
     const evt = new CustomEvent('selection-change', { detail: selectedItems.length });
@@ -62,7 +63,7 @@ export function FolderBrowser({ folderId, folderName }: Props) {
   const loadContents = async () => {
     setLoading(true);
     try {
-      const res = await listFolder(folderId);
+      const res = await listFolder(folderId, kind);
       setFolders(res.folders);
       setCharts(res.charts);
     } catch (err) {
@@ -97,7 +98,7 @@ export function FolderBrowser({ folderId, folderName }: Props) {
     }
     const delayDebounceFn = setTimeout(async () => {
       setIsSearching(true);
-      const results = await searchAll(searchQuery, folderId);
+      const results = await searchAll(searchQuery, folderId, kind);
       setSearchResults(results);
     }, 300);
     return () => clearTimeout(delayDebounceFn);
@@ -118,20 +119,34 @@ export function FolderBrowser({ folderId, folderName }: Props) {
 
   const handleCreateChart = async () => {
     if (!user) return;
-    const chart = {
-      id: crypto.randomUUID(),
-      title: 'Untitled Chart',
-      tempo: 120,
-      time_sig: '4/4',
-      lines: [],
-      semitone_offset: 0,
-      prefer_flats: false,
-      folder_id: folderId,
-      created_by: user.id,
-      updated_at: new Date().toISOString(),
-    };
-    await saveChart(chart);
-    router.push(`/chart/${chart.id}/edit`);
+    if (kind === 'lyrics') {
+      const lyrics = {
+        id: crypto.randomUUID(),
+        title: 'Untitled lyrics',
+        body: '',
+        folder_id: folderId,
+        created_by: user.id,
+        updated_at: new Date().toISOString(),
+      };
+      const { saveLyrics } = await import('@/lib/storage');
+      await saveLyrics(lyrics);
+      router.push(`/lyrics/${lyrics.id}/edit`);
+    } else {
+      const chart = {
+        id: crypto.randomUUID(),
+        title: 'Untitled Chart',
+        tempo: 120,
+        time_sig: '4/4',
+        lines: [],
+        semitone_offset: 0,
+        prefer_flats: false,
+        folder_id: folderId,
+        created_by: user.id,
+        updated_at: new Date().toISOString(),
+      };
+      await saveChart(chart);
+      router.push(`/chart/${chart.id}/edit`);
+    }
   };
 
   const executeDelete = async (permanent: boolean = false) => {
@@ -172,7 +187,7 @@ export function FolderBrowser({ folderId, folderName }: Props) {
     loadContents();
   };
 
-  const toggleSelection = (id: string, type: 'folder' | 'chart', e: React.MouseEvent) => {
+  const toggleSelection = (id: string, type: 'folder' | 'chart' | 'lyrics', e: React.MouseEvent) => {
     e.stopPropagation();
     setSelectedItems(prev => {
       const exists = prev.find(item => item.id === id);
@@ -181,7 +196,7 @@ export function FolderBrowser({ folderId, folderName }: Props) {
     });
   };
 
-  const RowMenu = ({ id, type, name }: { id: string, type: 'folder' | 'chart', name: string }) => {
+  const RowMenu = ({ id, type, name }: { id: string, type: 'folder' | 'chart' | 'lyrics', name: string }) => {
     const isOpen = activeDropdown === id;
     return (
       <div className="relative" ref={isOpen ? dropdownRef : null}>
@@ -269,7 +284,7 @@ export function FolderBrowser({ folderId, folderName }: Props) {
         <div className="flex items-center space-x-4">
           {folderId && (
             <button
-              onClick={() => router.push('/')}
+              onClick={() => router.push(kind === 'lyrics' ? '/lyrics' : '/')}
               className="p-3 text-text-secondary bg-surface border border-border rounded-xl hover:text-white hover:bg-surface-raised transition-all"
               title="Back"
             >
@@ -285,9 +300,9 @@ export function FolderBrowser({ folderId, folderName }: Props) {
             <FolderPlus size={18} className="mr-2 sm:mr-0" />
             <span className="sm:hidden">New Folder</span>
           </button>
-          <button onClick={handleCreateChart} className="p-3 bg-accent-gradient rounded-xl text-white shadow-md hover:brightness-110 transition-all flex items-center justify-center font-bold text-sm" title="New Chart">
+          <button onClick={handleCreateChart} className="p-3 bg-accent-gradient rounded-xl text-white shadow-md hover:brightness-110 transition-all flex items-center justify-center font-bold text-sm" title={kind === 'lyrics' ? "New Lyrics" : "New Chart"}>
             <FilePlus size={18} className="mr-2 sm:mr-0" />
-            <span className="sm:hidden">New Chart</span>
+            <span className="sm:hidden">{kind === 'lyrics' ? 'New Lyrics' : 'New Chart'}</span>
           </button>
         </div>
       </div>
@@ -322,19 +337,19 @@ export function FolderBrowser({ folderId, folderName }: Props) {
                   className={`bg-surface border rounded-xl p-5 flex flex-col items-center justify-center cursor-pointer group relative transition-all duration-200 ${
                     selectedItems.some(i => i.id === chart.id) ? 'border-accent-solid shadow-md bg-surface-raised before:absolute before:left-0 before:top-0 before:bottom-0 before:w-1 before:bg-accent-gradient before:rounded-l-xl' : 'border-border shadow-sm hover:shadow-hover hover:-translate-y-1'
                   }`}
-                  onClick={() => router.push(`/chart/${chart.id}`)}
+                  onClick={() => router.push(kind === 'lyrics' ? `/lyrics/${chart.id}` : `/chart/${chart.id}`)}
                 >
                   <div className="absolute top-3 left-3 z-10" onClick={e => e.stopPropagation()}>
                     <input
                       type="checkbox"
                       checked={selectedItems.some(i => i.id === chart.id)}
                       onChange={() => {}}
-                      onClick={(e) => toggleSelection(chart.id, 'chart', e)}
+                      onClick={(e) => toggleSelection(chart.id, kind, e)}
                       className="w-4 h-4 rounded border-border text-accent-solid focus:ring-accent-solid bg-transparent"
                     />
                   </div>
                   <div className="absolute top-2 right-2 z-10" onClick={e => e.stopPropagation()}>
-                    <RowMenu id={chart.id} type="chart" name={chart.title} />
+                    <RowMenu id={chart.id} type={kind} name={chart.title} />
                   </div>
                   <div className="w-16 h-16 bg-surface-raised rounded-full flex items-center justify-center mb-4 mt-2 shadow-inner border border-border">
                     <FileText size={24} className="text-accent-start" />
@@ -363,7 +378,7 @@ export function FolderBrowser({ folderId, folderName }: Props) {
                     className={`bg-surface border rounded-xl p-5 flex flex-col items-center justify-center cursor-pointer group relative transition-all duration-200 ${
                       selectedItems.some(i => i.id === folder.id) ? 'border-accent-solid shadow-md bg-surface-raised before:absolute before:left-0 before:top-0 before:bottom-0 before:w-1 before:bg-accent-gradient before:rounded-l-xl' : 'border-border shadow-sm hover:shadow-hover hover:-translate-y-1'
                     }`}
-                    onClick={() => router.push(`/folder/${folder.id}`)}
+                    onClick={() => router.push(kind === 'lyrics' ? `/lyrics/folder/${folder.id}` : `/folder/${folder.id}`)}
                   >
                     <div className="absolute top-3 left-3 z-10" onClick={e => e.stopPropagation()}>
                       <input
@@ -391,19 +406,19 @@ export function FolderBrowser({ folderId, folderName }: Props) {
                     className={`bg-surface border rounded-xl p-5 flex flex-col items-center justify-center cursor-pointer group relative transition-all duration-200 ${
                       selectedItems.some(i => i.id === chart.id) ? 'border-accent-solid shadow-md bg-surface-raised before:absolute before:left-0 before:top-0 before:bottom-0 before:w-1 before:bg-accent-gradient before:rounded-l-xl' : 'border-border shadow-sm hover:shadow-hover hover:-translate-y-1'
                     }`}
-                    onClick={() => router.push(`/chart/${chart.id}`)}
+                    onClick={() => router.push(kind === 'lyrics' ? `/lyrics/${chart.id}` : `/chart/${chart.id}`)}
                   >
                     <div className="absolute top-3 left-3 z-10" onClick={e => e.stopPropagation()}>
                       <input
                         type="checkbox"
                         checked={selectedItems.some(i => i.id === chart.id)}
                         onChange={() => {}}
-                        onClick={(e) => toggleSelection(chart.id, 'chart', e)}
+                        onClick={(e) => toggleSelection(chart.id, kind, e)}
                         className="w-4 h-4 rounded border-border text-accent-solid focus:ring-accent-solid bg-transparent"
                       />
                     </div>
                     <div className="absolute top-2 right-2 z-10" onClick={e => e.stopPropagation()}>
-                      <RowMenu id={chart.id} type="chart" name={chart.title} />
+                      <RowMenu id={chart.id} type={kind} name={chart.title} />
                     </div>
                     <div className="w-16 h-16 bg-surface-raised rounded-full flex items-center justify-center mb-4 mt-2 shadow-inner border border-border">
                       <FileText size={24} className="text-accent-start" />
@@ -551,7 +566,7 @@ export function FolderBrowser({ folderId, folderName }: Props) {
               const input = e.currentTarget.elements.namedItem('folderName') as HTMLInputElement;
               const name = input.value;
               if (name.trim()) {
-                await createFolder(folderId, name.trim());
+                await createFolder(folderId, name.trim(), kind);
                 loadContents();
               }
               setCreateFolderModal(false);

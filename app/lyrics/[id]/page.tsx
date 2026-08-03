@@ -47,7 +47,7 @@ function LyricsContentWrapper({ lyric, showUI, selectedFont }: any) {
     <div 
       id="lyrics-card"
       onClick={handleTap}
-      className={`inline-flex text-left flex-col w-max min-w-[min(100%,48rem)] max-w-none p-6 sm:p-12 print:p-0 bg-surface print:bg-transparent border border-border print:border-none shadow-card print:shadow-none rounded-3xl print:rounded-none relative select-none`}
+      className={`inline-flex text-left flex-col w-max min-w-[min(100%,48rem)] max-w-none p-6 sm:p-12 print:p-0 print:ml-12 print:w-full bg-surface print:bg-transparent border border-border print:border-none shadow-card print:shadow-none rounded-3xl print:rounded-none relative select-none`}
       style={{
         fontFamily: selectedFont === 'serif' ? 'Georgia, serif' : 
                     selectedFont === 'mono' ? 'monospace' : 
@@ -55,13 +55,13 @@ function LyricsContentWrapper({ lyric, showUI, selectedFont }: any) {
       }}
     >
       <div className="flex flex-col gap-4 w-max min-w-full leading-relaxed text-text-primary print-reset-scale print:text-black">
-        <div className="relative flex items-center justify-center mb-6 sm:mb-10 pb-4 border-b border-border print:border-none w-full text-text-primary print:text-black print:pt-24">
+        <div className="relative flex items-center justify-center mb-6 sm:mb-10 pb-4 border-b border-border print:border-none w-full text-text-primary print:text-black print:pt-24 print:pl-8">
           <h1 className="text-3xl sm:text-4xl print:text-4xl font-bold tracking-wide print:!tracking-normal text-center w-full">
             {lyric?.title || 'Untitled Lyrics'}
           </h1>
         </div>
         <div className="flex flex-col w-full">
-          <div className="flex flex-col w-fit mx-auto print:mx-0 overflow-x-visible whitespace-pre-wrap text-lg leading-relaxed print:text-[1.3rem] print:leading-[2] text-left text-text-primary print:text-black">
+          <div className="flex flex-col w-fit mx-auto print:mx-auto overflow-x-visible whitespace-pre-wrap text-lg leading-relaxed print:text-[1.3rem] print:leading-[2] text-center text-text-primary print:text-black">
             {lyric?.body}
           </div>
         </div>
