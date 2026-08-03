@@ -522,6 +522,17 @@ export default function ChartEditor() {
                                   <ChordInput 
                                     value={bar} 
                                     onChange={(val) => updateBar(line.id, block.id, barIdx, val)}
+                                    onKeyDown={(e) => {
+                                      if (e.key === 'Enter') {
+                                        e.preventDefault();
+                                        const inputs = Array.from(document.querySelectorAll('.chord-input-field')) as HTMLInputElement[];
+                                        const index = inputs.indexOf(e.currentTarget);
+                                        if (index > -1 && index < inputs.length - 1) {
+                                          inputs[index + 1].focus();
+                                          inputs[index + 1].select();
+                                        }
+                                      }
+                                    }}
                                     className="w-full h-full text-text-primary font-bold text-center bg-transparent focus:outline-none"
                                   />
                                 </div>

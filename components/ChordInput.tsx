@@ -6,10 +6,11 @@ import { parseChord } from '@/lib/chord-parser';
 interface Props {
   value: string;
   onChange: (val: string) => void;
+  onKeyDown?: (e: React.KeyboardEvent<HTMLInputElement>) => void;
   className?: string;
 }
 
-export function ChordInput({ value, onChange, className = '' }: Props) {
+export function ChordInput({ value, onChange, onKeyDown, className = '' }: Props) {
   const [focused, setFocused] = useState(false);
 
   return (
@@ -29,9 +30,10 @@ export function ChordInput({ value, onChange, className = '' }: Props) {
         type="text"
         value={value}
         onChange={e => onChange(e.target.value)}
+        onKeyDown={onKeyDown}
         onFocus={() => setFocused(true)}
         onBlur={() => setFocused(false)}
-        className="w-full h-full bg-transparent text-transparent caret-white outline-none border-none text-center font-semibold text-lg focus:ring-2 focus:ring-indigo-500 rounded px-1 transition-shadow"
+        className="w-full h-full bg-transparent text-transparent caret-white outline-none border-none text-center font-semibold text-lg focus:ring-2 focus:ring-indigo-500 rounded px-1 transition-shadow chord-input-field"
         spellCheck={false}
         autoComplete="off"
         style={{
