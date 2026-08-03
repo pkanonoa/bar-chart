@@ -24,6 +24,7 @@ export default function ChartEditor() {
   const [customText, setCustomText] = useState<string | null>(null);
   const [isFolderPickerOpen, setIsFolderPickerOpen] = useState(false);
   const isTypingText = React.useRef(false);
+  const lastEnterPress = React.useRef<number>(0);
 
   const generateText = React.useCallback((chartData: typeof chart) => {
     if (!chartData) return '';
@@ -530,6 +531,19 @@ export default function ChartEditor() {
                                         if (index > -1 && index < inputs.length - 1) {
                                           inputs[index + 1].focus();
                                           inputs[index + 1].select();
+                                        } else if (index === inputs.length - 1) {
+                                          const now = Date.now();
+                                          if (now - lastEnterPress.current < 500) {
+                                            addLine();
+                                            setTimeout(() => {
+                                              const newInputs = Array.from(document.querySelectorAll('.chord-input-field')) as HTMLInputElement[];
+                                              if (newInputs.length > inputs.length) {
+                                                newInputs[inputs.length].focus();
+                                                newInputs[inputs.length].select();
+                                              }
+                                            }, 50);
+                                          }
+                                          lastEnterPress.current = now;
                                         }
                                       }
                                     }}
