@@ -173,13 +173,15 @@ export function ChartRenderer({
     <div 
       id={id}
       onClick={onClick}
-      className="inline-flex text-left flex-col w-max min-w-[min(100%,64rem)] max-w-none p-6 sm:p-12 print:p-0 bg-surface print:bg-transparent border border-border print:border-none shadow-card print:shadow-none rounded-3xl print:rounded-none relative"
+      className="inline-flex text-left flex-col w-max min-w-[min(100%,64rem)] max-w-none p-6 sm:p-12 print:p-0 bg-surface print:bg-transparent border border-border print:border-none shadow-card print:shadow-none rounded-3xl print:rounded-none relative print:min-h-[28cm] print:w-full"
     >
       {watermark && (
-        <div className="hidden print:flex absolute inset-0 items-center justify-center pointer-events-none overflow-hidden z-[-1] opacity-10">
-          <span className="text-[10vw] font-black uppercase tracking-widest text-black rotate-[-45deg] whitespace-nowrap">
-            {watermark}
-          </span>
+        <div className="hidden print:grid absolute inset-0 grid-cols-4 gap-y-6 gap-x-4 items-center justify-items-center pointer-events-none overflow-hidden z-[1] opacity-[0.04] rotate-[-30deg] scale-150 select-none">
+          {Array.from({ length: 80 }).map((_, i) => (
+            <span key={i} className="text-base font-bold uppercase tracking-wider text-black whitespace-nowrap">
+              {watermark}
+            </span>
+          ))}
         </div>
       )}
       {renderTextFlow(chart)}

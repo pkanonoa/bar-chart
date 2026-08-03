@@ -82,6 +82,7 @@ export default function PrinterPage() {
   const [font, setFont] = useState('system');
   const [setlistName, setSetlistName] = useState('My Setlist');
   const [isPrintModalOpen, setIsPrintModalOpen] = useState(false);
+  const [watermark, setWatermark] = useState('');
 
   const sensors = useSensors(
     useSensor(PointerSensor, {
@@ -100,6 +101,9 @@ export default function PrinterPage() {
     
     const savedFont = localStorage.getItem('chord-grid-font');
     if (savedFont) setFont(savedFont);
+
+    const savedWatermark = localStorage.getItem('chord-grid-watermark');
+    if (savedWatermark) setWatermark(savedWatermark);
   }, []);
 
   useEffect(() => {
@@ -303,7 +307,7 @@ export default function PrinterPage() {
           if (!chart) return null;
           return (
             <div key={id} style={{ breakAfter: 'page', pageBreakAfter: 'always', marginBottom: '2rem' }} className="w-full">
-              <ChartRenderer chart={chart as any} selectedFont={font} />
+              <ChartRenderer chart={chart as any} selectedFont={font} watermark={watermark} />
             </div>
           );
         })}

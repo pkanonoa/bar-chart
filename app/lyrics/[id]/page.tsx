@@ -9,7 +9,7 @@ import { TransformWrapper, TransformComponent, useControls } from "react-zoom-pa
 import { FolderPickerModal } from '@/components/FolderPickerModal';
 import { moveEntry, deleteEntry, moveToTrash } from '@/lib/storage';
 
-function LyricsContentWrapper({ lyric, showUI, selectedFont }: any) {
+function LyricsContentWrapper({ lyric, showUI, selectedFont, watermark }: any) {
   const { zoomToElement } = useControls();
   const lastTap = React.useRef(0);
 
@@ -47,13 +47,22 @@ function LyricsContentWrapper({ lyric, showUI, selectedFont }: any) {
     <div 
       id="lyrics-card"
       onClick={handleTap}
-      className={`inline-flex text-left flex-col w-max min-w-[min(100%,48rem)] max-w-none p-6 sm:p-12 print:p-0 print:ml-24 print:w-full bg-surface print:bg-transparent border border-border print:border-none shadow-card print:shadow-none rounded-3xl print:rounded-none relative select-none`}
+      className={`inline-flex text-left flex-col w-max min-w-[min(100%,48rem)] max-w-none p-6 sm:p-12 print:p-0 print:ml-24 print:w-full bg-surface print:bg-transparent border border-border print:border-none shadow-card print:shadow-none rounded-3xl print:rounded-none relative select-none print:min-h-[28cm]`}
       style={{
         fontFamily: selectedFont === 'serif' ? 'Georgia, serif' : 
                     selectedFont === 'mono' ? 'monospace' : 
                     'system-ui, -apple-system, sans-serif'
       }}
     >
+      {watermark && (
+        <div className="hidden print:grid absolute inset-0 grid-cols-4 gap-y-6 gap-x-4 items-center justify-items-center pointer-events-none overflow-hidden z-[1] opacity-[0.04] rotate-[-30deg] scale-150 select-none">
+          {Array.from({ length: 80 }).map((_, i) => (
+            <span key={i} className="text-base font-bold uppercase tracking-wider text-black whitespace-nowrap">
+              {watermark}
+            </span>
+          ))}
+        </div>
+      )}
       <div className="flex flex-col gap-4 w-max min-w-full leading-relaxed text-text-primary print-reset-scale print:text-black">
         <div className="relative flex items-center justify-center mb-6 sm:mb-10 pb-4 border-b border-border print:border-none w-full text-text-primary print:text-black print:pt-24 print:pl-8">
           <h1 className="text-3xl sm:text-4xl print:text-4xl font-bold tracking-wide print:!tracking-normal text-center w-full">
@@ -82,6 +91,7 @@ export default function LyricsViewer() {
   const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
   const [selectedFont, setSelectedFont] = useState('system');
   const [showUI, setShowUI] = useState(false);
+  const [watermark, setWatermark] = useState('');
 
   React.useEffect(() => {
     window.dispatchEvent(new CustomEvent('ui-visibility-change', { detail: showUI }));
@@ -97,7 +107,19 @@ export default function LyricsViewer() {
     };
     updateFont();
     window.addEventListener('chord-grid-font-change', updateFont);
-    return () => window.removeEventListener('chord-grid-font-change', updateFont);
+
+    const updateWatermark = () => {
+      const savedWatermark = localStorage.getItem('chord-grid-watermark');
+      if (savedWatermark) setWatermark(savedWatermark);
+      else setWatermark('');
+    };
+    updateWatermark();
+    window.addEventListener('chord-grid-watermark-change', updateWatermark);
+
+    return () => {
+      window.removeEventListener('chord-grid-font-change', updateFont);
+      window.removeEventListener('chord-grid-watermark-change', updateWatermark);
+    };
   }, []);
 
   const handleMoveLyrics = async (newFolderId: string | null) => {
@@ -215,7 +237,7 @@ export default function LyricsViewer() {
             wrapperClass="!w-full !h-screen print:!h-auto" 
             contentClass="w-max min-w-full min-h-screen print:min-h-0 flex items-start justify-center p-4 sm:p-12 pt-16 sm:pt-24 print:pt-32 pb-24"
           >
-            <LyricsContentWrapper lyric={lyric} showUI={showUI} selectedFont={selectedFont} />
+            <LyricsContentWrapper lyric={lyric} showUI={showUI} selectedFont={selectedFont} watermark={watermark} />
           </TransformComponent>
         </TransformWrapper>
       </main>
