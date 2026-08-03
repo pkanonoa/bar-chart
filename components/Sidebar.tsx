@@ -4,7 +4,7 @@ import React, { useState, useEffect } from 'react';
 import { useAuth } from '@/components/AuthProvider';
 import { supabase } from '@/lib/supabase';
 import { getRecentCharts, createFolder, saveChart, importChart } from '@/lib/storage';
-import { X, User, LogOut, Home, Clock, Type, Settings, Plus, Upload, Folder as FolderIcon, FileText } from 'lucide-react';
+import { X, User, LogOut, Home, Clock, Type, Settings, Plus, Upload, Folder as FolderIcon, FileText, Printer } from 'lucide-react';
 import Link from 'next/link';
 import { useRouter, usePathname } from 'next/navigation';
 
@@ -118,9 +118,15 @@ export function Sidebar({ isOpen, onClose }: { isOpen: boolean; onClose: () => v
             </h3>
             <button 
               onClick={() => { router.push('/'); onClose(); }}
-              className="w-full flex items-center px-4 py-3 bg-surface border border-border shadow-md rounded-xl text-sm font-bold text-text-primary hover:text-accent-start hover:bg-surface-raised transition-all group"
+              className="w-full flex items-center px-4 py-3 bg-surface border border-border shadow-md rounded-xl text-sm font-bold text-text-primary hover:text-accent-start hover:bg-surface-raised transition-all group mb-3"
             >
               <FolderIcon size={18} className="mr-3 text-text-secondary group-hover:text-accent-start" /> My Library
+            </button>
+            <button 
+              onClick={() => { router.push('/printer'); onClose(); }}
+              className="w-full flex items-center px-4 py-3 bg-surface border border-border shadow-md rounded-xl text-sm font-bold text-text-primary hover:text-accent-start hover:bg-surface-raised transition-all group"
+            >
+              <Printer size={18} className="mr-3 text-text-secondary group-hover:text-accent-start" /> Printer
             </button>
           </div>
 

@@ -11,7 +11,7 @@ import { useAuth } from '@/components/AuthProvider';
 import {
   Folder as FolderIcon, FileText, MoreVertical, Search,
   Plus, Upload, CornerLeftUp, Trash2, Edit2, CornerRightDown, Download, X,
-  FolderPlus, FilePlus
+  FolderPlus, FilePlus, Printer
 } from 'lucide-react';
 
 interface Props {
@@ -225,12 +225,30 @@ export function FolderBrowser({ folderId, folderName }: Props) {
               <CornerRightDown size={14} className="mr-2" /> Move
             </button>
             {type === 'chart' && (
-              <button
-                onClick={(e) => { e.stopPropagation(); setActiveDropdown(null); exportChart(id); }}
-                className="flex items-center w-full px-4 py-2 text-xs uppercase tracking-widest font-bold text-text-secondary hover:bg-white/5 hover:text-white"
-              >
-                <Download size={14} className="mr-2" /> Export
-              </button>
+              <>
+                <button
+                  onClick={(e) => { 
+                    e.stopPropagation(); 
+                    setActiveDropdown(null); 
+                    const q = JSON.parse(localStorage.getItem('chord-grid-print-queue') || '[]');
+                    if (!q.includes(id)) {
+                      localStorage.setItem('chord-grid-print-queue', JSON.stringify([...q, id]));
+                      alert('Added to print queue');
+                    } else {
+                      alert('Already in print queue');
+                    }
+                  }}
+                  className="flex items-center w-full px-4 py-2 text-xs uppercase tracking-widest font-bold text-text-secondary hover:bg-white/5 hover:text-white"
+                >
+                  <Printer size={14} className="mr-2" /> Add to Printer
+                </button>
+                <button
+                  onClick={(e) => { e.stopPropagation(); setActiveDropdown(null); exportChart(id); }}
+                  className="flex items-center w-full px-4 py-2 text-xs uppercase tracking-widest font-bold text-text-secondary hover:bg-white/5 hover:text-white"
+                >
+                  <Download size={14} className="mr-2" /> Export
+                </button>
+              </>
             )}
             <button
               onClick={(e) => { e.stopPropagation(); setActiveDropdown(null); setDeleteItem({ id, type, name }); setDeleteConfirmText(''); }}

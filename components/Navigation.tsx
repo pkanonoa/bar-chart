@@ -1,7 +1,7 @@
 'use client';
 
 import React, { useState } from 'react';
-import { Home, Folder as FolderIcon, Plus, User, Type, FileText, Upload, LogOut, Settings, Trash2 } from 'lucide-react';
+import { Home, Folder as FolderIcon, Plus, User, Type, FileText, Upload, LogOut, Settings, Trash2, Printer } from 'lucide-react';
 import Link from 'next/link';
 import { usePathname, useRouter } from 'next/navigation';
 import { useAuth } from '@/components/AuthProvider';
@@ -96,6 +96,13 @@ export function Navigation() {
       icon: <Home className="w-6 h-6 sm:w-7 sm:h-7" />,
       isActive: (pathname === '/' || pathname.startsWith('/folder/')) && !showProfileMenu && !showAddMenu,
       onClick: () => router.push('/'),
+    },
+    {
+      id: 'printer',
+      label: 'Printer',
+      icon: <Printer className="w-6 h-6 sm:w-7 sm:h-7" />,
+      isActive: pathname.startsWith('/printer'),
+      onClick: () => router.push('/printer'),
     },
     {
       id: 'add',
