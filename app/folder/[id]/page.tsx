@@ -33,6 +33,7 @@ export default function FolderPage() {
 
   return (
     <div className="min-h-screen flex flex-col">
+      <Header />
       <main className="flex-1 overflow-y-auto">
         <FolderBrowser folderId={folderId} folderName={folder?.name || 'Unknown Folder'} />
       </main>

@@ -4,7 +4,8 @@ import React, { useState, useEffect } from 'react';
 import { useAuth } from '@/components/AuthProvider';
 import { supabase } from '@/lib/supabase';
 import { getRecentCharts, createFolder, saveChart, importChart } from '@/lib/storage';
-import { X, User, LogOut, Home, Clock, Type, Settings, Plus, Upload, Folder as FolderIcon, FileText, Printer } from 'lucide-react';
+import { saveLyrics, importLyrics } from '@/lib/lyrics';
+import { X, User, LogOut, Home, Clock, Type, Settings, Plus, Upload, Folder as FolderIcon, FileText, Printer, Trash2, Music } from 'lucide-react';
 import Link from 'next/link';
 import { useRouter, usePathname } from 'next/navigation';
 
@@ -15,7 +16,9 @@ export function Sidebar({ isOpen, onClose }: { isOpen: boolean; onClose: () => v
   const [recentCharts, setRecentCharts] = useState<any[]>([]);
   const [selectedFont, setSelectedFont] = useState('system');
   const [createFolderModal, setCreateFolderModal] = useState(false);
+  const [folderKind, setFolderKind] = useState<'chart' | 'lyrics'>('chart');
   const fileInputRef = React.useRef<HTMLInputElement>(null);
+  const lyricsFileInputRef = React.useRef<HTMLInputElement>(null);
 
   let currentFolderId: string | null = null;
   if (pathname.startsWith('/folder/')) {
@@ -42,7 +45,8 @@ export function Sidebar({ isOpen, onClose }: { isOpen: boolean; onClose: () => v
     window.dispatchEvent(new Event('chord-grid-font-change'));
   };
 
-  const handleCreateFolder = () => {
+  const handleCreateFolder = (kind: 'chart' | 'lyrics') => {
+    setFolderKind(kind);
     setCreateFolderModal(true);
   };
 
@@ -65,6 +69,21 @@ export function Sidebar({ isOpen, onClose }: { isOpen: boolean; onClose: () => v
     onClose();
   };
 
+  const handleCreateLyrics = async () => {
+    if (!user) return;
+    const lyrics = {
+      id: crypto.randomUUID(),
+      title: 'Untitled Lyrics',
+      body: '',
+      folder_id: pathname.startsWith('/lyrics') ? currentFolderId : null,
+      created_by: user.id,
+      updated_at: new Date().toISOString(),
+    };
+    await saveLyrics(lyrics);
+    router.push(`/lyrics/${lyrics.id}/edit`);
+    onClose();
+  };
+
   const handleImport = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (!file) return;
@@ -77,6 +96,23 @@ export function Sidebar({ isOpen, onClose }: { isOpen: boolean; onClose: () => v
       }
     } catch (err) {
       alert('Failed to import chart.');
+    }
+    e.target.value = '';
+    onClose();
+  };
+
+  const handleImportLyrics = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    try {
+      await importLyrics(file, currentFolderId);
+      if (pathname === '/lyrics' || pathname.startsWith('/lyrics/folder/')) {
+        window.dispatchEvent(new Event('refresh-folder'));
+      } else {
+        router.push(currentFolderId ? `/lyrics/folder/${currentFolderId}` : '/lyrics');
+      }
+    } catch (err) {
+      alert('Failed to import lyrics.');
     }
     e.target.value = '';
     onClose();
@@ -107,6 +143,14 @@ export function Sidebar({ isOpen, onClose }: { isOpen: boolean; onClose: () => v
               <X size={16} />
             </button>
           </div>
+          <div className="flex space-x-2 mt-2">
+            <button onClick={() => { router.push('/profile'); onClose(); }} className="flex-1 py-2 bg-surface border border-border shadow-sm rounded-lg text-xs font-bold text-text-secondary hover:text-white transition-all flex justify-center items-center">
+              <User size={14} className="mr-1" /> Profile
+            </button>
+            <button onClick={() => { router.push('/settings'); onClose(); }} className="flex-1 py-2 bg-surface border border-border shadow-sm rounded-lg text-xs font-bold text-text-secondary hover:text-white transition-all flex justify-center items-center">
+              <Settings size={14} className="mr-1" /> Settings
+            </button>
+          </div>
         </div>
 
         {/* Navigation */}
@@ -123,6 +167,12 @@ export function Sidebar({ isOpen, onClose }: { isOpen: boolean; onClose: () => v
               <FolderIcon size={18} className="mr-3 text-text-secondary group-hover:text-accent-start" /> Chords
             </button>
             <button 
+              onClick={() => { router.push('/lyrics'); onClose(); }}
+              className="w-full flex items-center px-4 py-3 bg-surface border border-border shadow-md rounded-xl text-sm font-bold text-text-primary hover:text-accent-start hover:bg-surface-raised transition-all group mb-3"
+            >
+              <Music size={18} className="mr-3 text-text-secondary group-hover:text-accent-start" /> Lyrics
+            </button>
+            <button 
               onClick={() => { router.push('/printer'); onClose(); }}
               className="w-full flex items-center px-4 py-3 bg-surface border border-border shadow-md rounded-xl text-sm font-bold text-text-primary hover:text-accent-start hover:bg-surface-raised transition-all group"
             >
@@ -135,19 +185,30 @@ export function Sidebar({ isOpen, onClose }: { isOpen: boolean; onClose: () => v
             <h3 className="text-[10px] font-bold uppercase tracking-widest text-text-secondary mb-4 flex items-center">
               <Settings size={12} className="mr-2" /> Quick Actions
             </h3>
-            <div className="grid grid-cols-2 gap-3">
-              <button onClick={handleCreateFolder} className="flex flex-col items-center justify-center p-3 bg-surface border border-border shadow-sm hover:bg-surface-raised rounded-xl text-text-secondary hover:text-white transition-all text-xs font-bold">
-                <FolderIcon size={18} className="mb-2" /> New Folder
+            <div className="grid grid-cols-2 gap-3 mb-3">
+              <button onClick={() => handleCreateFolder('chart')} className="flex flex-col items-center justify-center p-3 bg-surface border border-border shadow-sm hover:bg-surface-raised rounded-xl text-text-secondary hover:text-white transition-all text-xs font-bold">
+                <FolderIcon size={18} className="mb-2" /> New Chart Folder
+              </button>
+              <button onClick={() => handleCreateFolder('lyrics')} className="flex flex-col items-center justify-center p-3 bg-surface border border-border shadow-sm hover:bg-surface-raised rounded-xl text-text-secondary hover:text-white transition-all text-xs font-bold">
+                <FolderIcon size={18} className="mb-2" /> New Lyrics Folder
               </button>
               <button onClick={handleCreateChart} className="flex flex-col items-center justify-center p-3 bg-accent-gradient shadow-md rounded-xl text-white hover:brightness-110 transition-all text-xs font-bold">
                 <FileText size={18} className="mb-2" /> New Chart
               </button>
-              
-              <input type="file" ref={fileInputRef} onChange={handleImport} accept=".json" className="hidden" />
-              <button onClick={() => fileInputRef.current?.click()} className="col-span-2 flex items-center justify-center p-3 bg-surface border border-border shadow-sm hover:bg-surface-raised rounded-xl text-text-secondary hover:text-white transition-all text-xs font-bold">
-                <Upload size={16} className="mr-2" /> Import Chart JSON
+              <button onClick={handleCreateLyrics} className="flex flex-col items-center justify-center p-3 bg-accent-gradient shadow-md rounded-xl text-white hover:brightness-110 transition-all text-xs font-bold">
+                <Type size={18} className="mb-2" /> New Lyrics
               </button>
             </div>
+            
+            <input type="file" ref={fileInputRef} onChange={handleImport} accept=".json" className="hidden" />
+            <button onClick={() => fileInputRef.current?.click()} className="w-full flex items-center justify-center p-3 bg-surface border border-border shadow-sm hover:bg-surface-raised rounded-xl text-text-secondary hover:text-white transition-all text-xs font-bold mb-3">
+              <Upload size={16} className="mr-2" /> Import Chart JSON
+            </button>
+
+            <input type="file" ref={lyricsFileInputRef} onChange={handleImportLyrics} accept=".json,.txt,.lyrics" className="hidden" />
+            <button onClick={() => lyricsFileInputRef.current?.click()} className="w-full flex items-center justify-center p-3 bg-surface border border-border shadow-sm hover:bg-surface-raised rounded-xl text-text-secondary hover:text-white transition-all text-xs font-bold">
+              <Upload size={16} className="mr-2" /> Import Lyrics
+            </button>
           </div>
 
           {/* Recent Charts */}
@@ -195,6 +256,13 @@ export function Sidebar({ isOpen, onClose }: { isOpen: boolean; onClose: () => v
                 <option value="ui-monospace, SFMono-Regular, Menlo, Monaco, monospace">Apple / SF Mono</option>
               </select>
             </div>
+            
+            <button 
+              onClick={() => { router.push('/trash'); onClose(); }}
+              className="w-full flex items-center px-4 py-3 mt-4 bg-surface border border-border shadow-sm rounded-xl text-sm font-bold text-text-primary hover:text-red-400 hover:border-red-500/30 transition-all"
+            >
+              <Trash2 size={16} className="mr-3 text-text-secondary" /> Trash
+            </button>
           </div>
         </div>
 
@@ -219,11 +287,11 @@ export function Sidebar({ isOpen, onClose }: { isOpen: boolean; onClose: () => v
               const input = e.currentTarget.elements.namedItem('folderName') as HTMLInputElement;
               const name = input.value;
               if (name.trim()) {
-                await createFolder(currentFolderId, name.trim());
-                if (pathname === '/' || pathname.startsWith('/folder/')) {
+                await createFolder(currentFolderId, name.trim(), folderKind);
+                if (pathname === '/' || pathname === '/lyrics' || pathname.startsWith('/folder/') || pathname.startsWith('/lyrics/folder/')) {
                   window.dispatchEvent(new Event('refresh-folder'));
                 } else {
-                  router.push(currentFolderId ? `/folder/${currentFolderId}` : '/');
+                  router.push(currentFolderId ? (folderKind === 'lyrics' ? `/lyrics/folder/${currentFolderId}` : `/folder/${currentFolderId}`) : (folderKind === 'lyrics' ? '/lyrics' : '/'));
                 }
               }
               setCreateFolderModal(false);

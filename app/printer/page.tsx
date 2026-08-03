@@ -3,6 +3,7 @@
 import React, { useState, useEffect } from 'react';
 import { readChart, searchAll, Chart } from '@/lib/storage';
 import { ChartRenderer } from '@/components/ChartRenderer';
+import { Header } from '@/components/Header';
 import { Printer, Search, Plus, Trash2, ArrowUp, ArrowDown, FileText, CornerLeftUp, GripVertical, X } from 'lucide-react';
 import { useRouter } from 'next/navigation';
 import {
@@ -171,8 +172,12 @@ export default function PrinterPage() {
   };
 
   return (
-    <div className="w-full max-w-7xl mx-auto px-4 pt-[max(env(safe-area-inset-top,2rem),2rem)] pb-24 min-h-screen">
-      <div className="print:hidden mb-8">
+    <div className="min-h-screen flex flex-col">
+      <div className="print:hidden">
+        <Header />
+      </div>
+      <main className="flex-1 overflow-y-auto w-full max-w-7xl mx-auto px-4 pt-[max(env(safe-area-inset-top,2rem),2rem)] pb-24">
+        <div className="print:hidden mb-8">
         <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-8 gap-4">
           <div className="flex items-center">
             <button 
@@ -312,6 +317,7 @@ export default function PrinterPage() {
           );
         })}
       </div>
+      </main>
     </div>
   );
 }

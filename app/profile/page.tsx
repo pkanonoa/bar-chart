@@ -3,6 +3,7 @@
 import React from 'react';
 import { useAuth } from '@/components/AuthProvider';
 import { useRouter } from 'next/navigation';
+import { Header } from '@/components/Header';
 import { User, Mail, CreditCard, LogOut, CornerLeftUp } from 'lucide-react';
 import { supabase } from '@/lib/supabase';
 
@@ -25,7 +26,9 @@ export default function ProfilePage() {
   };
 
   return (
-    <div className="min-h-screen bg-bg flex flex-col text-text-primary px-4 pt-[max(env(safe-area-inset-top,2rem),2rem)] pb-32">
+    <div className="min-h-screen flex flex-col">
+      <Header />
+      <main className="flex-1 overflow-y-auto w-full px-4 pt-[max(env(safe-area-inset-top,2rem),2rem)] pb-32">
       <div className="max-w-2xl mx-auto w-full">
         <div className="flex items-center mb-10 space-x-4">
           <button
@@ -95,6 +98,7 @@ export default function ProfilePage() {
 
         </div>
       </div>
+      </main>
     </div>
   );
 }

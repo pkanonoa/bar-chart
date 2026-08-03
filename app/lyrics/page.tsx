@@ -2,6 +2,7 @@
 
 import { useAuth } from '@/components/AuthProvider';
 import { FolderBrowser } from '@/components/FolderBrowser';
+import { Header } from '@/components/Header';
 
 export default function LyricsHome() {
   const { user, loading } = useAuth();
@@ -12,6 +13,7 @@ export default function LyricsHome() {
 
   return (
     <div className="min-h-screen flex flex-col">
+      <Header />
       <main className="flex-1 overflow-y-auto">
         <FolderBrowser folderId={null} kind="lyrics" />
       </main>

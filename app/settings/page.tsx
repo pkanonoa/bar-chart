@@ -2,7 +2,7 @@
 
 import React, { useState, useEffect } from 'react';
 import { X, Type, Palette, Users, Info, Terminal, BookOpen, Droplet } from 'lucide-react';
-
+import { Header } from '@/components/Header';
 import { useRouter } from 'next/navigation';
 
 export default function SettingsPage() {
@@ -56,8 +56,10 @@ export default function SettingsPage() {
 
 
   return (
-    <div className="min-h-screen pt-12 pb-32 px-4 flex justify-center bg-bg">
-      <div className="bg-surface rounded-2xl w-full max-w-4xl shadow-popover border border-border flex flex-col max-h-[80vh] overflow-hidden">
+    <div className="min-h-screen flex flex-col bg-bg">
+      <Header />
+      <main className="flex-1 overflow-y-auto w-full pt-12 pb-32 px-4 flex justify-center">
+        <div className="bg-surface rounded-2xl w-full max-w-4xl shadow-popover border border-border flex flex-col max-h-[80vh] overflow-hidden">
         
         {/* Header */}
         <div className="px-6 py-4 border-b border-border flex justify-between items-center bg-surface-raised">
@@ -248,7 +250,8 @@ export default function SettingsPage() {
           </div>
         </div>
 
-      </div>
+        </div>
+      </main>
     </div>
   );
 }
