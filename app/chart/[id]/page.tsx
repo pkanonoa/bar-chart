@@ -166,7 +166,7 @@ export default function ChartViewer() {
 
         {/* Lines */}
         <div className="flex flex-col w-full">
-          <div className="flex flex-col gap-4 sm:gap-6 print:gap-8 w-full mx-auto print:mx-0 overflow-x-visible">
+          <div className="flex flex-col gap-4 sm:gap-6 print:gap-8 w-fit mx-auto print:mx-0 print:w-full overflow-x-visible print:px-8">
             {chartData.lines.map((line, lIdx) => {
               if (line.blocks.length === 0) {
                 return (
@@ -197,7 +197,7 @@ export default function ChartViewer() {
               }
 
               return (
-                <div key={lIdx} className="flex flex-row items-center flex-nowrap whitespace-nowrap w-full">
+                <div key={lIdx} className="flex flex-row items-center flex-nowrap whitespace-nowrap print:w-full">
                   {/* Left Label */}
                   <div 
                     className="shrink-0 text-text-primary print:text-black text-base sm:text-xl print:text-[1em] text-right pr-2 sm:pr-4 flex items-center justify-end"
@@ -207,7 +207,7 @@ export default function ChartViewer() {
                   </div>
 
                   {/* Chords Container */}
-                  <div className="flex items-center justify-between flex-nowrap shrink-0 w-full text-lg sm:text-2xl print:text-[1.1em]">
+                  <div className={`flex items-center flex-nowrap shrink-0 text-lg sm:text-2xl print:text-[1.1em] ${line.blocks.reduce((acc, b) => acc + b.bars.length, 0) >= 4 ? 'print:flex-1 print:justify-between' : 'print:justify-start print:gap-4'}`}>
                     {line.blocks.map((block, bIdx) => {
                       const isFirst = bIdx === 0;
                       let prefix = '';
@@ -237,11 +237,11 @@ export default function ChartViewer() {
                           <span className={`inline-block pr-2 sm:pr-3 print:pr-1 text-left tracking-tighter print:!tracking-normal print:!font-normal print:!text-[1em] ${prefix.includes('||') ? 'text-cyan-400 font-black text-[1.2em] print:text-black' : 'text-text-primary font-semibold print:text-black'}`}>{prefix}</span>
                           {block.bars.map((bar, barIdx) => (
                             <React.Fragment key={barIdx}>
-                              <span className="inline-block px-1.5 sm:px-2.5 print:px-1 text-center font-normal print:!font-normal hover:text-accent-start transition-colors duration-150 text-text-primary print:text-black">
+                              <span className="inline-block px-1.5 sm:px-2.5 print:px-1 text-center font-bold print:!font-normal hover:text-accent-start transition-colors duration-150 text-text-primary print:text-black">
                                 {parseChord(bar || '_')}
                               </span>
                               {barIdx < block.bars.length - 1 && (
-                                <span className="inline-block px-1.5 sm:px-2.5 print:px-1 text-center text-text-primary print:text-black print:!font-normal print:!tracking-normal">|</span>
+                                <span className="inline-block px-1.5 sm:px-2.5 print:px-1 text-center text-text-primary print:text-black print:!font-bold print:!tracking-normal">|</span>
                               )}
                             </React.Fragment>
                           ))}
