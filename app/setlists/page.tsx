@@ -321,30 +321,24 @@ export default function SetlistsPage() {
       <Header />
       <main className="flex-1 overflow-y-auto w-full max-w-3xl mx-auto px-4 pt-[max(env(safe-area-inset-top,2rem),2rem)] pb-32">
 
-        {/* Page header */}
+        {/* Action row (no redundant title since tab bar has it) */}
         <div className="flex items-center justify-between mb-8 mt-4">
-          <div className="flex items-center gap-3">
-            <button
-              onClick={() => router.push('/')}
-              className="p-3 text-text-secondary bg-surface border border-border rounded-xl hover:text-white hover:bg-surface-raised transition-all"
-            >
-              <CornerLeftUp size={20} />
-            </button>
-            <div>
-              <h1 className="text-3xl font-bold text-text-primary tracking-tight flex items-center gap-2">
-                <ListMusic size={28} className="text-accent-start" /> Setlists
-              </h1>
-              <p className="text-xs text-text-secondary font-medium mt-0.5">
-                Ordered song collections for gigs and sessions.
-              </p>
-            </div>
-          </div>
+          {/* Left: back button */}
+          <button
+            onClick={() => router.push('/')}
+            className="p-2.5 text-text-secondary bg-surface border border-border rounded-xl hover:text-white hover:bg-surface-raised transition-all"
+            title="Back"
+          >
+            <CornerLeftUp size={18} />
+          </button>
 
+          {/* Right: New Setlist */}
           <button
             onClick={() => setShowNew(true)}
-            className="flex items-center gap-2 px-4 py-2.5 bg-accent-gradient text-white text-sm font-bold rounded-xl shadow-md hover:brightness-110 transition-all"
+            className="flex items-center gap-1.5 px-3 py-2.5 bg-accent-gradient text-white text-xs font-bold rounded-xl shadow-md hover:brightness-110 transition-all shrink-0"
           >
-            <Plus size={16} /> New Setlist
+            <Plus size={16} />
+            <span className="hidden sm:inline">New Setlist</span>
           </button>
         </div>
 
