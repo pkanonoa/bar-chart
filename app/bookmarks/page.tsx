@@ -56,32 +56,68 @@ export default function BookmarksPage() {
             <p className="text-xs text-text-secondary">Tap the star icon on any chart or lyric to bookmark it.</p>
           </div>
         ) : (
-          <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-6">
-            {items.map(item => (
-              <div
-                key={item.id}
-                className="bg-surface border border-border rounded-xl p-5 flex flex-col items-center justify-center cursor-pointer hover:shadow-hover hover:-translate-y-1 transition-all duration-200 relative group"
-                onClick={() => router.push(item.type === 'lyrics' ? `/lyrics/${item.id}` : `/chart/${item.id}`)}
-              >
-                <div className="w-16 h-16 bg-surface-raised rounded-full flex items-center justify-center mb-4 shadow-inner border border-border">
-                  {item.type === 'lyrics' ? (
-                    <Music size={24} className="text-accent-start" />
-                  ) : (
-                    <FileText size={24} className="text-accent-start" />
-                  )}
+          <div>
+            {items.filter(i => i.type === 'chart').length > 0 && (
+              <div className="mb-10">
+                <h2 className="text-xl font-bold text-text-primary mb-6 flex items-center gap-2">
+                  <FileText size={20} className="text-text-secondary" /> Chords
+                </h2>
+                <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-6">
+                  {items.filter(i => i.type === 'chart').map(item => (
+                    <div
+                      key={item.id}
+                      className="bg-surface border border-border rounded-xl p-5 flex flex-col items-center justify-center cursor-pointer hover:shadow-hover hover:-translate-y-1 transition-all duration-200 relative group"
+                      onClick={() => router.push(`/chart/${item.id}`)}
+                    >
+                      <div className="w-16 h-16 bg-surface-raised rounded-full flex items-center justify-center mb-4 shadow-inner border border-border">
+                        <FileText size={24} className="text-accent-start" />
+                      </div>
+                      <p className="text-sm font-bold text-text-primary text-center w-full truncate">{item.title}</p>
+                      <p className="text-[10px] text-text-secondary mt-1">{new Date(item.updated_at).toLocaleDateString()}</p>
+                      
+                      <button
+                        className="absolute bottom-3 right-3 p-1.5 rounded-full hover:bg-white/5 transition-colors"
+                        onClick={(e) => handleToggleBookmark(item, e)}
+                        title="Remove bookmark"
+                      >
+                        <Star size={16} className="text-yellow-500 fill-yellow-500 opacity-100 group-hover:opacity-50 group-hover:hover:opacity-100 transition-opacity" />
+                      </button>
+                    </div>
+                  ))}
                 </div>
-                <p className="text-sm font-bold text-text-primary text-center w-full truncate">{item.title}</p>
-                <p className="text-[10px] text-text-secondary mt-1">{new Date(item.updated_at).toLocaleDateString()}</p>
-                
-                <button
-                  className="absolute bottom-3 right-3 p-1.5 rounded-full hover:bg-white/5 transition-colors"
-                  onClick={(e) => handleToggleBookmark(item, e)}
-                  title="Remove bookmark"
-                >
-                  <Star size={16} className="text-yellow-500 fill-yellow-500 opacity-100 group-hover:opacity-50 group-hover:hover:opacity-100 transition-opacity" />
-                </button>
               </div>
-            ))}
+            )}
+
+            {items.filter(i => i.type === 'lyrics').length > 0 && (
+              <div>
+                <h2 className="text-xl font-bold text-text-primary mb-6 flex items-center gap-2">
+                  <Music size={20} className="text-text-secondary" /> Lyrics
+                </h2>
+                <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-6">
+                  {items.filter(i => i.type === 'lyrics').map(item => (
+                    <div
+                      key={item.id}
+                      className="bg-surface border border-border rounded-xl p-5 flex flex-col items-center justify-center cursor-pointer hover:shadow-hover hover:-translate-y-1 transition-all duration-200 relative group"
+                      onClick={() => router.push(`/lyrics/${item.id}`)}
+                    >
+                      <div className="w-16 h-16 bg-surface-raised rounded-full flex items-center justify-center mb-4 shadow-inner border border-border">
+                        <Music size={24} className="text-accent-start" />
+                      </div>
+                      <p className="text-sm font-bold text-text-primary text-center w-full truncate">{item.title}</p>
+                      <p className="text-[10px] text-text-secondary mt-1">{new Date(item.updated_at).toLocaleDateString()}</p>
+                      
+                      <button
+                        className="absolute bottom-3 right-3 p-1.5 rounded-full hover:bg-white/5 transition-colors"
+                        onClick={(e) => handleToggleBookmark(item, e)}
+                        title="Remove bookmark"
+                      >
+                        <Star size={16} className="text-yellow-500 fill-yellow-500 opacity-100 group-hover:opacity-50 group-hover:hover:opacity-100 transition-opacity" />
+                      </button>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            )}
           </div>
         )}
       </main>
