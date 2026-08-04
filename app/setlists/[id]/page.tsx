@@ -22,9 +22,10 @@ import {
   verticalListSortingStrategy, useSortable,
 } from '@dnd-kit/sortable';
 import { CSS } from '@dnd-kit/utilities';
+import { TransformWrapper, TransformComponent } from 'react-zoom-pan-pinch';
 import {
   GripVertical, Plus, Printer, Play, MoreVertical, Trash2, Pencil,
-  FileText, Music, CornerLeftUp, X, Minus, ChevronUp, ChevronDown,
+  FileText, Music, CornerLeftUp, X, Minus, ChevronLeft, ChevronRight,
 } from 'lucide-react';
 
 // ─── Transpose Stepper Modal ──────────────────────────────────────────────────
@@ -198,7 +199,7 @@ function SortableItemRow({
                   onClick={() => { setMenuOpen(false); onSetTranspose(item); }}
                   className="w-full flex items-center gap-2 px-3 py-2 text-xs font-semibold text-text-primary hover:bg-white/5 transition-all"
                 >
-                  <ChevronUp size={13} className="text-accent-start" /> Set transpose
+                  <Pencil size={13} className="text-accent-start" /> Set transpose
                 </button>
               )}
               <button
@@ -308,6 +309,13 @@ export default function SetlistDetailPage() {
   const [items, setItems] = useState<SetlistItem[]>([]);
   const [loading, setLoading] = useState(true);
 
+  // Active tab (selected song index)
+  const [activeTab, setActiveTab] = useState(0);
+  const [tabChart, setTabChart] = useState<ChartData | null>(null);
+  const [tabLyrics, setTabLyrics] = useState<any>(null);
+  const [tabLoading, setTabLoading] = useState(false);
+  const tabsScrollRef = useRef<HTMLDivElement>(null);
+
   // Print data
   const [printCharts, setPrintCharts] = useState<Record<string, ChartData>>({});
   const [printLyrics, setPrintLyricsMap] = useState<Record<string, any>>({});
@@ -345,6 +353,31 @@ export default function SetlistDetailPage() {
   }, [setlistId, router]);
 
   useEffect(() => { if (!authLoading && user) load(); }, [authLoading, user, load]);
+
+  // Load content for the active tab
+  useEffect(() => {
+    if (items.length === 0) return;
+    const item = items[activeTab] || items[0];
+    if (!item) return;
+    setTabChart(null);
+    setTabLyrics(null);
+    setTabLoading(true);
+    if (item.item_type === 'chart') {
+      readChart(item.item_id).then(chart => {
+        if (chart) {
+          let display = chart as ChartData;
+          if (item.transpose_override) display = transposeChart(display, item.transpose_override, display.prefer_flats);
+          setTabChart(display);
+        }
+        setTabLoading(false);
+      });
+    } else {
+      readLyrics(item.item_id).then(lyr => {
+        setTabLyrics(lyr);
+        setTabLoading(false);
+      });
+    }
+  }, [activeTab, items]);
 
   // Pre-load print data whenever items change
   useEffect(() => {
@@ -403,7 +436,11 @@ export default function SetlistDetailPage() {
 
   const handleRemove = async (item: SetlistItem) => {
     await removeSetlistItem(item.id, setlistId);
-    setItems(prev => prev.filter(i => i.id !== item.id));
+    setItems(prev => {
+      const next = prev.filter(i => i.id !== item.id);
+      setActiveTab(t => Math.min(t, Math.max(0, next.length - 1)));
+      return next;
+    });
   };
 
   const handleNameSave = async () => {
@@ -518,7 +555,7 @@ export default function SetlistDetailPage() {
           </button>
         </div>
 
-        {/* Items list */}
+        {/* Song tabs + preview */}
         {items.length === 0 ? (
           <div className="text-center py-20 text-text-secondary border border-dashed border-border rounded-2xl">
             <Music size={40} className="mx-auto mb-3 opacity-30" />
@@ -526,22 +563,145 @@ export default function SetlistDetailPage() {
             <p className="text-sm opacity-70 mt-1">Tap "+ Add songs" to build your setlist.</p>
           </div>
         ) : (
-          <DndContext sensors={sensors} collisionDetection={closestCenter} onDragEnd={handleDragEnd}>
-            <SortableContext items={items.map(i => i.id)} strategy={verticalListSortingStrategy}>
-              <div className="flex flex-col gap-2">
-                {items.map((item, idx) => (
-                  <SortableItemRow
-                    key={item.id}
-                    item={item}
-                    idx={idx}
-                    onSetTranspose={setTransposeTarget}
-                    onSetNote={setNoteTarget}
-                    onRemove={handleRemove}
-                  />
-                ))}
+          <div className="flex flex-col">
+            {/* ── Tab strip ────────────────────────────────────────── */}
+            <div className="relative">
+              {/* Scroll container */}
+              <div
+                ref={tabsScrollRef}
+                className="flex items-end overflow-x-auto gap-1 px-1 pb-0"
+                style={{ scrollbarWidth: 'none', msOverflowStyle: 'none' }}
+              >
+                {items.map((item, idx) => {
+                  const active = idx === activeTab;
+                  const Icon = item.item_type === 'chart' ? FileText : Music;
+                  return (
+                    <button
+                      key={item.id}
+                      onClick={() => setActiveTab(idx)}
+                      className={`
+                        relative flex items-center gap-1.5 px-3 py-2 text-xs font-bold
+                        rounded-t-xl border border-b-0 transition-all duration-150
+                        whitespace-nowrap shrink-0 max-w-[160px]
+                        ${ active
+                          ? 'bg-surface border-border text-text-primary shadow-[0_-2px_10px_rgba(0,0,0,0.3)] z-10 -mb-px pb-[calc(0.5rem+1px)]'
+                          : 'bg-surface/40 border-transparent text-text-secondary hover:text-text-primary hover:bg-surface/70'
+                        }
+                      `}
+                    >
+                      {/* Top accent line on active */}
+                      {active && (
+                        <span className="absolute top-0 left-2 right-2 h-[2px] rounded-full bg-accent-gradient" />
+                      )}
+                      <span className="text-[9px] font-black opacity-50 shrink-0">{idx + 1}</span>
+                      <Icon size={11} className={active ? 'text-accent-start shrink-0' : 'shrink-0'} />
+                      <span className="truncate">{item.title || 'Untitled'}</span>
+                      {item.transpose_override !== null && item.transpose_override !== undefined && item.item_type === 'chart' && (
+                        <span className="text-[8px] font-black px-1 py-0.5 rounded bg-accent-gradient/20 text-accent-start shrink-0">
+                          {item.transpose_override > 0 ? '+' : ''}{item.transpose_override}
+                        </span>
+                      )}
+                    </button>
+                  );
+                })}
               </div>
-            </SortableContext>
-          </DndContext>
+              {/* Bottom border connecting tab row to panel */}
+              <div className="h-px bg-border" />
+            </div>
+
+            {/* ── Preview panel ─────────────────────────────────────── */}
+            <div className="bg-surface border border-t-0 border-border rounded-b-2xl overflow-hidden">
+              {/* Panel toolbar */}
+              {(() => {
+                const item = items[activeTab];
+                if (!item) return null;
+                return (
+                  <div className="flex items-center justify-between px-4 py-2.5 border-b border-border bg-surface-raised/50">
+                    <div className="flex items-center gap-2">
+                      {/* Prev / Next */}
+                      <button
+                        onClick={() => setActiveTab(t => Math.max(0, t - 1))}
+                        disabled={activeTab === 0}
+                        className="p-1 text-text-secondary hover:text-white disabled:opacity-30 transition-all"
+                      ><ChevronLeft size={16} /></button>
+                      <span className="text-xs text-text-secondary font-bold">
+                        {activeTab + 1} / {items.length}
+                      </span>
+                      <button
+                        onClick={() => setActiveTab(t => Math.min(items.length - 1, t + 1))}
+                        disabled={activeTab === items.length - 1}
+                        className="p-1 text-text-secondary hover:text-white disabled:opacity-30 transition-all"
+                      ><ChevronRight size={16} /></button>
+                    </div>
+                    <div className="flex items-center gap-2">
+                      {item.notes && (
+                        <span className="text-[10px] italic text-text-secondary hidden sm:block">{item.notes}</span>
+                      )}
+                      {item.transpose_override !== null && item.transpose_override !== undefined && item.item_type === 'chart' && (
+                        <span className="text-[10px] font-bold px-1.5 py-0.5 rounded bg-accent-gradient/15 text-accent-start border border-accent-solid/20">
+                          Setlist: {item.transpose_override > 0 ? '+' : ''}{item.transpose_override}
+                        </span>
+                      )}
+                      <button
+                        onClick={() => {
+                          if (item.item_type === 'chart') setTransposeTarget(item);
+                          else setNoteTarget(item);
+                        }}
+                        className="p-1.5 text-text-secondary hover:text-white bg-surface border border-border rounded-lg transition-all"
+                      ><Pencil size={13} /></button>
+                      <button
+                        onClick={() => handleRemove(item)}
+                        className="p-1.5 text-red-400 hover:text-red-300 bg-surface border border-border rounded-lg transition-all"
+                      ><Trash2 size={13} /></button>
+                    </div>
+                  </div>
+                );
+              })()}
+
+              {/* Content area */}
+              <div className="min-h-[320px] max-h-[55vh] overflow-auto relative">
+                {tabLoading && (
+                  <div className="absolute inset-0 flex items-center justify-center">
+                    <div className="w-7 h-7 rounded-full border-2 border-accent-start border-t-transparent animate-spin" />
+                  </div>
+                )}
+
+                {!tabLoading && tabChart && (
+                  <div className="p-4 overflow-auto">
+                    <ChartRenderer chart={tabChart} />
+                  </div>
+                )}
+
+                {!tabLoading && tabLyrics && (
+                  <div className="p-6">
+                    <h2 className="text-xl font-bold text-text-primary mb-4">{tabLyrics.title}</h2>
+                    <pre className="font-sans text-sm text-text-primary leading-relaxed whitespace-pre-wrap">{tabLyrics.body}</pre>
+                  </div>
+                )}
+              </div>
+            </div>
+
+            {/* ── Reorder list (collapsed below preview) ──────────── */}
+            <div className="mt-6">
+              <p className="text-[10px] font-bold uppercase tracking-widest text-text-secondary mb-2 px-1">Order (drag to reorder)</p>
+              <DndContext sensors={sensors} collisionDetection={closestCenter} onDragEnd={handleDragEnd}>
+                <SortableContext items={items.map(i => i.id)} strategy={verticalListSortingStrategy}>
+                  <div className="flex flex-col gap-2">
+                    {items.map((item, idx) => (
+                      <SortableItemRow
+                        key={item.id}
+                        item={item}
+                        idx={idx}
+                        onSetTranspose={setTransposeTarget}
+                        onSetNote={setNoteTarget}
+                        onRemove={handleRemove}
+                      />
+                    ))}
+                  </div>
+                </SortableContext>
+              </DndContext>
+            </div>
+          </div>
         )}
       </main>
 
