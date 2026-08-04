@@ -271,16 +271,18 @@ export default function PerformancePage() {
           doubleClick={{ disabled: true }}
         >
           <TransformComponent
-            wrapperClass="!w-full !h-screen"
+            wrapperClass="!w-full !h-screen cursor-pointer"
             contentClass="w-max min-w-full min-h-screen flex items-start justify-center p-4 sm:p-16 pt-24 pb-32"
           >
-            {chartLoading || !currentChart ? (
-              <div className="flex items-center justify-center w-64 h-64 text-text-secondary">
-                <div className="w-8 h-8 rounded-full border-2 border-accent-start border-t-transparent animate-spin" />
-              </div>
-            ) : (
-              <PerformChartWrapper chart={currentChart} />
-            )}
+            <div onClick={(e) => { e.stopPropagation(); toggleHeader(); }} className="w-full h-full flex items-center justify-center">
+              {chartLoading || !currentChart ? (
+                <div className="flex items-center justify-center w-64 h-64 text-text-secondary">
+                  <div className="w-8 h-8 rounded-full border-2 border-accent-start border-t-transparent animate-spin" />
+                </div>
+              ) : (
+                <PerformChartWrapper chart={currentChart} />
+              )}
+            </div>
           </TransformComponent>
         </TransformWrapper>
       </main>
