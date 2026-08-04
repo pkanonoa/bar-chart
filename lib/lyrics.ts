@@ -11,7 +11,12 @@ export type Lyric = {
   is_bookmarked?: boolean;
 };
 
-const isOnline = () => typeof navigator !== 'undefined' && navigator.onLine;
+const isOnline = () => {
+  if (typeof window !== 'undefined' && localStorage.getItem('chord-grid-guest-mode') === 'true') {
+    return false;
+  }
+  return typeof navigator !== 'undefined' && navigator.onLine;
+};
 
 async function cacheLyric(lyric: Lyric) {
   const dbPromise = getDBPromise();
@@ -22,14 +27,19 @@ async function cacheLyric(lyric: Lyric) {
 
 export async function saveLyrics(lyric: Lyric) {
   lyric.updated_at = new Date().toISOString();
+  let savedOnline = false;
   if (isOnline()) {
-    const { type, ...dbPayload } = lyric as any;
-    const { error } = await supabase.from('lyrics').upsert(dbPayload);
-    if (error) {
-      console.error('Failed to save lyrics:', JSON.stringify(error));
-      throw error;
+    try {
+      const { type, ...dbPayload } = lyric as any;
+      const { error } = await supabase.from('lyrics').upsert(dbPayload);
+      if (!error) {
+        savedOnline = true;
+      }
+    } catch (err) {
+      console.warn('[Lyrics] Network error saving lyrics, queueing pending save:', err);
     }
-  } else {
+  }
+  if (!savedOnline) {
     const dbPromise = getDBPromise();
     if (dbPromise) {
       const db = await dbPromise;
@@ -41,15 +51,20 @@ export async function saveLyrics(lyric: Lyric) {
 
 export async function readLyrics(id: string): Promise<Lyric | null> {
   if (isOnline()) {
-    const { data } = await supabase.from('lyrics').select('*').eq('id', id).single();
-    if (data) await cacheLyric(data);
-    return data;
-  } else {
-    const dbPromise = getDBPromise();
-    if (dbPromise) {
-      const db = await dbPromise;
-      return (await db.get('lyrics', id)) || null;
+    try {
+      const { data, error } = await supabase.from('lyrics').select('*').eq('id', id).single();
+      if (!error && data) {
+        await cacheLyric(data);
+        return data;
+      }
+    } catch (err) {
+      console.warn('[Lyrics] Network error reading lyrics, falling back to local storage:', err);
     }
+  }
+  const dbPromise = getDBPromise();
+  if (dbPromise) {
+    const db = await dbPromise;
+    return (await db.get('lyrics', id)) || null;
   }
   return null;
 }

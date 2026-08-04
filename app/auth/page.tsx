@@ -12,13 +12,18 @@ export default function AuthPage() {
   const [isSignUp, setIsSignUp] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const router = useRouter();
-  const { user, loading } = useAuth();
+  const { user, loading, enableGuestMode } = useAuth();
 
   if (loading) return <div className="flex h-screen items-center justify-center bg-gray-900 text-white">Loading...</div>;
   if (user) {
     router.push('/');
     return null;
   }
+
+  const handleGuestClick = () => {
+    enableGuestMode();
+    router.push('/');
+  };
 
   const handleAuth = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -78,12 +83,25 @@ export default function AuthPage() {
             {isSignUp ? 'Sign Up' : 'Sign In'}
           </button>
         </form>
-        <div className="mt-6 text-center">
+        <div className="mt-6 flex flex-col items-center space-y-3">
           <button
             onClick={() => setIsSignUp(!isSignUp)}
             className="text-sm text-indigo-400 hover:text-indigo-300"
           >
             {isSignUp ? 'Already have an account? Sign in' : "Don't have an account? Sign up"}
+          </button>
+          
+          <div className="w-full flex items-center my-2">
+            <div className="flex-1 border-t border-gray-800" />
+            <span className="px-2 text-xs text-gray-500 uppercase">Or</span>
+            <div className="flex-1 border-t border-gray-800" />
+          </div>
+
+          <button
+            onClick={handleGuestClick}
+            className="w-full py-2 px-4 bg-gray-800 border border-gray-700 rounded-md text-sm font-bold text-gray-300 hover:text-white hover:bg-gray-700 transition-all flex items-center justify-center"
+          >
+            ⚡ Continue Offline (Guest Mode)
           </button>
         </div>
       </div>

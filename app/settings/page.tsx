@@ -1,17 +1,19 @@
 'use client';
 
 import React, { useState, useEffect } from 'react';
-import { X, Type, Palette, Users, Info, Terminal, BookOpen, Droplet } from 'lucide-react';
+import { X, Type, Palette, Users, Info, Terminal, BookOpen, Droplet, CloudDownload, CheckCircle2, RefreshCw } from 'lucide-react';
 import { Header } from '@/components/Header';
 import { useRouter } from 'next/navigation';
 
 export default function SettingsPage() {
   const router = useRouter();
-  const [activeTab, setActiveTab] = useState<'font' | 'watermark' | 'stats' | 'about'>('font');
+  const [activeTab, setActiveTab] = useState<'font' | 'watermark' | 'offline' | 'stats' | 'about'>('font');
   const [currentFont, setCurrentFont] = useState('system');
   const [watermark, setWatermark] = useState('');
   const [userCount, setUserCount] = useState<number | null>(null);
   const [isLoadingCount, setIsLoadingCount] = useState(false);
+  const [syncingOffline, setSyncingOffline] = useState(false);
+  const [syncResult, setSyncResult] = useState<string | null>(null);
 
   useEffect(() => {
     setCurrentFont(localStorage.getItem('chord-grid-font') || 'system');
@@ -87,6 +89,13 @@ export default function SettingsPage() {
             </button>
 
             <button 
+              onClick={() => setActiveTab('offline')}
+              className={`flex items-center px-4 py-2.5 rounded-lg text-sm font-bold transition-all ${activeTab === 'offline' ? 'bg-accent-solid text-white' : 'text-text-secondary hover:bg-white/5 hover:text-text-primary'}`}
+            >
+              <CloudDownload size={16} className="mr-3" /> Offline Sync
+            </button>
+
+            <button 
               onClick={() => setActiveTab('stats')}
               className={`flex items-center px-4 py-2.5 rounded-lg text-sm font-bold transition-all ${activeTab === 'stats' ? 'bg-accent-solid text-white' : 'text-text-secondary hover:bg-white/5 hover:text-text-primary'}`}
             >
@@ -149,6 +158,67 @@ export default function SettingsPage() {
                       className="w-full px-4 py-3 bg-surface-raised border border-border rounded-xl text-text-primary focus:outline-none focus:border-accent-solid transition-colors"
                     />
                     <p className="text-xs text-text-secondary">Leave blank for no watermark.</p>
+                  </div>
+                </div>
+              </div>
+            )}
+            
+            {/* Offline Tab */}
+            {activeTab === 'offline' && (
+              <div className="space-y-6 animate-in fade-in slide-in-from-right-4">
+                <div>
+                  <h3 className="text-sm font-bold uppercase tracking-widest text-text-secondary mb-4">Offline Access</h3>
+                  <p className="text-sm text-text-primary mb-6">
+                    Pre-download all your cloud chord charts, lyrics, and folders into your device's local database so you can access them anywhere without an internet connection.
+                  </p>
+                  
+                  <div className="p-6 bg-surface border border-border rounded-2xl space-y-4">
+                    <div className="flex items-center space-x-4">
+                      <div className="p-3 bg-accent-solid/10 text-accent-start rounded-xl">
+                        <CloudDownload size={24} />
+                      </div>
+                      <div>
+                        <h4 className="text-base font-bold text-text-primary">Sync All Songs Offline</h4>
+                        <p className="text-xs text-text-secondary">Downloads all existing charts & lyrics into local IndexedDB.</p>
+                      </div>
+                    </div>
+
+                    {syncResult && (
+                      <div className="p-3 bg-green-500/10 border border-green-500/20 text-green-400 rounded-xl text-xs font-bold flex items-center">
+                        <CheckCircle2 size={16} className="mr-2 shrink-0" />
+                        {syncResult}
+                      </div>
+                    )}
+
+                    <button
+                      disabled={syncingOffline}
+                      onClick={async () => {
+                        setSyncingOffline(true);
+                        setSyncResult(null);
+                        try {
+                          const { syncAllOffline } = await import('@/lib/storage');
+                          const res = await syncAllOffline();
+                          setSyncResult(`Successfully downloaded ${res.chartsCount} charts, ${res.lyricsCount} lyrics, and ${res.foldersCount} folders to local storage!`);
+                        } catch (err) {
+                          setSyncResult('Failed to sync songs. Please check your internet connection.');
+                        } finally {
+                          setSyncingOffline(false);
+                        }
+                      }}
+                      className="w-full py-3 px-4 bg-accent-gradient text-white rounded-xl font-bold text-sm hover:brightness-110 transition-all flex items-center justify-center disabled:opacity-50"
+                    >
+                      {syncingOffline ? (
+                        <>
+                          <RefreshCw size={18} className="mr-2 animate-spin" />
+                          Downloading to Device...
+                        </>
+                      ) : (
+                        <>
+                          <CloudDownload size={18} className="mr-2" />
+                          Download All Songs Now
+                        </>
+                      )}
+                    </button>
                   </div>
                 </div>
               </div>

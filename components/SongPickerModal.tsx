@@ -63,6 +63,17 @@ export function SongPickerModal({ isOpen, onClose, onAdd, existingIds = [] }: So
     });
   };
 
+  const handleSelectAll = () => {
+    if (results.length === 0) return;
+    setSelected(prev => {
+      const next = new Map(prev);
+      results.forEach(item => {
+        next.set(item.id, { item_type: tab, item_id: item.id, title: item.title });
+      });
+      return next;
+    });
+  };
+
   const handleAdd = () => {
     if (selected.size === 0) return;
     onAdd(Array.from(selected.values()));
@@ -110,21 +121,29 @@ export function SongPickerModal({ isOpen, onClose, onAdd, existingIds = [] }: So
           ))}
         </div>
 
-        {/* Search */}
-        <div className="px-4 pb-3 shrink-0">
-          <div className="flex items-center gap-2 px-3 py-2 bg-surface-raised border border-border rounded-xl">
+        {/* Search and Select All */}
+        <div className="px-4 pb-3 shrink-0 flex gap-2">
+          <div className="flex-1 flex items-center gap-2 px-3 py-2 bg-surface-raised border border-border rounded-xl">
             <Search size={15} className="text-text-secondary shrink-0" />
             <input
               autoFocus
               value={query}
               onChange={e => setQuery(e.target.value)}
               placeholder={`Search ${tab === 'chart' ? 'charts' : 'lyrics'}…`}
-              className="flex-1 bg-transparent text-sm text-text-primary placeholder-text-secondary outline-none"
+              className="flex-1 bg-transparent text-sm text-text-primary placeholder-text-secondary outline-none min-w-0"
             />
             {searching && (
               <div className="w-3.5 h-3.5 rounded-full border-2 border-accent-start border-t-transparent animate-spin shrink-0" />
             )}
           </div>
+          {results.length > 0 && (
+            <button
+              onClick={handleSelectAll}
+              className="px-3 py-2 text-xs font-bold text-text-secondary bg-surface-raised border border-border rounded-xl hover:text-white transition-all whitespace-nowrap shrink-0"
+            >
+              Select All
+            </button>
+          )}
         </div>
 
         {/* Results */}

@@ -69,8 +69,13 @@ if (typeof window !== 'undefined') {
 
 export const getDBPromise = () => dbPromise;
 
-// Utility to check network
-const isOnline = () => typeof navigator !== 'undefined' && navigator.onLine;
+// Utility to check network and guest mode state
+const isOnline = () => {
+  if (typeof window !== 'undefined' && localStorage.getItem('chord-grid-guest-mode') === 'true') {
+    return false;
+  }
+  return typeof navigator !== 'undefined' && navigator.onLine;
+};
 
 // Flush pending saves when coming back online
 if (typeof window !== 'undefined') {
@@ -388,14 +393,19 @@ export async function moveEntry(id: string, type: 'folder' | 'chart' | 'lyrics',
 
 export async function saveChart(chart: Chart) {
   chart.updated_at = new Date().toISOString();
+  let savedOnline = false;
   if (isOnline()) {
-    const { custom_text, type, ...dbPayload } = chart as any;
-    const { error } = await supabase.from('charts').upsert(dbPayload);
-    if (error) {
-      console.error('Failed to save chart:', error);
-      throw error;
+    try {
+      const { custom_text, type, ...dbPayload } = chart as any;
+      const { error } = await supabase.from('charts').upsert(dbPayload);
+      if (!error) {
+        savedOnline = true;
+      }
+    } catch (err) {
+      console.warn('[Storage] Network error saving chart, queueing pending save:', err);
     }
-  } else if (dbPromise) {
+  }
+  if (!savedOnline && dbPromise) {
     const db = await dbPromise;
     await db.put('pending_saves', { id: chart.id, type: 'chart', data: chart, action: 'upsert' });
   }
@@ -404,12 +414,17 @@ export async function saveChart(chart: Chart) {
 
 export async function readChart(id: string, bypassCache = false): Promise<Chart | null> {
   if (isOnline()) {
-    // If not bypassing cache, we could check local state, but since we always put to DB
-    // we fetch directly. To ensure we get the latest DB update, we do a fresh query.
-    const { data } = await supabase.from('charts').select('*').eq('id', id).single();
-    if (data) await cacheChart(data);
-    return data;
-  } else if (dbPromise) {
+    try {
+      const { data, error } = await supabase.from('charts').select('*').eq('id', id).single();
+      if (!error && data) {
+        await cacheChart(data);
+        return data;
+      }
+    } catch (err) {
+      console.warn('[Storage] Network error reading chart, falling back to local storage:', err);
+    }
+  }
+  if (dbPromise) {
     const db = await dbPromise;
     return (await db.get('charts', id)) || null;
   }
@@ -641,6 +656,52 @@ export async function importLyrics(file: File, targetFolderId: string | null) {
     };
     reader.readAsText(file);
   });
+}
+
+export async function syncAllOffline(): Promise<{ chartsCount: number; lyricsCount: number; foldersCount: number }> {
+  if (!isOnline()) {
+    return { chartsCount: 0, lyricsCount: 0, foldersCount: 0 };
+  }
+  try {
+    const [{ data: charts }, { data: lyrics }, { data: folders }] = await Promise.all([
+      supabase.from('charts').select('*').not('title', 'like', '__TRASH__:%'),
+      supabase.from('lyrics').select('*').not('title', 'like', '__TRASH__:%'),
+      supabase.from('folders').select('*').not('name', 'like', '__TRASH__:%'),
+    ]);
+
+    if (dbPromise) {
+      const db = await dbPromise;
+      if (charts && charts.length > 0) {
+        const tx = db.transaction('charts', 'readwrite');
+        for (const c of charts) {
+          await tx.store.put(c);
+        }
+        await tx.done;
+      }
+      if (lyrics && lyrics.length > 0) {
+        const tx = db.transaction('lyrics', 'readwrite');
+        for (const l of lyrics) {
+          await tx.store.put(l);
+        }
+        await tx.done;
+      }
+      if (folders && folders.length > 0) {
+        const tx = db.transaction('folders', 'readwrite');
+        for (const f of folders) {
+          await tx.store.put(f);
+        }
+        await tx.done;
+      }
+    }
+    return {
+      chartsCount: charts?.length || 0,
+      lyricsCount: lyrics?.length || 0,
+      foldersCount: folders?.length || 0,
+    };
+  } catch (err) {
+    console.warn('[Sync] Full offline sync failed:', err);
+    return { chartsCount: 0, lyricsCount: 0, foldersCount: 0 };
+  }
 }
 
 export function getPendingSavesCount() {

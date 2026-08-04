@@ -208,6 +208,16 @@ export function FolderBrowser({ folderId, folderName, kind = 'chart' }: Props) {
     });
   };
 
+  const handleSelectAll = () => {
+    if (isSearching) {
+      setSelectedItems(searchResults.map(c => ({ id: c.id, type: c.type || kind })));
+    } else {
+      const allFolders = folders.map(f => ({ id: f.id, type: 'folder' as const }));
+      const allCharts = charts.map(c => ({ id: c.id, type: c.type || kind as any }));
+      setSelectedItems([...allFolders, ...allCharts]);
+    }
+  };
+
   const RowMenu = ({ id, type, name }: { id: string, type: 'folder' | 'chart' | 'lyrics', name: string }) => {
     const isOpen = activeDropdown === id;
     return (
@@ -480,6 +490,12 @@ export function FolderBrowser({ folderId, folderName, kind = 'chart' }: Props) {
             {selectedItems.length} selected
           </span>
           <div className="flex space-x-2 border-l border-border pl-3">
+            <button
+              onClick={handleSelectAll}
+              className="px-4 py-1.5 text-xs font-bold text-text-primary bg-surface border border-border rounded-full hover:text-accent-start hover:bg-white/5 transition-all"
+            >
+              Select All
+            </button>
             <button
               onClick={() => setIsBulkMove(true)}
               className="px-4 py-1.5 text-xs font-bold text-text-primary bg-surface border border-border rounded-full hover:text-accent-start hover:bg-white/5 transition-all"
