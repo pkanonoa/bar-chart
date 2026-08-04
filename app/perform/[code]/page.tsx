@@ -105,8 +105,6 @@ export default function PerformancePage() {
     if (savedFont) setSelectedFont(savedFont);
   }, []);
 
-  const headerHideTimeout = useRef<any>(null);
-
   // Load chart when localIndex changes
   const loadCurrentChart = useCallback((forceFromDb = false) => {
     if (!chartIds.length || chartIds[localIndex] === undefined) return;
@@ -130,17 +128,10 @@ export default function PerformancePage() {
     return () => window.removeEventListener('perform-session-end', handler);
   }, []);
 
-  // Auto-hide header
-  const showHeaderTemporarily = useCallback(() => {
-    setShowHeader(true);
-    clearTimeout(headerHideTimeout.current);
-    headerHideTimeout.current = setTimeout(() => setShowHeader(false), 4000);
+  // ─── Simple tap-to-toggle header (like setlist perform) ────────────────
+  const toggleHeader = useCallback(() => {
+    setShowHeader(prev => !prev);
   }, []);
-
-  useEffect(() => {
-    showHeaderTemporarily();
-    return () => clearTimeout(headerHideTimeout.current);
-  }, [showHeaderTemporarily]);
 
   // Keyboard navigation for leader
   useEffect(() => {
@@ -207,7 +198,7 @@ export default function PerformancePage() {
   return (
     <div
       className="min-h-screen bg-bg flex flex-col text-text-primary relative overflow-hidden"
-      onClick={showHeaderTemporarily}
+      onClick={toggleHeader}
     >
       {/* ── Header (auto-hide) ── */}
       <div className={`fixed top-0 left-0 right-0 z-50 flex items-center justify-between px-4 py-3 bg-bg/80 backdrop-blur-md border-b border-border/50 transition-all duration-300 ${showHeader ? 'translate-y-0 opacity-100' : '-translate-y-full opacity-0'}`}>
@@ -272,7 +263,7 @@ export default function PerformancePage() {
       </div>
 
       {/* ── Chart Canvas ── */}
-      <main className="flex-1 w-full h-screen overflow-hidden" onClick={showHeaderTemporarily}>
+      <main className="flex-1 w-full h-screen overflow-hidden" onClick={toggleHeader}>
         <TransformWrapper
           initialScale={1} minScale={0.1} maxScale={5}
           centerOnInit={true} centerZoomedOut={true}

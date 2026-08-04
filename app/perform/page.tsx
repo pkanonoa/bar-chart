@@ -199,16 +199,7 @@ export default function PerformPage() {
       <Header />
       <main className="flex-1 overflow-y-auto w-full max-w-3xl mx-auto px-4 pt-[max(env(safe-area-inset-top,2rem),2rem)] pb-32">
 
-        {/* ── Setlist name ── */}
-        <div className="mb-4">
-          <label className="text-xs font-bold uppercase tracking-widest text-text-secondary block mb-2">Setlist Name</label>
-          <input
-            value={setlistName}
-            onChange={e => setSetlistName(e.target.value)}
-            className="w-full px-4 py-3 bg-surface border border-border rounded-xl text-text-primary outline-none focus:border-accent-solid transition-all font-semibold text-lg"
-            placeholder="My Setlist"
-          />
-        </div>
+
 
         {/* ── Search ── */}
         <div className="relative mb-6 z-20">
