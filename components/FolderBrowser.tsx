@@ -58,6 +58,70 @@ export function FolderBrowser({ folderId, folderName, kind = 'chart' }: Props) {
   const [dropdownHorizontal, setDropdownHorizontal] = useState<'left' | 'right'>('right');
   const dropdownRef = useRef<HTMLDivElement>(null);
 
+  // Long press gesture handling
+  const longPressTimer = useRef<NodeJS.Timeout | null>(null);
+  const isLongPressActive = useRef(false);
+  const startPos = useRef<{ x: number; y: number } | null>(null);
+
+  const handlePointerDown = (id: string, type: 'folder' | 'chart' | 'lyrics', e: React.PointerEvent) => {
+    isLongPressActive.current = false;
+    startPos.current = { x: e.clientX, y: e.clientY };
+    if (longPressTimer.current) clearTimeout(longPressTimer.current);
+    longPressTimer.current = setTimeout(() => {
+      isLongPressActive.current = true;
+      if (typeof navigator !== 'undefined' && 'vibrate' in navigator) {
+        try { navigator.vibrate(50); } catch (e) {}
+      }
+      setSelectedItems(prev => {
+        const exists = prev.some(i => i.id === id);
+        if (exists) return prev.filter(i => i.id !== id);
+        return [...prev, { id, type }];
+      });
+    }, 450);
+  };
+
+  const handlePointerMove = (e: React.PointerEvent) => {
+    if (startPos.current && longPressTimer.current) {
+      const dx = Math.abs(e.clientX - startPos.current.x);
+      const dy = Math.abs(e.clientY - startPos.current.y);
+      if (dx > 10 || dy > 10) {
+        clearTimeout(longPressTimer.current);
+        longPressTimer.current = null;
+      }
+    }
+  };
+
+  const handlePointerUpOrClick = (id: string, type: 'folder' | 'chart' | 'lyrics', e: React.SyntheticEvent, onNormalClick: () => void) => {
+    if (longPressTimer.current) {
+      clearTimeout(longPressTimer.current);
+      longPressTimer.current = null;
+    }
+    if (isLongPressActive.current) {
+      e.preventDefault();
+      e.stopPropagation();
+      isLongPressActive.current = false;
+      return;
+    }
+    if (selectedItems.length > 0) {
+      e.stopPropagation();
+      e.preventDefault();
+      setSelectedItems(prev => {
+        const exists = prev.some(i => i.id === id);
+        if (exists) return prev.filter(i => i.id !== id);
+        return [...prev, { id, type }];
+      });
+    } else {
+      onNormalClick();
+    }
+  };
+
+  const handlePointerCancel = () => {
+    if (longPressTimer.current) {
+      clearTimeout(longPressTimer.current);
+      longPressTimer.current = null;
+    }
+  };
+
 
 
   const loadContents = async () => {
@@ -366,10 +430,14 @@ export function FolderBrowser({ folderId, folderName, kind = 'chart' }: Props) {
               searchResults.map((chart) => (
                 <div
                   key={chart.id}
-                  className={`bg-surface border rounded-xl p-5 flex flex-col items-center justify-center cursor-pointer group relative transition-all duration-200 ${
+                  className={`bg-surface border rounded-xl p-5 flex flex-col items-center justify-center cursor-pointer group relative transition-all duration-200 select-none ${
                     selectedItems.some(i => i.id === chart.id) ? 'border-accent-solid shadow-md bg-surface-raised before:absolute before:left-0 before:top-0 before:bottom-0 before:w-1 before:bg-accent-gradient before:rounded-l-xl' : 'border-border shadow-sm hover:shadow-hover hover:-translate-y-1'
                   } ${activeDropdown === chart.id ? 'z-50' : ''}`}
-                  onClick={() => router.push(kind === 'lyrics' ? `/lyrics/${chart.id}` : `/chart/${chart.id}`)}
+                  onPointerDown={(e) => handlePointerDown(chart.id, kind, e)}
+                  onPointerMove={handlePointerMove}
+                  onPointerUp={(e) => handlePointerUpOrClick(chart.id, kind, e, () => router.push(kind === 'lyrics' ? `/lyrics/${chart.id}` : `/chart/${chart.id}`))}
+                  onPointerCancel={handlePointerCancel}
+                  onContextMenu={(e) => { e.preventDefault(); toggleSelection(chart.id, kind, e); }}
                 >
                   <div className="absolute top-3 left-3 z-10" onClick={e => e.stopPropagation()}>
                     <input
@@ -416,10 +484,14 @@ export function FolderBrowser({ folderId, folderName, kind = 'chart' }: Props) {
                 {folders.map(folder => (
                   <div
                     key={folder.id}
-                    className={`bg-surface border rounded-xl p-5 flex flex-col items-center justify-center cursor-pointer group relative transition-all duration-200 ${
+                    className={`bg-surface border rounded-xl p-5 flex flex-col items-center justify-center cursor-pointer group relative transition-all duration-200 select-none ${
                       selectedItems.some(i => i.id === folder.id) ? 'border-accent-solid shadow-md bg-surface-raised before:absolute before:left-0 before:top-0 before:bottom-0 before:w-1 before:bg-accent-gradient before:rounded-l-xl' : 'border-border shadow-sm hover:shadow-hover hover:-translate-y-1'
                     } ${activeDropdown === folder.id ? 'z-50' : ''}`}
-                    onClick={() => router.push(kind === 'lyrics' ? `/lyrics/folder/${folder.id}` : `/folder/${folder.id}`)}
+                    onPointerDown={(e) => handlePointerDown(folder.id, 'folder', e)}
+                    onPointerMove={handlePointerMove}
+                    onPointerUp={(e) => handlePointerUpOrClick(folder.id, 'folder', e, () => router.push(kind === 'lyrics' ? `/lyrics/folder/${folder.id}` : `/folder/${folder.id}`))}
+                    onPointerCancel={handlePointerCancel}
+                    onContextMenu={(e) => { e.preventDefault(); toggleSelection(folder.id, 'folder', e); }}
                   >
                     <div className="absolute top-3 left-3 z-10" onClick={e => e.stopPropagation()}>
                       <input
@@ -444,10 +516,14 @@ export function FolderBrowser({ folderId, folderName, kind = 'chart' }: Props) {
                 {charts.map(chart => (
                   <div
                     key={chart.id}
-                    className={`bg-surface border rounded-xl p-5 flex flex-col items-center justify-center cursor-pointer group relative transition-all duration-200 ${
+                    className={`bg-surface border rounded-xl p-5 flex flex-col items-center justify-center cursor-pointer group relative transition-all duration-200 select-none ${
                       selectedItems.some(i => i.id === chart.id) ? 'border-accent-solid shadow-md bg-surface-raised before:absolute before:left-0 before:top-0 before:bottom-0 before:w-1 before:bg-accent-gradient before:rounded-l-xl' : 'border-border shadow-sm hover:shadow-hover hover:-translate-y-1'
                     } ${activeDropdown === chart.id ? 'z-50' : ''}`}
-                    onClick={() => router.push(kind === 'lyrics' ? `/lyrics/${chart.id}` : `/chart/${chart.id}`)}
+                    onPointerDown={(e) => handlePointerDown(chart.id, kind, e)}
+                    onPointerMove={handlePointerMove}
+                    onPointerUp={(e) => handlePointerUpOrClick(chart.id, kind, e, () => router.push(kind === 'lyrics' ? `/lyrics/${chart.id}` : `/chart/${chart.id}`))}
+                    onPointerCancel={handlePointerCancel}
+                    onContextMenu={(e) => { e.preventDefault(); toggleSelection(chart.id, kind, e); }}
                   >
                     <div className="absolute top-3 left-3 z-10" onClick={e => e.stopPropagation()}>
                       <input
