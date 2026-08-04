@@ -36,12 +36,16 @@ function useSetlistSession(setlistId: string, isLeaderDevice: boolean) {
   const isMountedRef = useRef(true);
   const positionRef = useRef(0);
   const isFollowingRef = useRef(true);
+  // Stable ref so the effect dependency array never changes
+  const isLeaderRef = useRef(isLeaderDevice);
 
   useEffect(() => { positionRef.current = songPosition; }, [songPosition]);
   useEffect(() => { isFollowingRef.current = isFollowing; }, [isFollowing]);
 
   useEffect(() => {
     isMountedRef.current = true;
+    const isLdr = isLeaderRef.current;
+
     const init = async () => {
       const { data: { user } } = await supabase.auth.getUser();
       if (!isMountedRef.current) return;
@@ -67,7 +71,7 @@ function useSetlistSession(setlistId: string, isLeaderDevice: boolean) {
           const presences = Object.values(state).flat() as SetlistPresence[];
           const leader = presences.find(p => p.role === 'leader');
           setLeaderName(leader?.name ?? null);
-          if (!isLeaderDevice && leader) {
+          if (!isLdr && leader) {
             setSongPosition(leader.songPosition ?? 0);
             positionRef.current = leader.songPosition ?? 0;
             setMode('follower');
@@ -76,7 +80,7 @@ function useSetlistSession(setlistId: string, isLeaderDevice: boolean) {
         })
         .subscribe(async (status) => {
           if (status !== 'SUBSCRIBED' || !isMountedRef.current) return;
-          if (isLeaderDevice) {
+          if (isLdr) {
             await channel.track({ role: 'leader', name: myNameRef.current, songPosition: 0 });
             setMode('leader');
           } else {
@@ -89,7 +93,8 @@ function useSetlistSession(setlistId: string, isLeaderDevice: boolean) {
       isMountedRef.current = false;
       if (channelRef.current) supabase.removeChannel(channelRef.current);
     };
-  }, [setlistId, isLeaderDevice]);
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [setlistId]); // intentionally omit isLeaderDevice — captured via ref on mount
 
   const goTo = useCallback((pos: number) => {
     const ch = channelRef.current;
@@ -153,6 +158,7 @@ export default function SetlistPerformPage() {
 
   const tabsRef = useRef<HTMLDivElement>(null);
   const activeTabRef = useRef<HTMLButtonElement>(null);
+  const [barsVisible, setBarsVisible] = useState(false);
 
   const [selectedFont, setSelectedFont] = useState('system');
   useEffect(() => { const f = localStorage.getItem('chord-grid-font'); if (f) setSelectedFont(f); }, []);
@@ -203,12 +209,12 @@ export default function SetlistPerformPage() {
 
   useEffect(() => { if (items.length > 0) loadSongAt(songPosition); }, [songPosition, items, loadSongAt]);
 
-  // Scroll active tab into view
+  // Scroll active tab into view when bars are visible
   useEffect(() => {
-    if (activeTabRef.current && tabsRef.current) {
+    if (barsVisible && activeTabRef.current && tabsRef.current) {
       activeTabRef.current.scrollIntoView({ behavior: 'smooth', block: 'nearest', inline: 'center' });
     }
-  }, [songPosition]);
+  }, [songPosition, barsVisible]);
 
   // Session end
   useEffect(() => {
@@ -267,9 +273,14 @@ export default function SetlistPerformPage() {
   return (
     <div className="min-h-screen bg-bg flex flex-col text-text-primary">
 
-      {/* ── Fixed top bar ───────────────────────────────────────────────── */}
-      <div className="fixed top-0 left-0 right-0 z-50 flex flex-col bg-surface/90 backdrop-blur-xl border-b border-border">
-
+      {/* ── Fixed top bar — slides in from top ──────────────────────────── */}
+      <div
+        className="fixed top-0 left-0 right-0 z-50 flex flex-col bg-surface/90 backdrop-blur-xl border-b border-border"
+        style={{
+          transform: barsVisible ? 'translateY(0)' : 'translateY(-110%)',
+          transition: 'transform 0.3s cubic-bezier(0.4,0,0.2,1)',
+        }}
+      >
         {/* Row 1: setlist name + controls */}
         <div className="flex items-center gap-3 px-3 py-2.5">
           <button
@@ -320,7 +331,7 @@ export default function SetlistPerformPage() {
           </div>
         </div>
 
-        {/* Row 2: Song tabs (always visible) */}
+        {/* Row 2: Song tabs */}
         <div
           ref={tabsRef}
           className="flex items-end overflow-x-auto gap-1 px-2"
@@ -338,7 +349,8 @@ export default function SetlistPerformPage() {
                 disabled={!canClick}
                 onClick={() => {
                   if (isLeader) goTo(idx);
-                  else { stopFollowing(); /* local only for follower */ }
+                  else { stopFollowing(); }
+                  setBarsVisible(false);
                 }}
                 className={`
                   relative flex items-center gap-1.5 px-3 py-2 text-[11px] font-bold
@@ -352,7 +364,6 @@ export default function SetlistPerformPage() {
                   }
                 `}
               >
-                {/* Active accent line */}
                 {active && <span className="absolute top-0 left-2 right-2 h-[2px] rounded-full bg-accent-gradient" />}
                 <span className="text-[9px] font-black opacity-40 shrink-0">{idx + 1}</span>
                 <Icon size={11} className={active ? 'text-accent-start shrink-0' : 'shrink-0'} />
@@ -369,9 +380,11 @@ export default function SetlistPerformPage() {
         </div>
       </div>
 
-      {/* ── Content area (padded below fixed header) ─────────────────────── */}
-      {/* Header height: ~row1(52px) + ~row2(40px) = ~92px */}
-      <div className="flex-1 pt-[92px]">
+      {/* ── Content area — full screen, tap to toggle bars ───────────────── */}
+      <div
+        className="flex-1 pt-0 w-full h-screen"
+        onClick={() => setBarsVisible(v => !v)}
+      >
         {contentLoading && (
           <div className="flex items-center justify-center h-[50vh]">
             <div className="w-8 h-8 rounded-full border-2 border-accent-start border-t-transparent animate-spin" />
@@ -386,7 +399,7 @@ export default function SetlistPerformPage() {
             doubleClick={{ disabled: false }}
           >
             <TransformComponent
-              wrapperStyle={{ width: '100vw', height: 'calc(100vh - 92px)' }}
+              wrapperStyle={{ width: '100vw', height: '100dvh' }}
               contentStyle={{ padding: '32px 24px 100px' }}
             >
               <ChartWrapper chart={currentChart} songKey={`${songPosition}`} />

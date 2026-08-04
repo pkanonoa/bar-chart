@@ -149,6 +149,18 @@ export function FolderBrowser({ folderId, folderName, kind = 'chart' }: Props) {
     }
   };
 
+  const handleImport = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    try {
+      await importChart(file, folderId);
+      loadContents();
+    } catch (err) {
+      alert('Failed to import chart.');
+    }
+    e.target.value = '';
+  };
+
   const executeDelete = async (permanent: boolean = false) => {
     if (deleteItem) {
       if (permanent) {
@@ -280,20 +292,66 @@ export function FolderBrowser({ folderId, folderName, kind = 'chart' }: Props) {
   return (
     <div className="w-full max-w-7xl mx-auto px-4 pt-[max(env(safe-area-inset-top,2rem),2rem)] pb-8">
       {/* Header Actions */}
-      <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-8 space-y-4 sm:space-y-0">
-        <div className="flex items-center space-x-4">
+      <div className="flex items-center justify-between mb-8 gap-4 flex-wrap">
+        {/* Left: icon + title + subtitle */}
+        <div className="flex items-center gap-4">
           {folderId && (
             <button
               onClick={() => router.push(kind === 'lyrics' ? '/lyrics' : '/')}
-              className="p-3 text-text-secondary bg-surface border border-border rounded-xl hover:text-white hover:bg-surface-raised transition-all"
+              className="p-3 text-text-secondary bg-surface border border-border rounded-xl hover:text-white hover:bg-surface-raised transition-all shrink-0"
               title="Back"
             >
               <CornerLeftUp size={20} />
             </button>
           )}
-          <h1 className="text-3xl font-bold text-text-primary tracking-tight">
-            {folderName || (kind === 'lyrics' ? 'Lyrics' : 'Chords')}
-          </h1>
+          <div className="flex items-center gap-3">
+            <div className="w-12 h-12 rounded-2xl bg-surface border border-border flex items-center justify-center shrink-0">
+              {kind === 'lyrics'
+                ? <FileText size={22} className="text-accent-start" />
+                : <FolderIcon size={22} className="text-accent-start" />
+              }
+            </div>
+            <div>
+              <h1 className="text-2xl sm:text-3xl font-bold text-text-primary tracking-tight leading-none">
+                {folderName || (kind === 'lyrics' ? 'Lyrics' : 'Chords')}
+              </h1>
+              <p className="text-xs text-text-secondary mt-0.5">
+                {kind === 'lyrics'
+                  ? 'Your lyric sheets and song words'
+                  : 'Your chord charts and song sheets'}
+              </p>
+            </div>
+          </div>
+        </div>
+
+        {/* Right: action buttons */}
+        <div className="flex items-center gap-2 flex-wrap">
+          {/* New Folder */}
+          <button
+            onClick={handleCreateFolder}
+            className="flex items-center gap-2 px-4 py-2.5 bg-surface border border-border text-text-primary text-sm font-bold rounded-xl hover:bg-surface-raised hover:text-accent-start transition-all"
+          >
+            <FolderPlus size={16} />
+            <span className="hidden sm:inline">New Folder</span>
+          </button>
+
+          {/* Import */}
+          <button
+            onClick={() => fileInputRef.current?.click()}
+            className="flex items-center gap-2 px-4 py-2.5 bg-surface border border-border text-text-primary text-sm font-bold rounded-xl hover:bg-surface-raised hover:text-accent-start transition-all"
+          >
+            <Upload size={16} />
+            <span className="hidden sm:inline">Import</span>
+          </button>
+
+          {/* New Chart / New Lyrics — primary gradient button */}
+          <button
+            onClick={handleCreateChart}
+            className="flex items-center gap-2 px-5 py-2.5 bg-accent-gradient text-white text-sm font-bold rounded-xl shadow-md hover:brightness-110 transition-all"
+          >
+            <FilePlus size={16} />
+            <span>New {kind === 'lyrics' ? 'Lyrics' : 'Chart'}</span>
+          </button>
         </div>
       </div>
 
@@ -310,6 +368,7 @@ export function FolderBrowser({ folderId, folderName, kind = 'chart' }: Props) {
           onChange={(e) => setSearchQuery(e.target.value)}
         />
       </div>
+
 
       {/* List View */}
       {/* Grid View */}
@@ -575,6 +634,14 @@ export function FolderBrowser({ folderId, folderName, kind = 'chart' }: Props) {
           </div>
         </div>
       )}
+      {/* Hidden file input for import */}
+      <input
+        ref={fileInputRef}
+        type="file"
+        accept=".json"
+        className="hidden"
+        onChange={handleImport}
+      />
     </div>
   );
 }
