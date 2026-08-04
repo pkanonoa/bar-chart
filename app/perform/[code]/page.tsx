@@ -5,6 +5,7 @@ import { useParams, useRouter } from 'next/navigation';
 import { useAuth } from '@/components/AuthProvider';
 import { usePerformanceSession } from '@/hooks/usePerformanceSession';
 import { readChart } from '@/lib/storage';
+import { useChartPrefetch } from '@/hooks/useChartPrefetch';
 import { ChartData } from '@/lib/chart-types';
 import { ChartRenderer } from '@/components/ChartRenderer';
 import { TransformWrapper, TransformComponent, useControls } from 'react-zoom-pan-pinch';
@@ -105,17 +106,34 @@ export default function PerformancePage() {
     if (savedFont) setSelectedFont(savedFont);
   }, []);
 
+  // ── Pre-fetch surrounding charts ──────────────────────────────────────────
+  const { getFromCache, addToCache } = useChartPrefetch(chartIds, localIndex);
+
   // Load chart when localIndex changes
   const loadCurrentChart = useCallback((forceFromDb = false) => {
     if (!chartIds.length || chartIds[localIndex] === undefined) return;
+    const id = chartIds[localIndex];
+
+    // Try the pre-fetch cache first (skip on forced refresh)
+    if (!forceFromDb) {
+      const cached = getFromCache(id);
+      if (cached) {
+        setCurrentChart(cached);
+        setChartLoading(false);
+        return;
+      }
+    }
+
     setChartLoading(true);
-    
     // Bypass local cache if we want to fetch fresh edits from DB
-    readChart(chartIds[localIndex], forceFromDb).then(data => {
-      if (data) setCurrentChart(data as ChartData);
+    readChart(id, forceFromDb).then(data => {
+      if (data) {
+        setCurrentChart(data as ChartData);
+        addToCache(id, data as ChartData);
+      }
       setChartLoading(false);
     });
-  }, [localIndex, chartIds]);
+  }, [localIndex, chartIds, getFromCache, addToCache]);
 
   useEffect(() => {
     loadCurrentChart();

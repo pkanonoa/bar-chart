@@ -133,40 +133,46 @@ export function Sidebar({ isOpen, onClose }: { isOpen: boolean; onClose: () => v
           {/* Main Navigation */}
           <div className="p-6 border-b border-border">
             <h3 className="text-[10px] font-bold uppercase tracking-widest text-text-secondary mb-4 flex items-center">
-              <Home size={12} className="mr-2" /> Library
+              <FolderIcon size={12} className="mr-2" /> Library
             </h3>
             <button 
-              onClick={() => handleNav('/')}
+              onClick={() => { router.push('/'); onClose(); }}
               className="w-full flex items-center px-4 py-3 bg-surface border border-border shadow-md rounded-xl text-sm font-bold text-text-primary hover:text-accent-start hover:bg-surface-raised transition-all group mb-3"
             >
-              <FolderIcon size={18} className="mr-3 text-text-secondary group-hover:text-accent-start" /> Chords
+              <FileText size={18} className="mr-3 text-text-secondary group-hover:text-accent-start" /> Chords
             </button>
             <button 
-              onClick={() => handleNav('/lyrics')}
+              onClick={() => { router.push('/lyrics'); onClose(); }}
               className="w-full flex items-center px-4 py-3 bg-surface border border-border shadow-md rounded-xl text-sm font-bold text-text-primary hover:text-accent-start hover:bg-surface-raised transition-all group mb-3"
             >
               <Music size={18} className="mr-3 text-text-secondary group-hover:text-accent-start" /> Lyrics
             </button>
             <button 
-              onClick={() => handleNav('/bookmarks')}
+              onClick={() => { router.push('/bookmarks'); onClose(); }}
               className="w-full flex items-center px-4 py-3 bg-surface border border-border shadow-md rounded-xl text-sm font-bold text-text-primary hover:text-accent-start hover:bg-surface-raised transition-all group mb-3"
             >
               <Star size={18} className="mr-3 text-text-secondary group-hover:text-accent-start" /> Bookmarks
             </button>
             <button 
-              onClick={() => handleNav('/setlists')}
-              className="w-full flex items-center px-4 py-3 bg-surface border border-border shadow-md rounded-xl text-sm font-bold text-text-primary hover:text-accent-start hover:bg-surface-raised transition-all group mb-3"
+              onClick={() => { router.push('/setlists'); onClose(); }}
+              className="w-full flex items-center px-4 py-3 bg-surface border border-border shadow-md rounded-xl text-sm font-bold text-text-primary hover:text-accent-start hover:bg-surface-raised transition-all group mb-1"
             >
               <ListMusic size={18} className="mr-3 text-text-secondary group-hover:text-accent-start" /> Setlists
             </button>
+          </div>
+
+          <div className="p-6 border-b border-border">
+            <h3 className="text-[10px] font-bold uppercase tracking-widest text-text-secondary mb-4 flex items-center">
+              <Settings size={12} className="mr-2" /> Tools
+            </h3>
             <button 
-              onClick={() => handleNav('/perform')}
+              onClick={() => { router.push('/perform'); onClose(); }}
               className="w-full flex items-center px-4 py-3 bg-surface border border-border shadow-md rounded-xl text-sm font-bold text-text-primary hover:text-accent-start hover:bg-surface-raised transition-all group mb-3"
             >
               <Music2 size={18} className="mr-3 text-text-secondary group-hover:text-accent-start" /> Perform
             </button>
             <button 
-              onClick={() => handleNav('/printer')}
+              onClick={() => { router.push('/printer'); onClose(); }}
               className="w-full flex items-center px-4 py-3 bg-surface border border-border shadow-md rounded-xl text-sm font-bold text-text-primary hover:text-accent-start hover:bg-surface-raised transition-all group mb-4"
             >
               <Printer size={18} className="mr-3 text-text-secondary group-hover:text-accent-start" /> Printer
