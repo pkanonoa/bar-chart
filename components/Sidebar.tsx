@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useTransition } from 'react';
 import { useAuth } from '@/components/AuthProvider';
 import { supabase } from '@/lib/supabase';
 import { getRecentCharts, createFolder, saveChart } from '@/lib/storage';
@@ -18,6 +18,14 @@ export function Sidebar({ isOpen, onClose }: { isOpen: boolean; onClose: () => v
   const [createFolderModal, setCreateFolderModal] = useState(false);
   const [folderKind, setFolderKind] = useState<'chart' | 'lyrics'>('chart');
   const [joinCode, setJoinCode] = useState('');
+  const [isPending, startTransition] = useTransition();
+
+  const handleNav = (path: string) => {
+    onClose();
+    startTransition(() => {
+      router.push(path);
+    });
+  };
 
   let currentFolderId: string | null = null;
   if (pathname.startsWith('/folder/')) {
@@ -111,10 +119,10 @@ export function Sidebar({ isOpen, onClose }: { isOpen: boolean; onClose: () => v
             </button>
           </div>
           <div className="flex space-x-2 mt-2">
-            <button onClick={() => { router.push('/profile'); onClose(); }} className="flex-1 py-2 bg-surface border border-border shadow-sm rounded-lg text-xs font-bold text-text-secondary hover:text-white transition-all flex justify-center items-center">
+            <button onClick={() => handleNav('/profile')} className="flex-1 py-2 bg-surface border border-border shadow-sm rounded-lg text-xs font-bold text-text-secondary hover:text-white transition-all flex justify-center items-center">
               <User size={14} className="mr-1" /> Profile
             </button>
-            <button onClick={() => { router.push('/settings'); onClose(); }} className="flex-1 py-2 bg-surface border border-border shadow-sm rounded-lg text-xs font-bold text-text-secondary hover:text-white transition-all flex justify-center items-center">
+            <button onClick={() => handleNav('/settings')} className="flex-1 py-2 bg-surface border border-border shadow-sm rounded-lg text-xs font-bold text-text-secondary hover:text-white transition-all flex justify-center items-center">
               <Settings size={14} className="mr-1" /> Settings
             </button>
           </div>
@@ -128,37 +136,37 @@ export function Sidebar({ isOpen, onClose }: { isOpen: boolean; onClose: () => v
               <Home size={12} className="mr-2" /> Library
             </h3>
             <button 
-              onClick={() => { router.push('/'); onClose(); }}
+              onClick={() => handleNav('/')}
               className="w-full flex items-center px-4 py-3 bg-surface border border-border shadow-md rounded-xl text-sm font-bold text-text-primary hover:text-accent-start hover:bg-surface-raised transition-all group mb-3"
             >
               <FolderIcon size={18} className="mr-3 text-text-secondary group-hover:text-accent-start" /> Chords
             </button>
             <button 
-              onClick={() => { router.push('/lyrics'); onClose(); }}
+              onClick={() => handleNav('/lyrics')}
               className="w-full flex items-center px-4 py-3 bg-surface border border-border shadow-md rounded-xl text-sm font-bold text-text-primary hover:text-accent-start hover:bg-surface-raised transition-all group mb-3"
             >
               <Music size={18} className="mr-3 text-text-secondary group-hover:text-accent-start" /> Lyrics
             </button>
             <button 
-              onClick={() => { router.push('/bookmarks'); onClose(); }}
+              onClick={() => handleNav('/bookmarks')}
               className="w-full flex items-center px-4 py-3 bg-surface border border-border shadow-md rounded-xl text-sm font-bold text-text-primary hover:text-accent-start hover:bg-surface-raised transition-all group mb-3"
             >
               <Star size={18} className="mr-3 text-text-secondary group-hover:text-accent-start" /> Bookmarks
             </button>
             <button 
-              onClick={() => { router.push('/setlists'); onClose(); }}
+              onClick={() => handleNav('/setlists')}
               className="w-full flex items-center px-4 py-3 bg-surface border border-border shadow-md rounded-xl text-sm font-bold text-text-primary hover:text-accent-start hover:bg-surface-raised transition-all group mb-3"
             >
               <ListMusic size={18} className="mr-3 text-text-secondary group-hover:text-accent-start" /> Setlists
             </button>
             <button 
-              onClick={() => { router.push('/perform'); onClose(); }}
+              onClick={() => handleNav('/perform')}
               className="w-full flex items-center px-4 py-3 bg-surface border border-border shadow-md rounded-xl text-sm font-bold text-text-primary hover:text-accent-start hover:bg-surface-raised transition-all group mb-3"
             >
               <Music2 size={18} className="mr-3 text-text-secondary group-hover:text-accent-start" /> Perform
             </button>
             <button 
-              onClick={() => { router.push('/printer'); onClose(); }}
+              onClick={() => handleNav('/printer')}
               className="w-full flex items-center px-4 py-3 bg-surface border border-border shadow-md rounded-xl text-sm font-bold text-text-primary hover:text-accent-start hover:bg-surface-raised transition-all group mb-4"
             >
               <Printer size={18} className="mr-3 text-text-secondary group-hover:text-accent-start" /> Printer
