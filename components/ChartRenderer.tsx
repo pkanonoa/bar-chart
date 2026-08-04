@@ -11,6 +11,8 @@ interface ChartRendererProps {
   selectedFont?: string;
   onClick?: (e: React.MouseEvent) => void;
   id?: string;
+  /** Index of the currently active section (for follower highlight) */
+  activeSectionIndex?: number;
 }
 
 export function ChartRenderer({ 
@@ -20,7 +22,8 @@ export function ChartRenderer({
   watermark = '',
   selectedFont = 'system',
   onClick,
-  id = 'chart-card'
+  id = 'chart-card',
+  activeSectionIndex,
 }: ChartRendererProps) {
   const renderTextFlow = (chartData: ChartData) => {
     if (!chartData) return null;
@@ -60,7 +63,9 @@ export function ChartRenderer({
             {chartData.lines.map((line, lIdx) => {
               if (line.blocks.length === 0) {
                 return (
-                  <div key={lIdx} className="flex flex-row items-center w-full flex-nowrap whitespace-nowrap">
+                <div key={lIdx} className={`flex flex-row items-center w-full flex-nowrap whitespace-nowrap rounded-lg transition-all duration-300 ${
+                  activeSectionIndex === lIdx ? 'ring-2 ring-accent-start/50 bg-accent-start/5 px-2 -mx-2' : ''
+                }`} id={`chart-line-${lIdx}`}>
                     {/* Left Label */}
                     {line.label ? (
                       <div 
@@ -87,7 +92,9 @@ export function ChartRenderer({
               }
 
               return (
-                <div key={lIdx} className="flex flex-row items-center flex-nowrap whitespace-nowrap">
+                <div key={lIdx} className={`flex flex-row items-center flex-nowrap whitespace-nowrap rounded-lg transition-all duration-300 ${
+                  activeSectionIndex === lIdx ? 'ring-2 ring-accent-start/50 bg-accent-start/5 px-2 -mx-2' : ''
+                }`} id={`chart-line-${lIdx}`}>
                   {/* Left Label */}
                   <div 
                     className="shrink-0 text-text-primary print:text-black text-base sm:text-xl print:text-[1em] text-right pr-2 sm:pr-4 flex items-center justify-end"

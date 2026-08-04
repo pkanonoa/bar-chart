@@ -381,8 +381,10 @@ export async function saveChart(chart: Chart) {
   await cacheChart(chart);
 }
 
-export async function readChart(id: string): Promise<Chart | null> {
+export async function readChart(id: string, bypassCache = false): Promise<Chart | null> {
   if (isOnline()) {
+    // If not bypassing cache, we could check local state, but since we always put to DB
+    // we fetch directly. To ensure we get the latest DB update, we do a fresh query.
     const { data } = await supabase.from('charts').select('*').eq('id', id).single();
     if (data) await cacheChart(data);
     return data;

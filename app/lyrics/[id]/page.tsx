@@ -17,11 +17,8 @@ function LyricsContentWrapper({ lyric, showUI, selectedFont, watermark }: any) {
     let timeoutId: any;
     const fitToScreen = () => {
       clearTimeout(timeoutId);
-      timeoutId = setTimeout(() => {
-        zoomToElement("lyrics-card", undefined, 0);
-      }, 200);
+      timeoutId = setTimeout(() => { zoomToElement("lyrics-card", undefined, 0); }, 200);
     };
-
     fitToScreen();
     window.addEventListener('resize', fitToScreen);
     window.addEventListener('orientationchange', fitToScreen);
@@ -44,22 +41,19 @@ function LyricsContentWrapper({ lyric, showUI, selectedFont, watermark }: any) {
   };
 
   return (
-    <div 
+    <div
       id="lyrics-card"
       onClick={handleTap}
-      className={`inline-flex text-left flex-col w-max min-w-[min(100%,48rem)] max-w-none p-6 sm:p-12 print:p-0 print:ml-24 print:w-full bg-surface print:bg-transparent border border-border print:border-none shadow-card print:shadow-none rounded-3xl print:rounded-none relative select-none print:min-h-[28cm]`}
+      className="inline-flex text-left flex-col w-max min-w-[min(100%,48rem)] max-w-none p-6 sm:p-12 print:p-0 print:ml-24 print:w-full bg-surface print:bg-transparent border border-border print:border-none shadow-card print:shadow-none rounded-3xl print:rounded-none relative select-none print:min-h-[28cm]"
       style={{
-        fontFamily: selectedFont === 'serif' ? 'Georgia, serif' : 
-                    selectedFont === 'mono' ? 'monospace' : 
-                    'system-ui, -apple-system, sans-serif'
+        fontFamily: selectedFont === 'serif' ? 'Georgia, serif' :
+          selectedFont === 'mono' ? 'monospace' : 'system-ui, -apple-system, sans-serif'
       }}
     >
       {watermark && (
         <div className="hidden print:grid absolute inset-0 grid-cols-4 gap-y-6 gap-x-4 items-center justify-items-center pointer-events-none overflow-hidden z-[1] opacity-[0.04] rotate-[-30deg] scale-150 select-none">
           {Array.from({ length: 80 }).map((_, i) => (
-            <span key={i} className="text-base font-bold uppercase tracking-wider text-black whitespace-nowrap">
-              {watermark}
-            </span>
+            <span key={i} className="text-base font-bold uppercase tracking-wider text-black whitespace-nowrap">{watermark}</span>
           ))}
         </div>
       )}
@@ -84,7 +78,7 @@ export default function LyricsViewer() {
   const params = useParams();
   const router = useRouter();
   const lyricId = params.id as string;
-  
+
   const { lyric, loading: lyricLoading, updateLyric } = useLyricsSync(lyricId);
   const [isFolderPickerOpen, setIsFolderPickerOpen] = useState(false);
   const [isMenuOpen, setIsMenuOpen] = useState(false);
@@ -95,30 +89,22 @@ export default function LyricsViewer() {
 
   React.useEffect(() => {
     window.dispatchEvent(new CustomEvent('ui-visibility-change', { detail: showUI }));
-    return () => {
-      window.dispatchEvent(new CustomEvent('ui-visibility-change', { detail: true }));
-    };
+    return () => { window.dispatchEvent(new CustomEvent('ui-visibility-change', { detail: true })); };
   }, [showUI]);
 
   React.useEffect(() => {
     const updateFont = () => {
-      const savedFont = localStorage.getItem('chord-grid-font');
-      if (savedFont) setSelectedFont(savedFont);
+      const saved = localStorage.getItem('chord-grid-font');
+      if (saved) setSelectedFont(saved);
     };
     updateFont();
     window.addEventListener('chord-grid-font-change', updateFont);
-
-    const updateWatermark = () => {
-      const savedWatermark = localStorage.getItem('chord-grid-watermark');
-      if (savedWatermark) setWatermark(savedWatermark);
-      else setWatermark('');
-    };
-    updateWatermark();
-    window.addEventListener('chord-grid-watermark-change', updateWatermark);
-
+    const updateWm = () => { setWatermark(localStorage.getItem('chord-grid-watermark') || ''); };
+    updateWm();
+    window.addEventListener('chord-grid-watermark-change', updateWm);
     return () => {
       window.removeEventListener('chord-grid-font-change', updateFont);
-      window.removeEventListener('chord-grid-watermark-change', updateWatermark);
+      window.removeEventListener('chord-grid-watermark-change', updateWm);
     };
   }, []);
 
@@ -131,7 +117,6 @@ export default function LyricsViewer() {
   if (authLoading || lyricLoading) {
     return <div className="flex h-screen items-center justify-center text-white">Loading...</div>;
   }
-
   if (!user || !lyric) {
     return (
       <div className="flex h-screen flex-col items-center justify-center text-white">
@@ -143,59 +128,33 @@ export default function LyricsViewer() {
 
   return (
     <div className="min-h-screen bg-bg flex flex-col text-text-primary relative" onClick={() => setShowUI(!showUI)}>
-      
-      {/* Floating Controls */}
+
       <div className={`fixed top-4 left-4 z-40 transition-opacity duration-300 ${showUI ? 'opacity-100 pointer-events-auto' : 'opacity-0 pointer-events-none'}`}>
-        <button 
-          onClick={(e) => { e.stopPropagation(); router.push(lyric.folder_id ? `/lyrics/folder/${lyric.folder_id}` : '/lyrics'); }}
-          className="p-3 text-text-secondary bg-surface border border-border rounded-xl shadow-md hover:text-white hover:bg-surface-raised transition-all"
-          title="Back"
-        >
+        <button onClick={(e) => { e.stopPropagation(); router.push(lyric.folder_id ? `/lyrics/folder/${lyric.folder_id}` : '/lyrics'); }}
+          className="p-3 text-text-secondary bg-surface border border-border rounded-xl shadow-md hover:text-white hover:bg-surface-raised transition-all" title="Back">
           <CornerLeftUp size={20} />
         </button>
       </div>
 
       <div className={`fixed top-4 right-4 z-40 flex items-center space-x-2 transition-opacity duration-300 ${showUI ? 'opacity-100 pointer-events-auto' : 'opacity-0 pointer-events-none'}`}>
-        
-        {/* Edit Button */}
-        <button
-          onClick={(e) => { e.stopPropagation(); router.push(`/lyrics/${lyric.id}/edit`); }}
-          className="w-11 h-11 flex items-center justify-center text-white bg-accent-gradient rounded-xl shadow-md hover:brightness-110 transition-all"
-          title="Edit Lyrics"
-        >
+        <button onClick={(e) => { e.stopPropagation(); router.push(`/lyrics/${lyric.id}/edit`); }}
+          className="w-11 h-11 flex items-center justify-center text-white bg-accent-gradient rounded-xl shadow-md hover:brightness-110 transition-all" title="Edit Lyrics">
           <Edit2 size={18} />
         </button>
-
-        {/* 3-Dot Menu */}
         <div className="relative" onClick={e => e.stopPropagation()}>
-          <button
-            onClick={() => setIsMenuOpen(!isMenuOpen)}
-            className="w-11 h-11 flex items-center justify-center text-text-secondary bg-surface border border-border shadow-md rounded-xl hover:text-white hover:bg-surface-raised transition-all"
-          >
+          <button onClick={() => setIsMenuOpen(!isMenuOpen)}
+            className="w-11 h-11 flex items-center justify-center text-text-secondary bg-surface border border-border shadow-md rounded-xl hover:text-white hover:bg-surface-raised transition-all">
             {isMenuOpen ? <X size={20} /> : <MoreVertical size={20} />}
           </button>
-
           {isMenuOpen && (
             <div className="absolute right-0 top-full mt-4 w-56 bg-surface-raised shadow-popover border border-border rounded-2xl overflow-hidden py-2">
-              <button
-                onClick={() => { setIsMenuOpen(false); setIsFolderPickerOpen(true); }}
-                className="w-full flex items-center px-4 py-3 text-sm font-semibold text-text-secondary hover:bg-white/5 hover:text-white"
-              >
+              <button onClick={() => { setIsMenuOpen(false); setIsFolderPickerOpen(true); }} className="w-full flex items-center px-4 py-3 text-sm font-semibold text-text-secondary hover:bg-white/5 hover:text-white">
                 <FolderIcon size={16} className="mr-3" /> Move to Folder
               </button>
-              <button
-                onClick={() => { setIsMenuOpen(false); window.print(); }}
-                className="w-full flex items-center px-4 py-3 text-sm font-semibold text-text-secondary hover:bg-white/5 hover:text-white"
-              >
+              <button onClick={() => { setIsMenuOpen(false); window.print(); }} className="w-full flex items-center px-4 py-3 text-sm font-semibold text-text-secondary hover:bg-white/5 hover:text-white">
                 <Printer size={16} className="mr-3" /> Export to PDF
               </button>
-              <button
-                onClick={async () => {
-                  setIsMenuOpen(false);
-                  setIsDeleteModalOpen(true);
-                  }}
-                className="w-full flex items-center px-4 py-3 text-sm font-semibold text-red-400 hover:bg-red-500/10 hover:text-red-300"
-              >
+              <button onClick={() => { setIsMenuOpen(false); setIsDeleteModalOpen(true); }} className="w-full flex items-center px-4 py-3 text-sm font-semibold text-red-400 hover:bg-red-500/10 hover:text-red-300">
                 <Trash2 size={16} className="mr-3" /> Delete Lyrics
               </button>
             </div>
@@ -203,55 +162,24 @@ export default function LyricsViewer() {
         </div>
       </div>
 
-      <main 
-        className="flex-1 w-full h-full min-h-screen overflow-hidden cursor-pointer"
+      <main className="flex-1 w-full h-full min-h-screen overflow-hidden cursor-pointer"
         onClick={async (e) => {
-          const nextState = !showUI;
-          setShowUI(nextState);
+          const nextState = !showUI; setShowUI(nextState);
           try {
-            if (!nextState) {
-              if (document.documentElement.requestFullscreen && !document.fullscreenElement) {
-                await document.documentElement.requestFullscreen();
-              }
-            } else {
-              if (document.exitFullscreen && document.fullscreenElement) {
-                await document.exitFullscreen();
-              }
-            }
-          } catch (err) {
-            console.log("Fullscreen API error:", err);
-          }
-        }}
-      >
-        <TransformWrapper
-          initialScale={1}
-          minScale={0.1}
-          maxScale={5}
-          centerOnInit={true}
-          centerZoomedOut={true}
-          wheel={{ step: 0.1 }}
-          pinch={{ step: 5 }}
-          doubleClick={{ disabled: true }}
-        >
-          <TransformComponent 
-            wrapperClass="!w-full !h-screen print:!h-auto" 
-            contentClass="w-max min-w-full min-h-screen print:min-h-0 flex items-start justify-center p-4 sm:p-12 pt-16 sm:pt-24 print:pt-32 pb-24"
-          >
+            if (!nextState) { if (document.documentElement.requestFullscreen && !document.fullscreenElement) await document.documentElement.requestFullscreen(); }
+            else { if (document.exitFullscreen && document.fullscreenElement) await document.exitFullscreen(); }
+          } catch (err) { console.log("Fullscreen API error:", err); }
+        }}>
+        <TransformWrapper initialScale={1} minScale={0.1} maxScale={5} centerOnInit={true} centerZoomedOut={true} wheel={{ step: 0.1 }} pinch={{ step: 5 }} doubleClick={{ disabled: true }}>
+          <TransformComponent wrapperClass="!w-full !h-screen print:!h-auto" contentClass="w-max min-w-full min-h-screen print:min-h-0 flex items-start justify-center p-4 sm:p-12 pt-16 sm:pt-24 print:pt-32 pb-24">
             <LyricsContentWrapper lyric={lyric} showUI={showUI} selectedFont={selectedFont} watermark={watermark} />
           </TransformComponent>
         </TransformWrapper>
       </main>
 
       {isFolderPickerOpen && (
-        <FolderPickerModal
-          isOpen={true}
-          onClose={() => setIsFolderPickerOpen(false)}
-          onMoveHere={(id) => {
-            handleMoveLyrics(id);
-            setIsFolderPickerOpen(false);
-          }}
-          title="Move Lyrics to..."
-        />
+        <FolderPickerModal isOpen={true} onClose={() => setIsFolderPickerOpen(false)}
+          onMoveHere={(id) => { handleMoveLyrics(id); setIsFolderPickerOpen(false); }} title="Move Lyrics to..." />
       )}
 
       {isDeleteModalOpen && (
@@ -261,29 +189,13 @@ export default function LyricsViewer() {
               <Trash2 size={24} className="text-red-500" />
             </div>
             <h3 className="text-xl font-bold text-text-primary mb-3">Delete Lyrics?</h3>
-            <p className="text-sm text-text-secondary mb-4 font-medium px-4">
-              Are you sure you want to delete "{lyric.title || 'Untitled Lyrics'}"?
-            </p>
+            <p className="text-sm text-text-secondary mb-4 font-medium px-4">Are you sure you want to delete "{lyric.title || 'Untitled Lyrics'}"?</p>
             <div className="flex justify-center space-x-3">
-              <button onClick={() => { setIsDeleteModalOpen(false); }} className="px-6 py-2.5 text-sm font-bold text-text-secondary bg-surface border border-border rounded-xl hover:text-white hover:bg-surface-raised transition-all">Cancel</button>
-              <button 
-                onClick={async () => {
-                  await moveToTrash(lyric.id, 'lyrics');
-                  router.push(lyric.folder_id ? `/lyrics/folder/${lyric.folder_id}` : '/lyrics');
-                }}
-                className="px-4 py-2.5 text-sm font-bold text-white bg-accent-gradient rounded-xl shadow-md hover:brightness-110 transition-all"
-              >
-                Move to Trash
-              </button>
-              <button 
-                onClick={async () => {
-                  await deleteEntry(lyric.id, 'lyrics');
-                  router.push(lyric.folder_id ? `/lyrics/folder/${lyric.folder_id}` : '/lyrics');
-                }}
-                className="px-4 py-2.5 text-sm font-bold text-red-500 bg-red-500/10 border border-red-500/20 rounded-xl shadow-md hover:bg-red-500 hover:text-white transition-all"
-              >
-                Delete Permanently
-              </button>
+              <button onClick={() => setIsDeleteModalOpen(false)} className="px-6 py-2.5 text-sm font-bold text-text-secondary bg-surface border border-border rounded-xl hover:text-white hover:bg-surface-raised transition-all">Cancel</button>
+              <button onClick={async () => { await moveToTrash(lyric.id, 'lyrics'); router.push(lyric.folder_id ? `/lyrics/folder/${lyric.folder_id}` : '/lyrics'); }}
+                className="px-4 py-2.5 text-sm font-bold text-white bg-accent-gradient rounded-xl shadow-md hover:brightness-110 transition-all">Move to Trash</button>
+              <button onClick={async () => { await deleteEntry(lyric.id, 'lyrics'); router.push(lyric.folder_id ? `/lyrics/folder/${lyric.folder_id}` : '/lyrics'); }}
+                className="px-4 py-2.5 text-sm font-bold text-red-500 bg-red-500/10 border border-red-500/20 rounded-xl shadow-md hover:bg-red-500 hover:text-white transition-all">Delete Permanently</button>
             </div>
           </div>
         </div>

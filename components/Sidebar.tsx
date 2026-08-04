@@ -5,7 +5,7 @@ import { useAuth } from '@/components/AuthProvider';
 import { supabase } from '@/lib/supabase';
 import { getRecentCharts, createFolder, saveChart, importChart } from '@/lib/storage';
 import { saveLyrics, importLyrics } from '@/lib/lyrics';
-import { X, User, LogOut, Home, Clock, Type, Settings, Plus, Upload, Folder as FolderIcon, FileText, Printer, Trash2, Music } from 'lucide-react';
+import { X, User, LogOut, Home, Clock, Type, Settings, Plus, Upload, Folder as FolderIcon, FileText, Printer, Trash2, Music, Music2 } from 'lucide-react';
 import Link from 'next/link';
 import { useRouter, usePathname } from 'next/navigation';
 
@@ -19,6 +19,7 @@ export function Sidebar({ isOpen, onClose }: { isOpen: boolean; onClose: () => v
   const [folderKind, setFolderKind] = useState<'chart' | 'lyrics'>('chart');
   const fileInputRef = React.useRef<HTMLInputElement>(null);
   const lyricsFileInputRef = React.useRef<HTMLInputElement>(null);
+  const [joinCode, setJoinCode] = useState('');
 
   let currentFolderId: string | null = null;
   if (pathname.startsWith('/folder/')) {
@@ -173,11 +174,52 @@ export function Sidebar({ isOpen, onClose }: { isOpen: boolean; onClose: () => v
               <Music size={18} className="mr-3 text-text-secondary group-hover:text-accent-start" /> Lyrics
             </button>
             <button 
+              onClick={() => { router.push('/perform'); onClose(); }}
+              className="w-full flex items-center px-4 py-3 bg-surface border border-border shadow-md rounded-xl text-sm font-bold text-text-primary hover:text-accent-start hover:bg-surface-raised transition-all group mb-3"
+            >
+              <Music2 size={18} className="mr-3 text-text-secondary group-hover:text-accent-start" /> Perform
+            </button>
+            <button 
               onClick={() => { router.push('/printer'); onClose(); }}
-              className="w-full flex items-center px-4 py-3 bg-surface border border-border shadow-md rounded-xl text-sm font-bold text-text-primary hover:text-accent-start hover:bg-surface-raised transition-all group"
+              className="w-full flex items-center px-4 py-3 bg-surface border border-border shadow-md rounded-xl text-sm font-bold text-text-primary hover:text-accent-start hover:bg-surface-raised transition-all group mb-4"
             >
               <Printer size={18} className="mr-3 text-text-secondary group-hover:text-accent-start" /> Printer
             </button>
+
+            {/* Join Session Section inside Sidebar */}
+            <div className="mt-4 pt-4 border-t border-border/50">
+              <h4 className="text-[10px] font-bold uppercase tracking-widest text-text-secondary mb-2 flex items-center gap-1">
+                <Music2 size={12} className="text-accent-start" /> Join Live Session
+              </h4>
+              <div className="flex gap-2">
+                <input
+                  value={joinCode}
+                  onChange={e => setJoinCode(e.target.value.toUpperCase().replace(/[^A-Z0-9]/g, '').slice(0, 6))}
+                  onKeyDown={e => {
+                    if (e.key === 'Enter' && joinCode.trim().length === 6) {
+                      router.push(`/perform/${joinCode.trim().toUpperCase()}`);
+                      setJoinCode('');
+                      onClose();
+                    }
+                  }}
+                  placeholder="CODE"
+                  className="w-20 px-2 py-1.5 bg-surface-raised border border-border rounded-lg text-text-primary placeholder-text-secondary text-center outline-none focus:border-accent-solid font-mono font-bold text-xs tracking-wider transition-all"
+                />
+                <button
+                  onClick={() => {
+                    if (joinCode.trim().length === 6) {
+                      router.push(`/perform/${joinCode.trim().toUpperCase()}`);
+                      setJoinCode('');
+                      onClose();
+                    }
+                  }}
+                  disabled={joinCode.trim().length !== 6}
+                  className="flex-1 py-1.5 bg-accent-gradient text-white text-xs font-bold rounded-lg disabled:opacity-40 hover:brightness-110 transition-all text-center"
+                >
+                  Join
+                </button>
+              </div>
+            </div>
           </div>
 
           {/* Quick Actions */}

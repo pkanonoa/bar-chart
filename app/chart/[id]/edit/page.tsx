@@ -11,7 +11,8 @@ import { moveEntry } from '@/lib/storage';
 import { FolderPickerModal } from '@/components/FolderPickerModal';
 import { X, Plus, LogOut, Download, Copy, RefreshCw, Cloud, CloudOff, Edit2, Folder as FolderIcon, CornerLeftUp } from 'lucide-react';
 import { ChartData } from '@/lib/chart-types';
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
+import { useSearchParams } from 'next/navigation';
 
 export default function ChartEditor() {
   const { user, loading: authLoading } = useAuth();
@@ -20,6 +21,8 @@ export default function ChartEditor() {
   const chartId = params.id as string;
   
   const { chart, loading: chartLoading, saveStatus, collaborators, updateChart, forceSave } = useChartSync(chartId);
+  const searchParams = useSearchParams();
+  const returnTo = searchParams.get('returnTo');
   const [copied, setCopied] = useState(false);
   const [customText, setCustomText] = useState<string | null>(null);
   const [isFolderPickerOpen, setIsFolderPickerOpen] = useState(false);
@@ -387,6 +390,7 @@ export default function ChartEditor() {
   const totalLines = chart.lines.length;
   const totalBars = chart.lines.reduce((sum, line) => sum + line.blocks.reduce((bSum, block) => bSum + block.bars.length, 0), 0);
 
+
   return (
     <div className="min-h-screen bg-bg flex flex-col text-text-primary relative pb-32">
       
@@ -402,11 +406,11 @@ export default function ChartEditor() {
               <button 
                 onClick={async () => {
                   await forceSave();
-                  router.push(`/chart/${chart.id}`);
+                  router.push(returnTo ?? `/chart/${chart.id}`);
                 }}
                 className="px-4 py-2 text-sm font-bold tracking-widest uppercase text-text-secondary hover:text-white bg-surface border border-border shadow-md rounded-xl hover:bg-surface-raised flex items-center transition-all"
               >
-                <CornerLeftUp size={16} className="mr-2" /> Back to Viewer
+                <CornerLeftUp size={16} className="mr-2" /> {returnTo ? 'Back to Performance' : 'Back to Viewer'}
               </button>
 
               <div className="flex flex-wrap items-center gap-4">

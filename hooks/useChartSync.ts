@@ -3,11 +3,13 @@ import { supabase } from '@/lib/supabase';
 import { ChartData } from '@/lib/chart-types';
 import { readChart, saveChart } from '@/lib/storage';
 
+
 export function useChartSync(chartId: string) {
   const [chart, setChart] = useState<ChartData | null>(null);
   const [loading, setLoading] = useState(true);
   const [saveStatus, setSaveStatus] = useState<'saved' | 'saving' | 'offline'>('saved');
   const [collaborators, setCollaborators] = useState<string[]>([]);
+  const [leaderInfo, setLeaderInfo] = useState<{ name: string; email: string; currentSection: number } | null>(null);
   
   const channelRef = useRef<ReturnType<typeof supabase.channel> | null>(null);
   const saveTimeoutRef = useRef<NodeJS.Timeout | null>(null);
@@ -40,12 +42,25 @@ export function useChartSync(chartId: string) {
         }
       })
       .on('presence', { event: 'sync' }, () => {
-        const state = channel.presenceState();
+        const state = channel.presenceState<any>();
         const users = Object.values(state).flatMap(p => p.map((u: any) => u.email || 'Anonymous'));
         if (isMounted) {
           // Filter out our own email if known
           const others = Array.from(new Set(users)).filter(e => e !== myEmail.current);
           setCollaborators(others);
+
+          // Derive leader from presence
+          let found: { name: string; email: string; currentSection: number } | null = null;
+          for (const presences of Object.values(state)) {
+            for (const p of presences as any[]) {
+              if (p.role === 'leader') {
+                found = { name: p.name || p.email || 'Someone', email: p.email || '', currentSection: p.currentSection ?? 0 };
+                break;
+              }
+            }
+            if (found) break;
+          }
+          setLeaderInfo(found);
         }
       })
       .subscribe(async (status) => {
@@ -125,5 +140,5 @@ export function useChartSync(chartId: string) {
     });
   }, []);
 
-  return { chart, loading, saveStatus, collaborators, updateChart, forceSave };
+  return { chart, loading, saveStatus, collaborators, leaderInfo, channelRef, updateChart, forceSave };
 }
