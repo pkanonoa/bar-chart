@@ -9,6 +9,7 @@ import { transposeChart } from '@/lib/transpose';
 import { ChartRenderer } from '@/components/ChartRenderer';
 import { ChartData } from '@/lib/chart-types';
 import { supabase } from '@/lib/supabase';
+import { useSetlistPrefetch } from '@/hooks/useSetlistPrefetch';
 import { TransformWrapper, TransformComponent, useControls } from 'react-zoom-pan-pinch';
 import {
   X, ChevronLeft, ChevronRight, Users, Radio, RefreshCw, FileText, Music,
@@ -186,10 +187,25 @@ export default function SetlistPerformPage() {
     })();
   }, [authLoading, user, setlistId]);
 
+  // ── Pre-fetch surrounding items ─────────────────────────────────────────
+  const { getFromCache, addToCache } = useSetlistPrefetch(items, songPosition);
+
   // Load song content when position changes
   const loadSongAt = useCallback(async (pos: number, force = false) => {
     const item = items[pos];
     if (!item) return;
+
+    // Try the pre-fetch cache first (skip on force-refresh)
+    if (!force) {
+      const cached = getFromCache(item);
+      if (cached) {
+        if (cached.chart) { setCurrentChart(cached.chart); setCurrentLyrics(null); }
+        else if (cached.lyrics) { setCurrentLyrics(cached.lyrics); setCurrentChart(null); }
+        setContentLoading(false);
+        return;
+      }
+    }
+
     setContentLoading(true);
     setCurrentChart(null);
     setCurrentLyrics(null);
@@ -199,13 +215,15 @@ export default function SetlistPerformPage() {
         let display = chart as ChartData;
         if (item.transpose_override) display = transposeChart(display, item.transpose_override, display.prefer_flats);
         setCurrentChart(display);
+        addToCache(item, { chart: display });
       }
     } else {
       const lyr = await readLyrics(item.item_id);
       setCurrentLyrics(lyr);
+      if (lyr) addToCache(item, { lyrics: lyr });
     }
     setContentLoading(false);
-  }, [items]);
+  }, [items, getFromCache, addToCache]);
 
   useEffect(() => { if (items.length > 0) loadSongAt(songPosition); }, [songPosition, items, loadSongAt]);
 
