@@ -4,13 +4,13 @@ import { useState, useEffect, useRef } from 'react';
 import { useRouter } from 'next/navigation';
 import {
   Folder, Chart, listFolder, createFolder, renameEntry,
-  deleteEntry, moveToTrash, moveEntry, saveChart, searchAll, exportChart, importChart
+  deleteEntry, moveToTrash, moveEntry, saveChart, searchAll, exportChart
 } from '@/lib/storage';
 import { FolderPickerModal } from './FolderPickerModal';
 import { useAuth } from '@/components/AuthProvider';
 import {
   Folder as FolderIcon, FileText, MoreVertical, Search,
-  Plus, Upload, CornerLeftUp, Trash2, Edit2, CornerRightDown, Download, X,
+  Plus, CornerLeftUp, Trash2, Edit2, CornerRightDown, Download, X,
   FolderPlus, FilePlus, Printer
 } from 'lucide-react';
 
@@ -58,7 +58,7 @@ export function FolderBrowser({ folderId, folderName, kind = 'chart' }: Props) {
   const [dropdownHorizontal, setDropdownHorizontal] = useState<'left' | 'right'>('right');
   const dropdownRef = useRef<HTMLDivElement>(null);
 
-  const fileInputRef = useRef<HTMLInputElement>(null);
+
 
   const loadContents = async () => {
     setLoading(true);
@@ -149,17 +149,7 @@ export function FolderBrowser({ folderId, folderName, kind = 'chart' }: Props) {
     }
   };
 
-  const handleImport = async (e: React.ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0];
-    if (!file) return;
-    try {
-      await importChart(file, folderId);
-      loadContents();
-    } catch (err) {
-      alert('Failed to import chart.');
-    }
-    e.target.value = '';
-  };
+
 
   const executeDelete = async (permanent: boolean = false) => {
     if (deleteItem) {
@@ -291,21 +281,18 @@ export function FolderBrowser({ folderId, folderName, kind = 'chart' }: Props) {
 
   return (
     <div className="w-full max-w-7xl mx-auto px-4 pt-[max(env(safe-area-inset-top,2rem),2rem)] pb-8">
-      {/* Header: back + title */}
-      <div className="flex items-center gap-3 mb-5">
-        {folderId && (
+      {/* Back button (only inside subfolders) */}
+      {folderId && (
+        <div className="mb-4">
           <button
             onClick={() => router.push(kind === 'lyrics' ? '/lyrics' : '/')}
-            className="p-2.5 text-text-secondary bg-surface border border-border rounded-xl hover:text-white hover:bg-surface-raised transition-all shrink-0"
+            className="p-2.5 text-text-secondary bg-surface border border-border rounded-xl hover:text-white hover:bg-surface-raised transition-all"
             title="Back"
           >
             <CornerLeftUp size={18} />
           </button>
-        )}
-        <h1 className="text-2xl font-bold text-text-primary tracking-tight">
-          {folderName || (kind === 'lyrics' ? 'Lyrics' : 'Chords')}
-        </h1>
-      </div>
+        </div>
+      )}
 
       {/* Search + action icon buttons on one row */}
       <div className="flex items-center gap-2 mb-8">
@@ -332,14 +319,7 @@ export function FolderBrowser({ folderId, folderName, kind = 'chart' }: Props) {
           <FolderPlus size={18} />
         </button>
 
-        {/* Import icon */}
-        <button
-          onClick={() => fileInputRef.current?.click()}
-          title="Import"
-          className="p-2.5 text-text-secondary bg-surface border border-border rounded-xl hover:text-accent-start hover:bg-surface-raised transition-all shrink-0"
-        >
-          <Upload size={18} />
-        </button>
+
 
         {/* New Chart / New Lyrics — gradient icon + label */}
         <button
@@ -617,14 +597,7 @@ export function FolderBrowser({ folderId, folderName, kind = 'chart' }: Props) {
           </div>
         </div>
       )}
-      {/* Hidden file input for import */}
-      <input
-        ref={fileInputRef}
-        type="file"
-        accept=".json"
-        className="hidden"
-        onChange={handleImport}
-      />
+
     </div>
   );
 }
