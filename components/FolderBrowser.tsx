@@ -308,7 +308,7 @@ export function FolderBrowser({ folderId, folderName, kind = 'chart' }: Props) {
         </button>
 
         {isOpen && (
-          <div className={`absolute ${dropdownHorizontal === 'right' ? 'right-0' : 'left-0'} ${dropdownDirection === 'up' ? 'bottom-full mb-2' : 'top-full mt-2'} w-48 bg-surface-raised rounded-xl shadow-popover z-20 border border-border py-1`}>
+          <div className={`absolute ${dropdownHorizontal === 'right' ? 'right-0' : 'left-0'} ${dropdownDirection === 'up' ? 'bottom-full mb-2' : 'top-full mt-2'} w-48 bg-[#181136] rounded-xl shadow-2xl z-[100] border border-white/15 py-1 backdrop-blur-xl`}>
             <button
               onClick={(e) => { e.stopPropagation(); setActiveDropdown(null); setRenameItem({ id, type, currentName: name }); }}
               className="flex items-center w-full px-4 py-2 text-xs uppercase tracking-widest font-bold text-text-secondary hover:bg-white/5 hover:text-white"
@@ -428,7 +428,7 @@ export function FolderBrowser({ folderId, folderName, kind = 'chart' }: Props) {
                   key={chart.id}
                   className={`bg-surface border rounded-xl p-5 flex flex-col items-center justify-center cursor-pointer group relative transition-all duration-200 select-none ${
                     selectedItems.some(i => i.id === chart.id) ? 'border-accent-solid shadow-md bg-surface-raised before:absolute before:left-0 before:top-0 before:bottom-0 before:w-1 before:bg-accent-gradient before:rounded-l-xl' : 'border-border shadow-sm hover:shadow-hover hover:-translate-y-1'
-                  } ${activeDropdown === chart.id ? 'z-50' : ''}`}
+                  } ${activeDropdown === chart.id ? 'z-40' : ''}`}
                   style={{ touchAction: 'manipulation', WebkitUserSelect: 'none', userSelect: 'none', WebkitTouchCallout: 'none' }}
                   onPointerDown={(e) => handlePointerDown(chart.id, kind, e)}
                   onPointerMove={handlePointerMove}
@@ -455,13 +455,16 @@ export function FolderBrowser({ folderId, folderName, kind = 'chart' }: Props) {
                   <p className="text-sm font-bold text-text-primary text-center w-full truncate">{chart.title}</p>
                   <p className="text-[10px] text-text-secondary mt-1">{new Date(chart.updated_at).toLocaleDateString()}</p>
                   <button
-                    className="absolute bottom-3 right-3 z-10 p-1.5 rounded-full hover:bg-white/5 transition-colors"
+                    className={`absolute bottom-3 right-3 z-10 p-1.5 rounded-full hover:bg-white/10 transition-all ${
+                      chart.is_bookmarked ? 'opacity-100 scale-100' : 'opacity-0 group-hover:opacity-100 scale-90 hover:scale-100'
+                    }`}
                     onClick={(e) => {
                       e.stopPropagation();
                       handleToggleBookmark(chart);
                     }}
+                    title={chart.is_bookmarked ? 'Remove Bookmark' : 'Bookmark Chart'}
                   >
-                    <Star size={16} className={chart.is_bookmarked ? "text-yellow-500 fill-yellow-500" : "text-text-secondary/30 hover:text-yellow-500/70"} />
+                    <Star size={16} className={chart.is_bookmarked ? "text-yellow-400 fill-yellow-400 drop-shadow-[0_0_6px_rgba(250,204,21,0.4)]" : "text-text-secondary/40 hover:text-yellow-400"} />
                   </button>
                 </div>
               ))
@@ -484,7 +487,7 @@ export function FolderBrowser({ folderId, folderName, kind = 'chart' }: Props) {
                     key={folder.id}
                     className={`bg-surface border rounded-xl p-5 flex flex-col items-center justify-center cursor-pointer group relative transition-all duration-200 select-none ${
                       selectedItems.some(i => i.id === folder.id) ? 'border-accent-solid shadow-md bg-surface-raised before:absolute before:left-0 before:top-0 before:bottom-0 before:w-1 before:bg-accent-gradient before:rounded-l-xl' : 'border-border shadow-sm hover:shadow-hover hover:-translate-y-1'
-                    } ${activeDropdown === folder.id ? 'z-50' : ''}`}
+                    } ${activeDropdown === folder.id ? 'z-40' : ''}`}
                     style={{ touchAction: 'manipulation', WebkitUserSelect: 'none', userSelect: 'none', WebkitTouchCallout: 'none' }}
                     onPointerDown={(e) => handlePointerDown(folder.id, 'folder', e)}
                     onPointerMove={handlePointerMove}
@@ -518,7 +521,7 @@ export function FolderBrowser({ folderId, folderName, kind = 'chart' }: Props) {
                     key={chart.id}
                     className={`bg-surface border rounded-xl p-5 flex flex-col items-center justify-center cursor-pointer group relative transition-all duration-200 select-none ${
                       selectedItems.some(i => i.id === chart.id) ? 'border-accent-solid shadow-md bg-surface-raised before:absolute before:left-0 before:top-0 before:bottom-0 before:w-1 before:bg-accent-gradient before:rounded-l-xl' : 'border-border shadow-sm hover:shadow-hover hover:-translate-y-1'
-                    } ${activeDropdown === chart.id ? 'z-50' : ''}`}
+                    } ${activeDropdown === chart.id ? 'z-40' : ''}`}
                     style={{ touchAction: 'manipulation', WebkitUserSelect: 'none', userSelect: 'none', WebkitTouchCallout: 'none' }}
                     onPointerDown={(e) => handlePointerDown(chart.id, kind, e)}
                     onPointerMove={handlePointerMove}
@@ -545,13 +548,16 @@ export function FolderBrowser({ folderId, folderName, kind = 'chart' }: Props) {
                     <p className="text-sm font-bold text-text-primary text-center w-full truncate">{chart.title}</p>
                     <p className="text-[10px] text-text-secondary mt-1">{new Date(chart.updated_at).toLocaleDateString()}</p>
                     <button
-                      className="absolute bottom-3 right-3 z-10 p-1.5 rounded-full hover:bg-white/5 transition-colors"
+                      className={`absolute bottom-3 right-3 z-10 p-1.5 rounded-full hover:bg-white/10 transition-all ${
+                        chart.is_bookmarked ? 'opacity-100 scale-100' : 'opacity-0 group-hover:opacity-100 scale-90 hover:scale-100'
+                      }`}
                       onClick={(e) => {
                         e.stopPropagation();
                         handleToggleBookmark(chart);
                       }}
+                      title={chart.is_bookmarked ? 'Remove Bookmark' : 'Bookmark Chart'}
                     >
-                      <Star size={16} className={chart.is_bookmarked ? "text-yellow-500 fill-yellow-500" : "text-text-secondary/30 hover:text-yellow-500/70"} />
+                      <Star size={16} className={chart.is_bookmarked ? "text-yellow-400 fill-yellow-400 drop-shadow-[0_0_6px_rgba(250,204,21,0.4)]" : "text-text-secondary/40 hover:text-yellow-400"} />
                     </button>
                   </div>
                 ))}
