@@ -4,6 +4,7 @@ import { createContext, useContext, useEffect, useState } from 'react';
 import { supabase } from '@/lib/supabase';
 import { User } from '@supabase/supabase-js';
 import { useRouter, usePathname } from 'next/navigation';
+import { syncAllOffline } from '@/lib/storage';
 
 interface AuthContextType {
   user: User | null;
@@ -90,7 +91,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
           setUser(session.user);
           setIsGuest(false);
           // Pre-cache all user songs in background for offline use
-          import('@/lib/storage').then(({ syncAllOffline }) => syncAllOffline());
+          syncAllOffline().catch(() => {});
         } else {
           setUser(null);
         }

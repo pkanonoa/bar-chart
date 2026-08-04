@@ -4,6 +4,8 @@ import React, { useState, useEffect } from 'react';
 import { X, Type, Palette, Users, Info, Terminal, BookOpen, Droplet, CloudDownload, CheckCircle2, RefreshCw } from 'lucide-react';
 import { Header } from '@/components/Header';
 import { useRouter } from 'next/navigation';
+import { supabase } from '@/lib/supabase';
+import { syncAllOffline } from '@/lib/storage';
 
 export default function SettingsPage() {
   const router = useRouter();
@@ -26,7 +28,6 @@ export default function SettingsPage() {
       const fetchUserCount = async () => {
         setIsLoadingCount(true);
         try {
-          const { supabase } = await import('@/lib/supabase');
           // Call our custom RPC function
           const { data, error } = await supabase.rpc('get_user_count');
           if (error) throw error;
@@ -196,7 +197,6 @@ export default function SettingsPage() {
                         setSyncingOffline(true);
                         setSyncResult(null);
                         try {
-                          const { syncAllOffline } = await import('@/lib/storage');
                           const res = await syncAllOffline();
                           setSyncResult(`Successfully downloaded ${res.chartsCount} charts, ${res.lyricsCount} lyrics, and ${res.foldersCount} folders to local storage!`);
                         } catch (err) {

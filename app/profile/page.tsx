@@ -1,6 +1,6 @@
 'use client';
 
-import React from 'react';
+import React, { useEffect } from 'react';
 import { useAuth } from '@/components/AuthProvider';
 import { useRouter } from 'next/navigation';
 import { Header } from '@/components/Header';
@@ -11,13 +11,21 @@ export default function ProfilePage() {
   const { user, loading, signOut } = useAuth();
   const router = useRouter();
 
-  if (loading) {
-    return <div className="flex h-screen items-center justify-center text-white">Loading...</div>;
-  }
+  useEffect(() => {
+    if (!loading && !user) {
+      router.push('/auth');
+    }
+  }, [user, loading, router]);
 
-  if (!user) {
-    router.push('/auth');
-    return null;
+  if (loading || !user) {
+    return (
+      <div className="min-h-screen bg-bg flex flex-col">
+        <Header />
+        <div className="flex-1 flex items-center justify-center">
+          <div className="w-8 h-8 rounded-full border-2 border-accent-start border-t-transparent animate-spin" />
+        </div>
+      </div>
+    );
   }
 
   const handleLogout = async () => {
