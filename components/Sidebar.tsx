@@ -3,9 +3,9 @@
 import React, { useState, useEffect } from 'react';
 import { useAuth } from '@/components/AuthProvider';
 import { supabase } from '@/lib/supabase';
-import { getRecentCharts, createFolder, saveChart, importChart } from '@/lib/storage';
-import { saveLyrics, importLyrics } from '@/lib/lyrics';
-import { X, User, LogOut, Home, Clock, Type, Settings, Plus, Upload, Folder as FolderIcon, FileText, Printer, Trash2, Music, Music2, ListMusic } from 'lucide-react';
+import { getRecentCharts, createFolder, saveChart } from '@/lib/storage';
+import { saveLyrics } from '@/lib/lyrics';
+import { X, User, LogOut, Home, Clock, Type, Settings, Plus, Folder as FolderIcon, FileText, Printer, Trash2, Music, Music2, ListMusic } from 'lucide-react';
 import Link from 'next/link';
 import { useRouter, usePathname } from 'next/navigation';
 
@@ -17,8 +17,6 @@ export function Sidebar({ isOpen, onClose }: { isOpen: boolean; onClose: () => v
   const [selectedFont, setSelectedFont] = useState('system');
   const [createFolderModal, setCreateFolderModal] = useState(false);
   const [folderKind, setFolderKind] = useState<'chart' | 'lyrics'>('chart');
-  const fileInputRef = React.useRef<HTMLInputElement>(null);
-  const lyricsFileInputRef = React.useRef<HTMLInputElement>(null);
   const [joinCode, setJoinCode] = useState('');
 
   let currentFolderId: string | null = null;
@@ -85,39 +83,7 @@ export function Sidebar({ isOpen, onClose }: { isOpen: boolean; onClose: () => v
     onClose();
   };
 
-  const handleImport = async (e: React.ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0];
-    if (!file) return;
-    try {
-      await importChart(file, currentFolderId);
-      if (pathname === '/' || pathname.startsWith('/folder/')) {
-        window.dispatchEvent(new Event('refresh-folder'));
-      } else {
-        router.push(currentFolderId ? `/folder/${currentFolderId}` : '/');
-      }
-    } catch (err) {
-      alert('Failed to import chart.');
-    }
-    e.target.value = '';
-    onClose();
-  };
 
-  const handleImportLyrics = async (e: React.ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0];
-    if (!file) return;
-    try {
-      await importLyrics(file, currentFolderId);
-      if (pathname === '/lyrics' || pathname.startsWith('/lyrics/folder/')) {
-        window.dispatchEvent(new Event('refresh-folder'));
-      } else {
-        router.push(currentFolderId ? `/lyrics/folder/${currentFolderId}` : '/lyrics');
-      }
-    } catch (err) {
-      alert('Failed to import lyrics.');
-    }
-    e.target.value = '';
-    onClose();
-  };
 
   return (
     <>
@@ -248,15 +214,7 @@ export function Sidebar({ isOpen, onClose }: { isOpen: boolean; onClose: () => v
               </button>
             </div>
             
-            <input type="file" ref={fileInputRef} onChange={handleImport} accept=".json" className="hidden" />
-            <button onClick={() => fileInputRef.current?.click()} className="w-full flex items-center justify-center p-3 bg-surface border border-border shadow-sm hover:bg-surface-raised rounded-xl text-text-secondary hover:text-white transition-all text-xs font-bold mb-3">
-              <Upload size={16} className="mr-2" /> Import Chart JSON
-            </button>
 
-            <input type="file" ref={lyricsFileInputRef} onChange={handleImportLyrics} accept=".json,.txt,.lyrics" className="hidden" />
-            <button onClick={() => lyricsFileInputRef.current?.click()} className="w-full flex items-center justify-center p-3 bg-surface border border-border shadow-sm hover:bg-surface-raised rounded-xl text-text-secondary hover:text-white transition-all text-xs font-bold">
-              <Upload size={16} className="mr-2" /> Import Lyrics
-            </button>
           </div>
 
           {/* Recent Charts */}

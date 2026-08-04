@@ -291,82 +291,65 @@ export function FolderBrowser({ folderId, folderName, kind = 'chart' }: Props) {
 
   return (
     <div className="w-full max-w-7xl mx-auto px-4 pt-[max(env(safe-area-inset-top,2rem),2rem)] pb-8">
-      {/* Header Actions */}
-      <div className="flex items-center justify-between mb-8 gap-4 flex-wrap">
-        {/* Left: icon + title + subtitle */}
-        <div className="flex items-center gap-4">
-          {folderId && (
-            <button
-              onClick={() => router.push(kind === 'lyrics' ? '/lyrics' : '/')}
-              className="p-3 text-text-secondary bg-surface border border-border rounded-xl hover:text-white hover:bg-surface-raised transition-all shrink-0"
-              title="Back"
-            >
-              <CornerLeftUp size={20} />
-            </button>
-          )}
-          <div className="flex items-center gap-3">
-            <div className="w-12 h-12 rounded-2xl bg-surface border border-border flex items-center justify-center shrink-0">
-              {kind === 'lyrics'
-                ? <FileText size={22} className="text-accent-start" />
-                : <FolderIcon size={22} className="text-accent-start" />
-              }
-            </div>
-            <div>
-              <h1 className="text-2xl sm:text-3xl font-bold text-text-primary tracking-tight leading-none">
-                {folderName || (kind === 'lyrics' ? 'Lyrics' : 'Chords')}
-              </h1>
-              <p className="text-xs text-text-secondary mt-0.5">
-                {kind === 'lyrics'
-                  ? 'Your lyric sheets and song words'
-                  : 'Your chord charts and song sheets'}
-              </p>
-            </div>
-          </div>
-        </div>
-
-        {/* Right: action buttons */}
-        <div className="flex items-center gap-2 flex-wrap">
-          {/* New Folder */}
+      {/* Header: back + title */}
+      <div className="flex items-center gap-3 mb-5">
+        {folderId && (
           <button
-            onClick={handleCreateFolder}
-            className="flex items-center gap-2 px-4 py-2.5 bg-surface border border-border text-text-primary text-sm font-bold rounded-xl hover:bg-surface-raised hover:text-accent-start transition-all"
+            onClick={() => router.push(kind === 'lyrics' ? '/lyrics' : '/')}
+            className="p-2.5 text-text-secondary bg-surface border border-border rounded-xl hover:text-white hover:bg-surface-raised transition-all shrink-0"
+            title="Back"
           >
-            <FolderPlus size={16} />
-            <span className="hidden sm:inline">New Folder</span>
+            <CornerLeftUp size={18} />
           </button>
-
-          {/* Import */}
-          <button
-            onClick={() => fileInputRef.current?.click()}
-            className="flex items-center gap-2 px-4 py-2.5 bg-surface border border-border text-text-primary text-sm font-bold rounded-xl hover:bg-surface-raised hover:text-accent-start transition-all"
-          >
-            <Upload size={16} />
-            <span className="hidden sm:inline">Import</span>
-          </button>
-
-          {/* New Chart / New Lyrics — primary gradient button */}
-          <button
-            onClick={handleCreateChart}
-            className="flex items-center gap-2 px-5 py-2.5 bg-accent-gradient text-white text-sm font-bold rounded-xl shadow-md hover:brightness-110 transition-all"
-          >
-            <FilePlus size={16} />
-            <span>New {kind === 'lyrics' ? 'Lyrics' : 'Chart'}</span>
-          </button>
-        </div>
+        )}
+        <h1 className="text-2xl font-bold text-text-primary tracking-tight">
+          {folderName || (kind === 'lyrics' ? 'Lyrics' : 'Chords')}
+        </h1>
       </div>
 
-      {/* Search Bar */}
-      <div className="relative mb-8 max-w-md">
-        <div className="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none">
-          <Search className="h-5 w-5 text-text-secondary" />
+      {/* Search + action icon buttons on one row */}
+      <div className="flex items-center gap-2 mb-8">
+        {/* Search */}
+        <div className="relative flex-1">
+          <div className="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none">
+            <Search className="h-4 w-4 text-text-secondary" />
+          </div>
+          <input
+            type="text"
+            className="block w-full pl-10 pr-4 py-2.5 bg-surface border border-border rounded-xl text-sm text-text-primary placeholder-text-secondary focus:outline-none focus:border-accent-solid transition-all font-medium"
+            placeholder={folderId ? 'Search in folder…' : kind === 'lyrics' ? 'Search lyrics…' : 'Search charts…'}
+            value={searchQuery}
+            onChange={(e) => setSearchQuery(e.target.value)}
+          />
         </div>
-        <input
-          type="text"
-          className="block w-full pl-12 pr-4 py-3 bg-surface border border-border rounded-xl leading-5 text-text-primary placeholder-text-secondary focus:outline-none focus:border-accent-solid transition-all font-medium shadow-inner"
-          placeholder={folderId ? "Search in this folder..." : "Search all charts..."}
-          value={searchQuery}
-          onChange={(e) => setSearchQuery(e.target.value)}
-        />
+
+        {/* New Folder icon */}
+        <button
+          onClick={handleCreateFolder}
+          title="New Folder"
+          className="p-2.5 text-text-secondary bg-surface border border-border rounded-xl hover:text-accent-start hover:bg-surface-raised transition-all shrink-0"
+        >
+          <FolderPlus size={18} />
+        </button>
+
+        {/* Import icon */}
+        <button
+          onClick={() => fileInputRef.current?.click()}
+          title="Import"
+          className="p-2.5 text-text-secondary bg-surface border border-border rounded-xl hover:text-accent-start hover:bg-surface-raised transition-all shrink-0"
+        >
+          <Upload size={18} />
+        </button>
+
+        {/* New Chart / New Lyrics — gradient icon + label */}
+        <button
+          onClick={handleCreateChart}
+          title={kind === 'lyrics' ? 'New Lyrics' : 'New Chart'}
+          className="flex items-center gap-1.5 px-3 py-2.5 bg-accent-gradient text-white text-xs font-bold rounded-xl shadow-md hover:brightness-110 transition-all shrink-0"
+        >
+          <FilePlus size={16} />
+          <span className="hidden sm:inline">{kind === 'lyrics' ? 'New Lyrics' : 'New Chart'}</span>
+        </button>
       </div>
 
 
