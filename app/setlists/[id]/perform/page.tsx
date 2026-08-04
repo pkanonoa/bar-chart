@@ -11,10 +11,10 @@ import { ChartData } from '@/lib/chart-types';
 import { supabase } from '@/lib/supabase';
 import { TransformWrapper, TransformComponent, useControls } from 'react-zoom-pan-pinch';
 import {
-  X, ChevronLeft, ChevronRight, Users, Radio, RefreshCw,
+  X, ChevronLeft, ChevronRight, Users, Radio, RefreshCw, FileText, Music,
 } from 'lucide-react';
 
-// ─── Setlist Performance Session Hook ─────────────────────────────────────────
+// ─── Setlist Session Hook ─────────────────────────────────────────────────────
 
 type PerfMode = 'leader' | 'follower' | 'loading';
 
@@ -42,13 +42,10 @@ function useSetlistSession(setlistId: string, isLeaderDevice: boolean) {
 
   useEffect(() => {
     isMountedRef.current = true;
-
     const init = async () => {
       const { data: { user } } = await supabase.auth.getUser();
       if (!isMountedRef.current) return;
-      if (user) {
-        myNameRef.current = user.email?.split('@')[0] ?? 'Anonymous';
-      }
+      if (user) myNameRef.current = user.email?.split('@')[0] ?? 'Anonymous';
 
       const channel = supabase.channel(`setlist-${setlistId}`);
       channelRef.current = channel;
@@ -59,9 +56,6 @@ function useSetlistSession(setlistId: string, isLeaderDevice: boolean) {
           const pos = payload?.position ?? 0;
           setSongPosition(pos);
           positionRef.current = pos;
-          if (isFollowingRef.current) {
-            window.dispatchEvent(new CustomEvent('setlist-navigate', { detail: { position: pos } }));
-          }
         })
         .on('broadcast', { event: 'session-end' }, () => {
           if (!isMountedRef.current) return;
@@ -90,7 +84,6 @@ function useSetlistSession(setlistId: string, isLeaderDevice: boolean) {
           }
         });
     };
-
     init();
     return () => {
       isMountedRef.current = false;
@@ -115,46 +108,33 @@ function useSetlistSession(setlistId: string, isLeaderDevice: boolean) {
     channelRef.current = null;
   }, []);
 
-  const stopFollowing = useCallback(() => {
-    setIsFollowing(false);
-    isFollowingRef.current = false;
-  }, []);
-
+  const stopFollowing = useCallback(() => { setIsFollowing(false); isFollowingRef.current = false; }, []);
   const resumeFollowing = useCallback(() => {
     setIsFollowing(true);
     isFollowingRef.current = true;
-    window.dispatchEvent(new CustomEvent('setlist-navigate', { detail: { position: positionRef.current } }));
+    setSongPosition(positionRef.current);
   }, []);
 
   return { mode, songPosition, leaderName, followerCount, isFollowing, goTo, endSession, stopFollowing, resumeFollowing };
 }
 
-// ─── Inner chart wrapper (zoom) ───────────────────────────────────────────────
+// ─── Chart zoom wrapper ───────────────────────────────────────────────────────
 
-function ChartWrapper({ chart }: { chart: ChartData }) {
+function ChartWrapper({ chart, songKey }: { chart: ChartData; songKey: string }) {
   const { zoomToElement } = useControls();
   useEffect(() => {
     let id: any;
-    const fit = () => {
-      clearTimeout(id);
-      id = setTimeout(() => zoomToElement('setlist-chart-card', undefined, 0), 150);
-    };
+    const fit = () => { clearTimeout(id); id = setTimeout(() => zoomToElement('perf-chart-card', undefined, 0), 100); };
     fit();
     window.addEventListener('resize', fit);
     window.addEventListener('orientationchange', fit);
     return () => { clearTimeout(id); window.removeEventListener('resize', fit); window.removeEventListener('orientationchange', fit); };
-  }, [zoomToElement]);
+  }, [zoomToElement, songKey]);
 
-  useEffect(() => {
-    const handler = () => zoomToElement('setlist-chart-card', undefined, 250);
-    window.addEventListener('setlist-navigate', handler);
-    return () => window.removeEventListener('setlist-navigate', handler);
-  }, [zoomToElement]);
-
-  return <ChartRenderer chart={chart} id="setlist-chart-card" />;
+  return <ChartRenderer chart={chart} id="perf-chart-card" />;
 }
 
-// ─── Main page ────────────────────────────────────────────────────────────────
+// ─── Main Page ────────────────────────────────────────────────────────────────
 
 export default function SetlistPerformPage() {
   const { user, loading: authLoading } = useAuth();
@@ -166,30 +146,23 @@ export default function SetlistPerformPage() {
   const [setlistName, setSetlistName] = useState('');
   const [loading, setLoading] = useState(true);
   const [sessionEnded, setSessionEnded] = useState(false);
-  const [showHeader, setShowHeader] = useState(true);
-  const headerTimerRef = useRef<any>(null);
 
-  // Current song content
   const [currentChart, setCurrentChart] = useState<ChartData | null>(null);
   const [currentLyrics, setCurrentLyrics] = useState<any | null>(null);
   const [contentLoading, setContentLoading] = useState(false);
 
-  // Font
-  const [selectedFont, setSelectedFont] = useState('system');
-  useEffect(() => {
-    const f = localStorage.getItem('chord-grid-font');
-    if (f) setSelectedFont(f);
-  }, []);
+  const tabsRef = useRef<HTMLDivElement>(null);
+  const activeTabRef = useRef<HTMLButtonElement>(null);
 
-  // Determine leader vs follower
+  const [selectedFont, setSelectedFont] = useState('system');
+  useEffect(() => { const f = localStorage.getItem('chord-grid-font'); if (f) setSelectedFont(f); }, []);
+
   const isLeaderDevice = typeof window !== 'undefined'
     ? !!sessionStorage.getItem(`setlist-leader-${setlistId}`)
     : false;
 
-  const {
-    mode, songPosition, leaderName, followerCount,
-    isFollowing, goTo, endSession, stopFollowing, resumeFollowing,
-  } = useSetlistSession(setlistId, isLeaderDevice);
+  const { mode, songPosition, leaderName, followerCount, isFollowing, goTo, endSession, stopFollowing, resumeFollowing } =
+    useSetlistSession(setlistId, isLeaderDevice);
 
   const isLeader = mode === 'leader';
 
@@ -207,7 +180,7 @@ export default function SetlistPerformPage() {
     })();
   }, [authLoading, user, setlistId]);
 
-  // Load current song content
+  // Load song content when position changes
   const loadSongAt = useCallback(async (pos: number, force = false) => {
     const item = items[pos];
     if (!item) return;
@@ -218,9 +191,7 @@ export default function SetlistPerformPage() {
       const chart = await readChart(item.item_id, force);
       if (chart) {
         let display = chart as ChartData;
-        if (item.transpose_override) {
-          display = transposeChart(display, item.transpose_override, display.prefer_flats);
-        }
+        if (item.transpose_override) display = transposeChart(display, item.transpose_override, display.prefer_flats);
         setCurrentChart(display);
       }
     } else {
@@ -232,16 +203,14 @@ export default function SetlistPerformPage() {
 
   useEffect(() => { if (items.length > 0) loadSongAt(songPosition); }, [songPosition, items, loadSongAt]);
 
-  // Header auto-hide
-  const bumpHeader = useCallback(() => {
-    setShowHeader(true);
-    clearTimeout(headerTimerRef.current);
-    headerTimerRef.current = setTimeout(() => setShowHeader(false), 4000);
-  }, []);
+  // Scroll active tab into view
+  useEffect(() => {
+    if (activeTabRef.current && tabsRef.current) {
+      activeTabRef.current.scrollIntoView({ behavior: 'smooth', block: 'nearest', inline: 'center' });
+    }
+  }, [songPosition]);
 
-  useEffect(() => { bumpHeader(); return () => clearTimeout(headerTimerRef.current); }, [bumpHeader]);
-
-  // Session end handler
+  // Session end
   useEffect(() => {
     const handler = () => setSessionEnded(true);
     window.addEventListener('setlist-session-end', handler);
@@ -253,7 +222,7 @@ export default function SetlistPerformPage() {
     if (!isLeader) return;
     const handler = (e: KeyboardEvent) => {
       if (e.key === 'ArrowRight' || e.key === 'PageDown') goTo(Math.min(songPosition + 1, items.length - 1));
-      if (e.key === 'ArrowLeft' || e.key === 'PageUp') goTo(Math.max(songPosition - 1, 0));
+      if (e.key === 'ArrowLeft'  || e.key === 'PageUp')   goTo(Math.max(songPosition - 1, 0));
     };
     window.addEventListener('keydown', handler);
     return () => window.removeEventListener('keydown', handler);
@@ -267,15 +236,14 @@ export default function SetlistPerformPage() {
 
   const currentItem = items[songPosition];
 
+  // ── Special screens ───────────────────────────────────────────────────────
+
   if (sessionEnded) {
     return (
       <div className="min-h-screen bg-bg flex flex-col items-center justify-center text-text-primary gap-4">
         <Radio size={40} className="text-accent-start opacity-50" />
         <h2 className="text-2xl font-bold">Session ended</h2>
-        <button
-          onClick={() => router.push(`/setlists/${setlistId}`)}
-          className="px-6 py-3 bg-accent-gradient text-white font-bold rounded-xl shadow-md hover:brightness-110 transition-all"
-        >
+        <button onClick={() => router.push(`/setlists/${setlistId}`)} className="px-6 py-3 bg-accent-gradient text-white font-bold rounded-xl shadow-md hover:brightness-110 transition-all">
           Back to Setlist
         </button>
       </div>
@@ -289,142 +257,177 @@ export default function SetlistPerformPage() {
         <p className="text-sm text-text-secondary">
           {mode === 'loading' && !isLeaderDevice ? 'Waiting for leader to join…' : 'Loading…'}
         </p>
-        <button onClick={() => router.push(`/setlists/${setlistId}`)} className="text-xs text-text-secondary underline mt-2">
-          Cancel
-        </button>
+        <button onClick={() => router.push(`/setlists/${setlistId}`)} className="text-xs text-text-secondary underline mt-2">Cancel</button>
       </div>
     );
   }
 
+  // ── Main layout ───────────────────────────────────────────────────────────
+
   return (
-    <div
-      className="min-h-screen bg-bg flex flex-col text-text-primary relative overflow-hidden"
-      onClick={bumpHeader}
-    >
-      {/* Auto-hiding header */}
-      <div className={`fixed top-0 left-0 right-0 z-50 flex items-center justify-between px-4 py-3 bg-bg/80 backdrop-blur-md border-b border-border/50 transition-all duration-300 ${showHeader ? 'translate-y-0 opacity-100' : '-translate-y-full opacity-0'}`}>
-        <div className="flex items-center gap-3 min-w-0">
+    <div className="min-h-screen bg-bg flex flex-col text-text-primary">
+
+      {/* ── Fixed top bar ───────────────────────────────────────────────── */}
+      <div className="fixed top-0 left-0 right-0 z-50 flex flex-col bg-surface/90 backdrop-blur-xl border-b border-border">
+
+        {/* Row 1: setlist name + controls */}
+        <div className="flex items-center gap-3 px-3 py-2.5">
           <button
-            onClick={e => { e.stopPropagation(); isLeader ? handleEndSession() : router.push(`/setlists/${setlistId}`); }}
-            className="p-2 text-text-secondary hover:text-white bg-surface border border-border rounded-lg transition-all shrink-0"
+            onClick={() => isLeader ? handleEndSession() : router.push(`/setlists/${setlistId}`)}
+            className="p-2 text-text-secondary hover:text-white bg-surface-raised border border-border rounded-lg transition-all shrink-0"
           >
-            <X size={18} />
+            <X size={16} />
           </button>
-          <div className="min-w-0">
+
+          <div className="flex-1 min-w-0">
             <p className="text-xs font-bold text-text-primary truncate">{setlistName}</p>
             <p className="text-[10px] text-text-secondary">
               {isLeader
-                ? <span className="flex items-center gap-1"><Users size={10} /> {followerCount} follower{followerCount !== 1 ? 's' : ''}</span>
-                : <span>Following {leaderName}</span>
+                ? `${followerCount} follower${followerCount !== 1 ? 's' : ''}`
+                : `Following ${leaderName}`
               }
             </p>
           </div>
+
+          <div className="flex items-center gap-1.5 shrink-0">
+            {/* Transpose badge */}
+            {currentItem?.transpose_override !== null && currentItem?.transpose_override !== undefined && currentItem.item_type === 'chart' && (
+              <span className="text-[9px] font-bold px-1.5 py-0.5 rounded bg-accent-gradient/15 text-accent-start border border-accent-solid/20">
+                {currentItem.transpose_override > 0 ? '+' : ''}{currentItem.transpose_override}
+              </span>
+            )}
+            {/* Follower refresh */}
+            {!isLeader && (
+              <button
+                onClick={() => loadSongAt(songPosition, true)}
+                className="p-1.5 text-text-secondary hover:text-white bg-surface-raised border border-border rounded-lg transition-all"
+              >
+                <RefreshCw size={14} className={contentLoading ? 'animate-spin' : ''} />
+              </button>
+            )}
+            {/* Follower: stop following */}
+            {!isLeader && isFollowing && (
+              <button onClick={stopFollowing} className="px-2 py-1 text-[9px] font-bold text-text-secondary border border-border rounded-lg hover:text-white transition-all">
+                Browse
+              </button>
+            )}
+            {/* End session (leader) */}
+            {isLeader && (
+              <button onClick={handleEndSession} className="px-2 py-1 text-[9px] font-bold text-red-400 border border-red-500/30 bg-red-500/10 rounded-lg hover:bg-red-500 hover:text-white transition-all">
+                End
+              </button>
+            )}
+          </div>
         </div>
 
-        <div className="flex items-center gap-2 shrink-0">
-          {/* Song counter */}
-          <div className="px-3 py-1.5 bg-surface border border-border rounded-xl text-xs font-bold text-text-secondary">
-            Song {songPosition + 1} of {items.length}
-            {currentItem && <span className="text-text-primary ml-1">· {currentItem.title}</span>}
-          </div>
+        {/* Row 2: Song tabs (always visible) */}
+        <div
+          ref={tabsRef}
+          className="flex items-end overflow-x-auto gap-1 px-2"
+          style={{ scrollbarWidth: 'none', msOverflowStyle: 'none' }}
+        >
+          {items.map((item, idx) => {
+            const active = idx === songPosition;
+            const Icon = item.item_type === 'chart' ? FileText : Music;
+            const canClick = isLeader || !isFollowing;
 
-          {/* Follower refresh */}
-          {!isLeader && (
-            <button
-              onClick={e => { e.stopPropagation(); loadSongAt(songPosition, true); }}
-              className="p-2 text-text-secondary hover:text-white bg-surface border border-border rounded-lg transition-all"
-              title="Refresh current song"
-            >
-              <RefreshCw size={16} className={contentLoading ? 'animate-spin' : ''} />
-            </button>
-          )}
-
-          {/* Transpose label */}
-          {currentItem?.transpose_override !== null && currentItem?.transpose_override !== undefined && currentItem.item_type === 'chart' && (
-            <span className="text-[10px] font-bold px-2 py-1 bg-accent-gradient/15 text-accent-start border border-accent-solid/20 rounded-lg">
-              Setlist: {currentItem.transpose_override > 0 ? '+' : ''}{currentItem.transpose_override}
-            </span>
-          )}
-
-          {isLeader && (
-            <button
-              onClick={e => { e.stopPropagation(); handleEndSession(); }}
-              className="px-3 py-1.5 text-xs font-bold text-red-400 border border-red-500/30 bg-red-500/10 rounded-lg hover:bg-red-500 hover:text-white transition-all"
-            >
-              End
-            </button>
-          )}
+            return (
+              <button
+                key={item.id}
+                ref={active ? activeTabRef : undefined}
+                disabled={!canClick}
+                onClick={() => {
+                  if (isLeader) goTo(idx);
+                  else { stopFollowing(); /* local only for follower */ }
+                }}
+                className={`
+                  relative flex items-center gap-1.5 px-3 py-2 text-[11px] font-bold
+                  rounded-t-xl border border-b-0 transition-all duration-150
+                  whitespace-nowrap shrink-0 max-w-[150px]
+                  ${active
+                    ? 'bg-bg border-border text-text-primary shadow-[0_-2px_10px_rgba(0,0,0,0.4)] z-10 -mb-px pb-[calc(0.5rem+1px)]'
+                    : canClick
+                      ? 'bg-surface/40 border-transparent text-text-secondary hover:text-text-primary hover:bg-surface/80 cursor-pointer'
+                      : 'bg-surface/20 border-transparent text-text-secondary/50 cursor-default'
+                  }
+                `}
+              >
+                {/* Active accent line */}
+                {active && <span className="absolute top-0 left-2 right-2 h-[2px] rounded-full bg-accent-gradient" />}
+                <span className="text-[9px] font-black opacity-40 shrink-0">{idx + 1}</span>
+                <Icon size={11} className={active ? 'text-accent-start shrink-0' : 'shrink-0'} />
+                <span className="truncate">{item.title || 'Untitled'}</span>
+                {item.transpose_override !== null && item.transpose_override !== undefined && item.item_type === 'chart' && (
+                  <span className="text-[8px] font-black px-0.5 rounded bg-accent-gradient/20 text-accent-start shrink-0">
+                    {item.transpose_override > 0 ? '+' : ''}{item.transpose_override}
+                  </span>
+                )}
+              </button>
+            );
+          })}
+          <div className="w-2 shrink-0" />
         </div>
       </div>
 
-      {/* Content */}
-      <div className="flex-1 w-full">
+      {/* ── Content area (padded below fixed header) ─────────────────────── */}
+      {/* Header height: ~row1(52px) + ~row2(40px) = ~92px */}
+      <div className="flex-1 pt-[92px]">
         {contentLoading && (
-          <div className="absolute inset-0 flex items-center justify-center z-10">
+          <div className="flex items-center justify-center h-[50vh]">
             <div className="w-8 h-8 rounded-full border-2 border-accent-start border-t-transparent animate-spin" />
           </div>
         )}
 
-        {currentItem?.item_type === 'chart' && currentChart && (
+        {!contentLoading && currentItem?.item_type === 'chart' && currentChart && (
           <TransformWrapper
-            initialScale={1}
-            minScale={0.2}
-            maxScale={4}
+            key={`chart-${songPosition}`}
+            initialScale={1} minScale={0.2} maxScale={4}
             centerOnInit
             doubleClick={{ disabled: false }}
           >
             <TransformComponent
-              wrapperStyle={{ width: '100vw', height: '100vh' }}
-              contentStyle={{ padding: '80px 24px 120px' }}
+              wrapperStyle={{ width: '100vw', height: 'calc(100vh - 92px)' }}
+              contentStyle={{ padding: '32px 24px 100px' }}
             >
-              <ChartWrapper chart={currentChart} />
+              <ChartWrapper chart={currentChart} songKey={`${songPosition}`} />
             </TransformComponent>
           </TransformWrapper>
         )}
 
-        {currentItem?.item_type === 'lyrics' && currentLyrics && (
-          <div className="pt-20 pb-32 px-6 max-w-3xl mx-auto">
+        {!contentLoading && currentItem?.item_type === 'lyrics' && currentLyrics && (
+          <div className="px-6 py-8 pb-28 max-w-3xl mx-auto">
             <h1 className="text-3xl font-bold mb-6 text-text-primary">{currentLyrics.title}</h1>
-            {currentItem.notes && (
-              <p className="text-sm italic text-text-secondary mb-4">{currentItem.notes}</p>
-            )}
-            <pre
-              className="font-sans text-sm leading-relaxed whitespace-pre-wrap text-text-primary"
+            {currentItem.notes && <p className="text-sm italic text-text-secondary mb-4">{currentItem.notes}</p>}
+            <pre className="font-sans text-sm leading-relaxed whitespace-pre-wrap text-text-primary"
               style={selectedFont !== 'system' ? { fontFamily: selectedFont } : {}}
-            >
-              {currentLyrics.body}
-            </pre>
+            >{currentLyrics.body}</pre>
           </div>
         )}
       </div>
 
-      {/* Leader navigation */}
+      {/* ── Leader prev / next ────────────────────────────────────────────── */}
       {isLeader && (
         <>
           <button
-            onClick={e => { e.stopPropagation(); goTo(Math.max(0, songPosition - 1)); }}
+            onClick={() => goTo(Math.max(0, songPosition - 1))}
             disabled={songPosition === 0}
-            className="fixed bottom-8 left-5 z-50 w-16 h-16 flex items-center justify-center text-white bg-accent-gradient rounded-2xl shadow-popover hover:brightness-110 transition-all disabled:opacity-30"
-            title="Previous song (←)"
-          >
-            <ChevronLeft size={32} />
-          </button>
+            className="fixed bottom-8 left-5 z-50 w-16 h-16 flex items-center justify-center text-white bg-accent-gradient rounded-2xl shadow-popover hover:brightness-110 disabled:opacity-30 transition-all"
+            title="Previous (←)"
+          ><ChevronLeft size={32} /></button>
           <button
-            onClick={e => { e.stopPropagation(); goTo(Math.min(items.length - 1, songPosition + 1)); }}
+            onClick={() => goTo(Math.min(items.length - 1, songPosition + 1))}
             disabled={songPosition >= items.length - 1}
-            className="fixed bottom-8 right-5 z-50 w-16 h-16 flex items-center justify-center text-white bg-accent-gradient rounded-2xl shadow-popover hover:brightness-110 transition-all disabled:opacity-30"
-            title="Next song (→)"
-          >
-            <ChevronRight size={32} />
-          </button>
+            className="fixed bottom-8 right-5 z-50 w-16 h-16 flex items-center justify-center text-white bg-accent-gradient rounded-2xl shadow-popover hover:brightness-110 disabled:opacity-30 transition-all"
+            title="Next (→)"
+          ><ChevronRight size={32} /></button>
         </>
       )}
 
-      {/* Follower: not following indicator + back-to-leader */}
+      {/* ── Follower: back to leader ──────────────────────────────────────── */}
       {!isLeader && !isFollowing && (
         <button
-          onClick={e => { e.stopPropagation(); resumeFollowing(); }}
-          className="fixed bottom-8 left-1/2 -translate-x-1/2 z-50 flex items-center gap-2 px-5 py-3 text-xs font-bold tracking-widest uppercase text-white bg-accent-gradient rounded-full shadow-popover hover:brightness-110 transition-all animate-bounce"
+          onClick={resumeFollowing}
+          className="fixed bottom-8 left-1/2 -translate-x-1/2 z-50 flex items-center gap-2 px-5 py-3 text-xs font-bold tracking-widest uppercase text-white bg-accent-gradient rounded-full shadow-popover hover:brightness-110 animate-bounce transition-all"
         >
           <Radio size={14} /> Back to {leaderName}'s song
         </button>
