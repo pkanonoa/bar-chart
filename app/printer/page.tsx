@@ -181,13 +181,6 @@ export default function PrinterPage() {
         <div className="print:hidden mb-8">
         <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-8 gap-4">
           <div className="flex items-center">
-            <button 
-              onClick={() => router.push('/')}
-              className="p-3 mr-4 text-text-secondary bg-surface border border-border rounded-xl hover:text-white hover:bg-surface-raised transition-all"
-              title="Back"
-            >
-              <CornerLeftUp size={20} />
-            </button>
             <h1 className="text-3xl font-bold text-text-primary tracking-tight">
               Printer (Setlist)
             </h1>

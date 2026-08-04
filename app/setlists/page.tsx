@@ -323,16 +323,16 @@ export default function SetlistsPage() {
 
         {/* Action row (no redundant title since tab bar has it) */}
         <div className="flex items-center justify-between mb-8 mt-4">
-          {/* Left: back button */}
-          <button
-            onClick={() => router.push('/')}
-            className="p-2.5 text-text-secondary bg-surface border border-border rounded-xl hover:text-white hover:bg-surface-raised transition-all"
-            title="Back"
-          >
-            <CornerLeftUp size={18} />
-          </button>
-
-          {/* Right: New Setlist */}
+          <div className="flex items-center gap-3">
+            <div>
+              <h1 className="text-3xl font-bold text-text-primary tracking-tight flex items-center gap-2">
+                <ListMusic size={28} className="text-accent-start" /> Setlists
+              </h1>
+              <p className="text-xs text-text-secondary font-medium mt-0.5">
+                Ordered song collections for gigs and sessions.
+              </p>
+            </div>
+          </div>
           <button
             onClick={() => setShowNew(true)}
             className="flex items-center gap-1.5 px-3 py-2.5 bg-accent-gradient text-white text-xs font-bold rounded-xl shadow-md hover:brightness-110 transition-all shrink-0"

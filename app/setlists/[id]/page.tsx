@@ -440,13 +440,6 @@ export default function SetlistDetailPage() {
 
         {/* Page header */}
         <div className="flex items-start gap-3 mb-8 mt-4">
-          <button
-            onClick={() => router.push('/setlists')}
-            className="p-3 text-text-secondary bg-surface border border-border rounded-xl hover:text-white hover:bg-surface-raised transition-all shrink-0 mt-1"
-          >
-            <CornerLeftUp size={20} />
-          </button>
-
           <div className="flex-1 min-w-0">
             {/* Editable name */}
             {editingName ? (

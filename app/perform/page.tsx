@@ -202,10 +202,6 @@ export default function PerformPage() {
         {/* Page header */}
         <div className="flex items-center justify-between mb-8 mt-4">
           <div className="flex items-center gap-3">
-            <button onClick={() => router.push('/')}
-              className="p-3 text-text-secondary bg-surface border border-border rounded-xl hover:text-white hover:bg-surface-raised transition-all">
-              <CornerLeftUp size={20} />
-            </button>
             <div>
               <h1 className="text-3xl font-bold text-text-primary tracking-tight flex items-center gap-2">
                 <Music2 size={28} className="text-accent-start" /> Performance
