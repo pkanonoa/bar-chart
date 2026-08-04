@@ -136,4 +136,23 @@ body {
     color: #000000 !important;
     background: none !important;
   }
+
+  /* Show print-only elements */
+  .print-only {
+    display: block !important;
+  }
+
+  /* Page breaks between songs */
+  .page-break {
+    page-break-before: always;
+  }
+  .page-break-after {
+    page-break-after: always;
+  }
+}
+
+@media not print {
+  .print-only {
+    display: none !important;
+  }
 }
