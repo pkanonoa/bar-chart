@@ -60,15 +60,14 @@ export function FolderBrowser({ folderId, folderName, kind = 'chart' }: Props) {
 
   // Long press gesture handling
   const longPressTimer = useRef<NodeJS.Timeout | null>(null);
-  const isLongPressActive = useRef(false);
+  const lastLongPressTime = useRef(0);
   const startPos = useRef<{ x: number; y: number } | null>(null);
 
   const handlePointerDown = (id: string, type: 'folder' | 'chart' | 'lyrics', e: React.PointerEvent) => {
-    isLongPressActive.current = false;
     startPos.current = { x: e.clientX, y: e.clientY };
     if (longPressTimer.current) clearTimeout(longPressTimer.current);
     longPressTimer.current = setTimeout(() => {
-      isLongPressActive.current = true;
+      lastLongPressTime.current = Date.now();
       if (typeof navigator !== 'undefined' && 'vibrate' in navigator) {
         try { navigator.vibrate(50); } catch (e) {}
       }
@@ -77,7 +76,7 @@ export function FolderBrowser({ folderId, folderName, kind = 'chart' }: Props) {
         if (exists) return prev.filter(i => i.id !== id);
         return [...prev, { id, type }];
       });
-    }, 450);
+    }, 400);
   };
 
   const handlePointerMove = (e: React.PointerEvent) => {
@@ -91,35 +90,32 @@ export function FolderBrowser({ folderId, folderName, kind = 'chart' }: Props) {
     }
   };
 
-  const handlePointerUpOrClick = (id: string, type: 'folder' | 'chart' | 'lyrics', e: React.SyntheticEvent, onNormalClick: () => void) => {
+  const handlePointerUp = () => {
     if (longPressTimer.current) {
       clearTimeout(longPressTimer.current);
       longPressTimer.current = null;
     }
-    if (isLongPressActive.current) {
+  };
+
+  const handleCardClick = (id: string, type: 'folder' | 'chart' | 'lyrics', e: React.MouseEvent, onNormalClick: () => void) => {
+    if (Date.now() - lastLongPressTime.current < 600) {
       e.preventDefault();
       e.stopPropagation();
-      isLongPressActive.current = false;
       return;
     }
+
     if (selectedItems.length > 0) {
-      e.stopPropagation();
       e.preventDefault();
+      e.stopPropagation();
       setSelectedItems(prev => {
         const exists = prev.some(i => i.id === id);
         if (exists) return prev.filter(i => i.id !== id);
         return [...prev, { id, type }];
       });
-    } else {
-      onNormalClick();
+      return;
     }
-  };
 
-  const handlePointerCancel = () => {
-    if (longPressTimer.current) {
-      clearTimeout(longPressTimer.current);
-      longPressTimer.current = null;
-    }
+    onNormalClick();
   };
 
 
@@ -433,11 +429,13 @@ export function FolderBrowser({ folderId, folderName, kind = 'chart' }: Props) {
                   className={`bg-surface border rounded-xl p-5 flex flex-col items-center justify-center cursor-pointer group relative transition-all duration-200 select-none ${
                     selectedItems.some(i => i.id === chart.id) ? 'border-accent-solid shadow-md bg-surface-raised before:absolute before:left-0 before:top-0 before:bottom-0 before:w-1 before:bg-accent-gradient before:rounded-l-xl' : 'border-border shadow-sm hover:shadow-hover hover:-translate-y-1'
                   } ${activeDropdown === chart.id ? 'z-50' : ''}`}
+                  style={{ touchAction: 'manipulation', WebkitUserSelect: 'none', userSelect: 'none', WebkitTouchCallout: 'none' }}
                   onPointerDown={(e) => handlePointerDown(chart.id, kind, e)}
                   onPointerMove={handlePointerMove}
-                  onPointerUp={(e) => handlePointerUpOrClick(chart.id, kind, e, () => router.push(kind === 'lyrics' ? `/lyrics/${chart.id}` : `/chart/${chart.id}`))}
-                  onPointerCancel={handlePointerCancel}
-                  onContextMenu={(e) => { e.preventDefault(); toggleSelection(chart.id, kind, e); }}
+                  onPointerUp={handlePointerUp}
+                  onPointerCancel={handlePointerUp}
+                  onClick={(e) => handleCardClick(chart.id, kind, e, () => router.push(kind === 'lyrics' ? `/lyrics/${chart.id}` : `/chart/${chart.id}`))}
+                  onContextMenu={(e) => { e.preventDefault(); }}
                 >
                   <div className="absolute top-3 left-3 z-10" onClick={e => e.stopPropagation()}>
                     <input
@@ -487,11 +485,13 @@ export function FolderBrowser({ folderId, folderName, kind = 'chart' }: Props) {
                     className={`bg-surface border rounded-xl p-5 flex flex-col items-center justify-center cursor-pointer group relative transition-all duration-200 select-none ${
                       selectedItems.some(i => i.id === folder.id) ? 'border-accent-solid shadow-md bg-surface-raised before:absolute before:left-0 before:top-0 before:bottom-0 before:w-1 before:bg-accent-gradient before:rounded-l-xl' : 'border-border shadow-sm hover:shadow-hover hover:-translate-y-1'
                     } ${activeDropdown === folder.id ? 'z-50' : ''}`}
+                    style={{ touchAction: 'manipulation', WebkitUserSelect: 'none', userSelect: 'none', WebkitTouchCallout: 'none' }}
                     onPointerDown={(e) => handlePointerDown(folder.id, 'folder', e)}
                     onPointerMove={handlePointerMove}
-                    onPointerUp={(e) => handlePointerUpOrClick(folder.id, 'folder', e, () => router.push(kind === 'lyrics' ? `/lyrics/folder/${folder.id}` : `/folder/${folder.id}`))}
-                    onPointerCancel={handlePointerCancel}
-                    onContextMenu={(e) => { e.preventDefault(); toggleSelection(folder.id, 'folder', e); }}
+                    onPointerUp={handlePointerUp}
+                    onPointerCancel={handlePointerUp}
+                    onClick={(e) => handleCardClick(folder.id, 'folder', e, () => router.push(kind === 'lyrics' ? `/lyrics/folder/${folder.id}` : `/folder/${folder.id}`))}
+                    onContextMenu={(e) => { e.preventDefault(); }}
                   >
                     <div className="absolute top-3 left-3 z-10" onClick={e => e.stopPropagation()}>
                       <input
@@ -519,11 +519,13 @@ export function FolderBrowser({ folderId, folderName, kind = 'chart' }: Props) {
                     className={`bg-surface border rounded-xl p-5 flex flex-col items-center justify-center cursor-pointer group relative transition-all duration-200 select-none ${
                       selectedItems.some(i => i.id === chart.id) ? 'border-accent-solid shadow-md bg-surface-raised before:absolute before:left-0 before:top-0 before:bottom-0 before:w-1 before:bg-accent-gradient before:rounded-l-xl' : 'border-border shadow-sm hover:shadow-hover hover:-translate-y-1'
                     } ${activeDropdown === chart.id ? 'z-50' : ''}`}
+                    style={{ touchAction: 'manipulation', WebkitUserSelect: 'none', userSelect: 'none', WebkitTouchCallout: 'none' }}
                     onPointerDown={(e) => handlePointerDown(chart.id, kind, e)}
                     onPointerMove={handlePointerMove}
-                    onPointerUp={(e) => handlePointerUpOrClick(chart.id, kind, e, () => router.push(kind === 'lyrics' ? `/lyrics/${chart.id}` : `/chart/${chart.id}`))}
-                    onPointerCancel={handlePointerCancel}
-                    onContextMenu={(e) => { e.preventDefault(); toggleSelection(chart.id, kind, e); }}
+                    onPointerUp={handlePointerUp}
+                    onPointerCancel={handlePointerUp}
+                    onClick={(e) => handleCardClick(chart.id, kind, e, () => router.push(kind === 'lyrics' ? `/lyrics/${chart.id}` : `/chart/${chart.id}`))}
+                    onContextMenu={(e) => { e.preventDefault(); }}
                   >
                     <div className="absolute top-3 left-3 z-10" onClick={e => e.stopPropagation()}>
                       <input
