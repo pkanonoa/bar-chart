@@ -19,6 +19,7 @@ create table public.charts (
     lines jsonb not null default '[]'::jsonb,
     semitone_offset integer not null default 0,
     prefer_flats boolean not null default false,
+    is_bookmarked boolean not null default false,
     folder_id uuid references public.folders(id) on delete cascade,
     created_by uuid references auth.users(id) not null default auth.uid(),
     updated_at timestamptz not null default now()

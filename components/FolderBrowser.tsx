@@ -4,14 +4,14 @@ import { useState, useEffect, useRef } from 'react';
 import { useRouter } from 'next/navigation';
 import {
   Folder, Chart, listFolder, createFolder, renameEntry,
-  deleteEntry, moveToTrash, moveEntry, saveChart, searchAll, exportChart
+  deleteEntry, moveToTrash, moveEntry, saveChart, searchAll, exportChart, toggleBookmark
 } from '@/lib/storage';
 import { FolderPickerModal } from './FolderPickerModal';
 import { useAuth } from '@/components/AuthProvider';
 import {
   Folder as FolderIcon, FileText, MoreVertical, Search,
   Plus, CornerLeftUp, Trash2, Edit2, CornerRightDown, Download, X,
-  FolderPlus, FilePlus, Printer
+  FolderPlus, FilePlus, Printer, Star
 } from 'lucide-react';
 
 interface Props {
@@ -175,6 +175,16 @@ export function FolderBrowser({ folderId, folderName, kind = 'chart' }: Props) {
       loadContents();
     }
     setMoveItem(null);
+  };
+
+  const handleToggleBookmark = async (chart: any) => {
+    const newValue = !chart.is_bookmarked;
+    await toggleBookmark(chart.id, chart.type as 'chart' | 'lyrics', newValue);
+    // Optimistic update
+    setCharts(prev => prev.map(c => c.id === chart.id ? { ...c, is_bookmarked: newValue } : c));
+    if (searchResults) {
+      setSearchResults(prev => prev.map(c => c.id === chart.id ? { ...c, is_bookmarked: newValue } : c));
+    }
   };
 
   const handleBulkDelete = async (permanent: boolean = false) => {
@@ -348,7 +358,7 @@ export function FolderBrowser({ folderId, folderName, kind = 'chart' }: Props) {
                   key={chart.id}
                   className={`bg-surface border rounded-xl p-5 flex flex-col items-center justify-center cursor-pointer group relative transition-all duration-200 ${
                     selectedItems.some(i => i.id === chart.id) ? 'border-accent-solid shadow-md bg-surface-raised before:absolute before:left-0 before:top-0 before:bottom-0 before:w-1 before:bg-accent-gradient before:rounded-l-xl' : 'border-border shadow-sm hover:shadow-hover hover:-translate-y-1'
-                  }`}
+                  } ${activeDropdown === chart.id ? 'z-50' : ''}`}
                   onClick={() => router.push(kind === 'lyrics' ? `/lyrics/${chart.id}` : `/chart/${chart.id}`)}
                 >
                   <div className="absolute top-3 left-3 z-10" onClick={e => e.stopPropagation()}>
@@ -368,6 +378,15 @@ export function FolderBrowser({ folderId, folderName, kind = 'chart' }: Props) {
                   </div>
                   <p className="text-sm font-bold text-text-primary text-center w-full truncate">{chart.title}</p>
                   <p className="text-[10px] text-text-secondary mt-1">{new Date(chart.updated_at).toLocaleDateString()}</p>
+                  <button
+                    className="absolute bottom-3 right-3 z-10 p-1.5 rounded-full hover:bg-white/5 transition-colors"
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      handleToggleBookmark(chart);
+                    }}
+                  >
+                    <Star size={16} className={chart.is_bookmarked ? "text-yellow-500 fill-yellow-500" : "text-text-secondary/30 hover:text-yellow-500/70"} />
+                  </button>
                 </div>
               ))
             )}
@@ -389,7 +408,7 @@ export function FolderBrowser({ folderId, folderName, kind = 'chart' }: Props) {
                     key={folder.id}
                     className={`bg-surface border rounded-xl p-5 flex flex-col items-center justify-center cursor-pointer group relative transition-all duration-200 ${
                       selectedItems.some(i => i.id === folder.id) ? 'border-accent-solid shadow-md bg-surface-raised before:absolute before:left-0 before:top-0 before:bottom-0 before:w-1 before:bg-accent-gradient before:rounded-l-xl' : 'border-border shadow-sm hover:shadow-hover hover:-translate-y-1'
-                    }`}
+                    } ${activeDropdown === folder.id ? 'z-50' : ''}`}
                     onClick={() => router.push(kind === 'lyrics' ? `/lyrics/folder/${folder.id}` : `/folder/${folder.id}`)}
                   >
                     <div className="absolute top-3 left-3 z-10" onClick={e => e.stopPropagation()}>
@@ -417,7 +436,7 @@ export function FolderBrowser({ folderId, folderName, kind = 'chart' }: Props) {
                     key={chart.id}
                     className={`bg-surface border rounded-xl p-5 flex flex-col items-center justify-center cursor-pointer group relative transition-all duration-200 ${
                       selectedItems.some(i => i.id === chart.id) ? 'border-accent-solid shadow-md bg-surface-raised before:absolute before:left-0 before:top-0 before:bottom-0 before:w-1 before:bg-accent-gradient before:rounded-l-xl' : 'border-border shadow-sm hover:shadow-hover hover:-translate-y-1'
-                    }`}
+                    } ${activeDropdown === chart.id ? 'z-50' : ''}`}
                     onClick={() => router.push(kind === 'lyrics' ? `/lyrics/${chart.id}` : `/chart/${chart.id}`)}
                   >
                     <div className="absolute top-3 left-3 z-10" onClick={e => e.stopPropagation()}>
@@ -437,6 +456,15 @@ export function FolderBrowser({ folderId, folderName, kind = 'chart' }: Props) {
                     </div>
                     <p className="text-sm font-bold text-text-primary text-center w-full truncate">{chart.title}</p>
                     <p className="text-[10px] text-text-secondary mt-1">{new Date(chart.updated_at).toLocaleDateString()}</p>
+                    <button
+                      className="absolute bottom-3 right-3 z-10 p-1.5 rounded-full hover:bg-white/5 transition-colors"
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        handleToggleBookmark(chart);
+                      }}
+                    >
+                      <Star size={16} className={chart.is_bookmarked ? "text-yellow-500 fill-yellow-500" : "text-text-secondary/30 hover:text-yellow-500/70"} />
+                    </button>
                   </div>
                 ))}
               </>

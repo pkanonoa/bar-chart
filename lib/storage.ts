@@ -12,6 +12,7 @@ export type Chart = {
   folder_id: string | null;
   created_by: string;
   updated_at: string;
+  is_bookmarked?: boolean;
 };
 
 export type Folder = {
@@ -129,9 +130,9 @@ export async function listFolder(folderId: string | null, kind: 'chart' | 'lyric
 
     let itemsQuery;
     if (kind === 'chart') {
-      itemsQuery = supabase.from('charts').select('id, title, updated_at').order('updated_at', { ascending: false }).not('title', 'like', '__TRASH__:%');
+      itemsQuery = supabase.from('charts').select('id, title, updated_at, is_bookmarked').order('updated_at', { ascending: false }).not('title', 'like', '__TRASH__:%');
     } else {
-      itemsQuery = supabase.from('lyrics').select('id, title, updated_at').order('updated_at', { ascending: false }).not('title', 'like', '__TRASH__:%');
+      itemsQuery = supabase.from('lyrics').select('id, title, updated_at, is_bookmarked').order('updated_at', { ascending: false }).not('title', 'like', '__TRASH__:%');
     }
     
     if (folderId) {
@@ -159,7 +160,7 @@ export async function listFolder(folderId: string | null, kind: 'chart' | 'lyric
     const items = allItems.filter((c) => c.folder_id === folderId && !c.title.startsWith('__TRASH__:'));
     return {
       folders,
-      charts: items.map((c) => ({ id: c.id, title: c.title, updated_at: c.updated_at, type: kind })),
+      charts: items.map((c) => ({ id: c.id, title: c.title, updated_at: c.updated_at, is_bookmarked: c.is_bookmarked, type: kind })),
     };
   }
 }
@@ -201,6 +202,26 @@ export async function renameEntry(id: string, type: 'folder' | 'chart' | 'lyrics
     const existing = await db.get(storeName, id);
     if (existing) {
       const updated = type === 'folder' ? { ...existing, name: newName, updated_at } : { ...existing, title: newName, updated_at };
+      await db.put(storeName, updated);
+      await db.put('pending_saves', { id, type, data: updated, action: 'upsert' });
+    }
+  }
+}
+
+export async function toggleBookmark(id: string, type: 'chart' | 'lyrics', is_bookmarked: boolean) {
+  const updated_at = new Date().toISOString();
+  if (isOnline()) {
+    if (type === 'chart') {
+      await supabase.from('charts').update({ is_bookmarked, updated_at }).eq('id', id);
+    } else if (type === 'lyrics') {
+      await supabase.from('lyrics').update({ is_bookmarked, updated_at }).eq('id', id);
+    }
+  } else if (dbPromise) {
+    const db = await dbPromise;
+    const storeName = type === 'chart' ? 'charts' : 'lyrics';
+    const existing = await db.get(storeName, id);
+    if (existing) {
+      const updated = { ...existing, is_bookmarked, updated_at };
       await db.put(storeName, updated);
       await db.put('pending_saves', { id, type, data: updated, action: 'upsert' });
     }
@@ -397,7 +418,7 @@ export async function readChart(id: string, bypassCache = false): Promise<Chart 
 
 export async function getRecentCharts(limit: number = 5) {
   if (isOnline()) {
-    const { data } = await supabase.from('charts').select('id, title, updated_at').not('title', 'like', '__TRASH__:%').order('updated_at', { ascending: false }).limit(limit);
+    const { data } = await supabase.from('charts').select('id, title, updated_at, is_bookmarked').not('title', 'like', '__TRASH__:%').order('updated_at', { ascending: false }).limit(limit);
     return data || [];
   } else if (dbPromise) {
     const db = await dbPromise;
@@ -436,6 +457,30 @@ export async function getFolder(id: string): Promise<Folder | null> {
     return (await db.get('folders', id)) || null;
   }
   return null;
+}
+
+export async function getBookmarks() {
+  if (isOnline()) {
+    const [{ data: charts }, { data: lyrics }] = await Promise.all([
+      supabase.from('charts').select('id, title, updated_at, is_bookmarked').eq('is_bookmarked', true).not('title', 'like', '__TRASH__:%').order('updated_at', { ascending: false }),
+      supabase.from('lyrics').select('id, title, updated_at, is_bookmarked').eq('is_bookmarked', true).not('title', 'like', '__TRASH__:%').order('updated_at', { ascending: false })
+    ]);
+    const all = [
+      ...(charts || []).map((c) => ({ ...c, type: 'chart' as const })),
+      ...(lyrics || []).map((l) => ({ ...l, type: 'lyrics' as const }))
+    ];
+    return all.sort((a, b) => new Date(b.updated_at).getTime() - new Date(a.updated_at).getTime());
+  } else if (dbPromise) {
+    const db = await dbPromise;
+    const charts = await db.getAll('charts');
+    const lyrics = await db.getAll('lyrics');
+    const all = [
+      ...charts.filter(c => c.is_bookmarked && !c.title.startsWith('__TRASH__:')).map((c) => ({ id: c.id, title: c.title, updated_at: c.updated_at, is_bookmarked: c.is_bookmarked, type: 'chart' as const })),
+      ...lyrics.filter(l => l.is_bookmarked && !l.title.startsWith('__TRASH__:')).map((l) => ({ id: l.id, title: l.title, updated_at: l.updated_at, is_bookmarked: l.is_bookmarked, type: 'lyrics' as const }))
+    ];
+    return all.sort((a, b) => new Date(b.updated_at).getTime() - new Date(a.updated_at).getTime());
+  }
+  return [];
 }
 
 export async function searchAll(query: string, rootFolderId: string | null = null, kind: 'chart' | 'lyrics' = 'chart') {

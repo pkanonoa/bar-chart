@@ -5,7 +5,7 @@ import { useAuth } from '@/components/AuthProvider';
 import { supabase } from '@/lib/supabase';
 import { getRecentCharts, createFolder, saveChart } from '@/lib/storage';
 import { saveLyrics } from '@/lib/lyrics';
-import { X, User, LogOut, Home, Clock, Type, Settings, Plus, Folder as FolderIcon, FileText, Printer, Trash2, Music, Music2, ListMusic } from 'lucide-react';
+import { X, User, LogOut, Home, Clock, Type, Settings, Plus, Folder as FolderIcon, FileText, Printer, Trash2, Music, Music2, ListMusic, Star } from 'lucide-react';
 import Link from 'next/link';
 import { useRouter, usePathname } from 'next/navigation';
 
@@ -138,6 +138,12 @@ export function Sidebar({ isOpen, onClose }: { isOpen: boolean; onClose: () => v
               className="w-full flex items-center px-4 py-3 bg-surface border border-border shadow-md rounded-xl text-sm font-bold text-text-primary hover:text-accent-start hover:bg-surface-raised transition-all group mb-3"
             >
               <Music size={18} className="mr-3 text-text-secondary group-hover:text-accent-start" /> Lyrics
+            </button>
+            <button 
+              onClick={() => { router.push('/bookmarks'); onClose(); }}
+              className="w-full flex items-center px-4 py-3 bg-surface border border-border shadow-md rounded-xl text-sm font-bold text-text-primary hover:text-accent-start hover:bg-surface-raised transition-all group mb-3"
+            >
+              <Star size={18} className="mr-3 text-text-secondary group-hover:text-accent-start" /> Bookmarks
             </button>
             <button 
               onClick={() => { router.push('/setlists'); onClose(); }}

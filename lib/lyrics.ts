@@ -8,6 +8,7 @@ export type Lyric = {
   folder_id: string | null;
   created_by: string;
   updated_at: string;
+  is_bookmarked?: boolean;
 };
 
 const isOnline = () => typeof navigator !== 'undefined' && navigator.onLine;
@@ -55,7 +56,7 @@ export async function readLyrics(id: string): Promise<Lyric | null> {
 
 export async function getRecentLyrics(limit: number = 5) {
   if (isOnline()) {
-    const { data } = await supabase.from('lyrics').select('id, title, updated_at').not('title', 'like', '__TRASH__:%').order('updated_at', { ascending: false }).limit(limit);
+    const { data } = await supabase.from('lyrics').select('id, title, updated_at, is_bookmarked').not('title', 'like', '__TRASH__:%').order('updated_at', { ascending: false }).limit(limit);
     return data || [];
   } else {
     const dbPromise = getDBPromise();
