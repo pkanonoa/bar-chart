@@ -179,13 +179,6 @@ export default function PrinterPage() {
       </div>
       <main className="flex-1 overflow-y-auto w-full max-w-7xl mx-auto px-4 pt-[max(env(safe-area-inset-top,2rem),2rem)] pb-24">
         <div className="print:hidden mb-8">
-        <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-8 gap-4">
-          <div className="flex items-center">
-            <h1 className="text-3xl font-bold text-text-primary tracking-tight">
-              Printer (Setlist)
-            </h1>
-          </div>
-        </div>
 
         {/* Search bar and print options button side-by-side */}
         <div className="relative flex items-center gap-3 w-full mb-8 z-20">

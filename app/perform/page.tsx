@@ -199,20 +199,6 @@ export default function PerformPage() {
       <Header />
       <main className="flex-1 overflow-y-auto w-full max-w-3xl mx-auto px-4 pt-[max(env(safe-area-inset-top,2rem),2rem)] pb-32">
 
-        {/* Page header */}
-        <div className="flex items-center justify-between mb-8 mt-4">
-          <div className="flex items-center gap-3">
-            <div>
-              <h1 className="text-3xl font-bold text-text-primary tracking-tight flex items-center gap-2">
-                <Music2 size={28} className="text-accent-start" /> Performance
-              </h1>
-              <p className="text-xs text-text-secondary font-medium mt-0.5">Build a setlist, then lead a live session.</p>
-            </div>
-          </div>
-        </div>
-
-
-
         {/* ── Setlist name ── */}
         <div className="mb-4">
           <label className="text-xs font-bold uppercase tracking-widest text-text-secondary block mb-2">Setlist Name</label>

@@ -321,18 +321,8 @@ export default function SetlistsPage() {
       <Header />
       <main className="flex-1 overflow-y-auto w-full max-w-3xl mx-auto px-4 pt-[max(env(safe-area-inset-top,2rem),2rem)] pb-32">
 
-        {/* Action row (no redundant title since tab bar has it) */}
-        <div className="flex items-center justify-between mb-8 mt-4">
-          <div className="flex items-center gap-3">
-            <div>
-              <h1 className="text-3xl font-bold text-text-primary tracking-tight flex items-center gap-2">
-                <ListMusic size={28} className="text-accent-start" /> Setlists
-              </h1>
-              <p className="text-xs text-text-secondary font-medium mt-0.5">
-                Ordered song collections for gigs and sessions.
-              </p>
-            </div>
-          </div>
+        {/* Action row */}
+        <div className="flex justify-end mb-6 mt-4">
           <button
             onClick={() => setShowNew(true)}
             className="flex items-center gap-1.5 px-3 py-2.5 bg-accent-gradient text-white text-xs font-bold rounded-xl shadow-md hover:brightness-110 transition-all shrink-0"
