@@ -1,154 +1,111 @@
 'use client';
 
-import React, { useState } from 'react';
-import { Home, Folder as FolderIcon, Plus, User, Type, FileText, Upload, LogOut, Settings, Trash2, Printer } from 'lucide-react';
-import Link from 'next/link';
+import React from 'react';
+import { Home, Type, ListMusic, Music2, Printer } from 'lucide-react';
 import { usePathname, useRouter } from 'next/navigation';
-import { useAuth } from '@/components/AuthProvider';
-import { supabase } from '@/lib/supabase';
-import { createFolder, saveChart, importChart, saveLyrics } from '@/lib/storage';
+
+const TABS = [
+  {
+    id: 'chords',
+    label: 'Chords',
+    icon: Home,
+    href: '/',
+    match: (p: string) => p === '/' || p.startsWith('/folder/') || p.startsWith('/chart/'),
+  },
+  {
+    id: 'lyrics',
+    label: 'Lyrics',
+    icon: Type,
+    href: '/lyrics',
+    match: (p: string) => p.startsWith('/lyrics'),
+  },
+  {
+    id: 'setlists',
+    label: 'Setlists',
+    icon: ListMusic,
+    href: '/setlists',
+    match: (p: string) => p.startsWith('/setlists'),
+  },
+  {
+    id: 'perform',
+    label: 'Perform',
+    icon: Music2,
+    href: '/perform',
+    match: (p: string) => p.startsWith('/perform'),
+  },
+  {
+    id: 'printer',
+    label: 'Printer',
+    icon: Printer,
+    href: '/printer',
+    match: (p: string) => p.startsWith('/printer'),
+  },
+];
 
 export function Navigation() {
   const pathname = usePathname();
   const router = useRouter();
-  const { user } = useAuth();
-  
-  const [showAddMenu, setShowAddMenu] = useState(false);
-  const [showProfileMenu, setShowProfileMenu] = useState(false);
-  const [createFolderModal, setCreateFolderModal] = useState(false);
-  const [hiddenBySelection, setHiddenBySelection] = useState(false);
-  const [hiddenByChartUI, setHiddenByChartUI] = useState(false);
-  const [folderKind, setFolderKind] = useState<'chart' | 'lyrics'>('chart');
 
-  React.useEffect(() => {
-    const handleSelection = (e: any) => {
-      setHiddenBySelection(e.detail > 0);
-    };
-    const handleUIVisibility = (e: any) => {
-      setHiddenByChartUI(!e.detail);
-    };
-    window.addEventListener('selection-change', handleSelection);
-    window.addEventListener('ui-visibility-change', handleUIVisibility);
-    return () => {
-      window.removeEventListener('selection-change', handleSelection);
-      window.removeEventListener('ui-visibility-change', handleUIVisibility);
-    };
-  }, []);
+  // Hide tab bar on full-screen performance/viewer pages
+  const hideOnPaths = ['/perform/', '/setlists/'];
+  const isFullscreen = hideOnPaths.some(prefix =>
+    pathname.includes(prefix) && (pathname.includes('/perform') || (pathname.split('/').length > 3 && !pathname.endsWith('/perform')))
+  );
 
-  // Extract folder ID if we are in a folder
-  let currentFolderId: string | null = null;
-  if (pathname.startsWith('/folder/')) {
-    currentFolderId = pathname.split('/')[2];
-  } else if (pathname.startsWith('/lyrics/folder/')) {
-    currentFolderId = pathname.split('/')[3];
-  }
+  // Actually: hide only on deep performance screens (not the builder pages)
+  const isPerformScreen =
+    (pathname.startsWith('/perform/') && pathname.split('/').length === 3) ||
+    pathname.includes('/perform') && pathname.split('/').length >= 4;
 
-  const handleCreateFolder = () => {
-    setShowAddMenu(false);
-    if (pathname.startsWith('/lyrics')) {
-      setFolderKind('lyrics');
-    } else {
-      setFolderKind('chart');
-    }
-    setCreateFolderModal(true);
-  };
+  if (isPerformScreen) return null;
 
-  const handleCreateChart = async () => {
-    setShowAddMenu(false);
-    if (!user) return;
-    const chart = {
-      id: crypto.randomUUID(),
-      title: 'Untitled Chart',
-      tempo: 120,
-      time_sig: '4/4',
-      lines: [],
-      semitone_offset: 0,
-      prefer_flats: false,
-      folder_id: pathname.startsWith('/lyrics') ? null : currentFolderId,
-      created_by: user.id,
-      updated_at: new Date().toISOString(),
-    };
-    await saveChart(chart);
-    router.push(`/chart/${chart.id}/edit`);
-  };
+  return (
+    <>
+      {/* Bottom tab bar */}
+      <nav className="fixed bottom-0 left-0 right-0 z-40 no-print">
+        {/* Blurred background */}
+        <div className="absolute inset-0 bg-surface/80 backdrop-blur-xl border-t border-border/50" />
 
-  const handleCreateLyrics = async () => {
-    setShowAddMenu(false);
-    if (!user) return;
-    const lyrics = {
-      id: crypto.randomUUID(),
-      title: 'Untitled lyrics',
-      body: '',
-      folder_id: pathname.startsWith('/lyrics') ? currentFolderId : null,
-      created_by: user.id,
-      updated_at: new Date().toISOString(),
-    };
-    await saveLyrics(lyrics);
-    router.push(`/lyrics/${lyrics.id}/edit`);
-  };
+        <div className="relative flex items-stretch justify-around px-2 pb-[env(safe-area-inset-bottom,0px)]">
+          {TABS.map(tab => {
+            const active = tab.match(pathname);
+            const Icon = tab.icon;
+            return (
+              <button
+                key={tab.id}
+                onClick={() => router.push(tab.href)}
+                className={`flex flex-col items-center justify-center gap-1 flex-1 py-3 transition-all group ${
+                  active ? 'text-accent-start' : 'text-text-secondary hover:text-text-primary'
+                }`}
+              >
+                {/* Active indicator bar */}
+                <div className={`absolute top-0 w-8 h-[2px] rounded-full transition-all duration-300 ${
+                  active ? 'bg-accent-gradient opacity-100' : 'opacity-0'
+                }`} />
 
-  const handleImport = async (e: React.ChangeEvent<HTMLInputElement>) => {
-    setShowAddMenu(false);
-    const file = e.target.files?.[0];
-    if (!file) return;
-    try {
-      await importChart(file, currentFolderId);
-      if (pathname === '/' || pathname.startsWith('/folder/')) {
-        window.dispatchEvent(new Event('refresh-folder'));
-      } else {
-        router.push(currentFolderId ? `/folder/${currentFolderId}` : '/');
-      }
-    } catch (err) {
-      alert('Failed to import chart.');
-    }
-    e.target.value = '';
-  };
+                {/* Icon with gradient bg when active */}
+                <div className={`relative w-9 h-7 flex items-center justify-center rounded-xl transition-all duration-200 ${
+                  active
+                    ? 'bg-accent-gradient/15'
+                    : 'group-hover:bg-white/5'
+                }`}>
+                  <Icon size={20} className={active ? 'text-accent-start' : ''} />
+                </div>
 
-  const handleLogout = async () => {
-    setShowProfileMenu(false);
-    await supabase.auth.signOut();
-    router.push('/auth');
-  };
+                {/* Label */}
+                <span className={`text-[10px] font-bold tracking-wide leading-none ${
+                  active ? 'text-accent-start' : 'text-text-secondary'
+                }`}>
+                  {tab.label}
+                </span>
+              </button>
+            );
+          })}
+        </div>
+      </nav>
 
-  const fileInputRef = React.useRef<HTMLInputElement>(null);
-
-  const navItems = [
-    {
-      id: 'home',
-      label: 'Chords',
-      icon: <Home className="w-6 h-6 sm:w-7 sm:h-7" />,
-      isActive: (pathname === '/' || pathname.startsWith('/folder/')) && !showProfileMenu && !showAddMenu,
-      onClick: () => router.push('/'),
-    },
-    {
-      id: 'lyrics',
-      label: 'Lyrics',
-      icon: <Type className="w-6 h-6 sm:w-7 sm:h-7" />,
-      isActive: pathname.startsWith('/lyrics') && !pathname.includes('/printer') && !showProfileMenu && !showAddMenu,
-      onClick: () => router.push('/lyrics'),
-    },
-    {
-      id: 'add',
-      label: 'Create',
-      icon: <Plus className="w-6 h-6 sm:w-7 sm:h-7" />,
-      isActive: showAddMenu,
-      onClick: () => setShowAddMenu(!showAddMenu),
-    },
-    {
-      id: 'printer',
-      label: 'Printer',
-      icon: <Printer className="w-6 h-6 sm:w-7 sm:h-7" />,
-      isActive: pathname.startsWith('/printer') && !showProfileMenu && !showAddMenu,
-      onClick: () => router.push('/printer'),
-    },
-    {
-      id: 'profile',
-      label: 'Profile',
-      icon: <User className="w-6 h-6 sm:w-7 sm:h-7" />,
-      isActive: showProfileMenu,
-      onClick: () => setShowProfileMenu(!showProfileMenu),
-    }
-  ];
-
-  return null;
+      {/* Spacer so content isn't hidden behind tab bar */}
+      <div className="h-16 pb-[env(safe-area-inset-bottom,0px)]" />
+    </>
+  );
 }

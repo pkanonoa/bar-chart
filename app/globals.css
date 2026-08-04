@@ -137,6 +137,11 @@ body {
     background: none !important;
   }
 
+  /* Hide tab bar when printing */
+  .no-print {
+    display: none !important;
+  }
+
   /* Show print-only elements */
   .print-only {
     display: block !important;
