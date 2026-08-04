@@ -59,6 +59,9 @@ export function usePerformanceSession(
 
   useEffect(() => {
     isMountedRef.current = true;
+    // Unique suffix per mount prevents "cannot add presence callbacks after subscribe()"
+    // which occurs under React Strict Mode's double-invoke of effects.
+    const instanceId = Math.random().toString(36).slice(2, 8);
     const init = async () => {
       const { data: { user } } = await supabase.auth.getUser();
       if (!isMountedRef.current) return;
@@ -67,7 +70,7 @@ export function usePerformanceSession(
         myNameRef.current = user.email?.split('@')[0] ?? 'Anonymous';
       }
 
-      const channel = supabase.channel(`session-${code}`);
+      const channel = supabase.channel(`session-${code}-${instanceId}`);
       channelRef.current = channel;
 
       channel

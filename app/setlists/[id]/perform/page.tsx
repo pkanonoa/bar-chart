@@ -52,7 +52,10 @@ function useSetlistSession(setlistId: string, isLeaderDevice: boolean) {
       if (!isMountedRef.current) return;
       if (user) myNameRef.current = user.email?.split('@')[0] ?? 'Anonymous';
 
-      const channel = supabase.channel(`setlist-${setlistId}`);
+      // Unique suffix prevents "cannot add presence callbacks after subscribe()"
+      // under React Strict Mode's double-invoke of effects.
+      const instanceId = Math.random().toString(36).slice(2, 8);
+      const channel = supabase.channel(`setlist-${setlistId}-${instanceId}`);
       channelRef.current = channel;
 
       channel
