@@ -306,7 +306,11 @@ export default function PerformPage() {
         <button
           onClick={handleStartSession}
           disabled={queue.length === 0}
-          className="w-full py-5 bg-accent-gradient text-white text-lg font-bold rounded-2xl shadow-popover hover:brightness-110 transition-all flex items-center justify-center gap-3 disabled:opacity-40 disabled:cursor-not-allowed"
+          className={`w-full py-5 text-white text-lg font-bold rounded-2xl shadow-popover transition-all flex items-center justify-center gap-3 ${
+            queue.length === 0 
+              ? 'bg-surface-raised/80 text-text-secondary cursor-not-allowed border border-border' 
+              : 'bg-accent-gradient hover:brightness-110'
+          }`}
         >
           <Play size={22} fill="white" /> Start Session
         </button>
