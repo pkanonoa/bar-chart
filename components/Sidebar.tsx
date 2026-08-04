@@ -10,7 +10,7 @@ import Link from 'next/link';
 import { useRouter, usePathname } from 'next/navigation';
 
 export function Sidebar({ isOpen, onClose }: { isOpen: boolean; onClose: () => void }) {
-  const { user } = useAuth();
+  const { user, signOut } = useAuth();
   const router = useRouter();
   const pathname = usePathname();
   const [recentCharts, setRecentCharts] = useState<any[]>([]);
@@ -41,8 +41,8 @@ export function Sidebar({ isOpen, onClose }: { isOpen: boolean; onClose: () => v
   }, [isOpen]);
 
   const handleLogout = async () => {
-    await supabase.auth.signOut();
     onClose();
+    await signOut();
   };
 
   const handleFontChange = (e: React.ChangeEvent<HTMLSelectElement>) => {

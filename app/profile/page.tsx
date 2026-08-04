@@ -8,7 +8,7 @@ import { User, Mail, CreditCard, LogOut, CornerLeftUp } from 'lucide-react';
 import { supabase } from '@/lib/supabase';
 
 export default function ProfilePage() {
-  const { user, loading } = useAuth();
+  const { user, loading, signOut } = useAuth();
   const router = useRouter();
 
   if (loading) {
@@ -21,8 +21,7 @@ export default function ProfilePage() {
   }
 
   const handleLogout = async () => {
-    await supabase.auth.signOut();
-    router.push('/auth');
+    await signOut();
   };
 
   return (

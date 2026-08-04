@@ -10,13 +10,15 @@ interface AuthContextType {
   loading: boolean;
   isGuest: boolean;
   enableGuestMode: () => void;
+  signOut: () => Promise<void>;
 }
 
 const AuthContext = createContext<AuthContextType>({ 
   user: null, 
   loading: true, 
   isGuest: false, 
-  enableGuestMode: () => {} 
+  enableGuestMode: () => {},
+  signOut: async () => {} 
 });
 
 const GUEST_KEY = 'chord-grid-guest-mode';
@@ -53,6 +55,21 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     }
     setIsGuest(true);
     setUser(getOrCreateOfflineUser());
+  };
+
+  const signOut = async () => {
+    if (typeof window !== 'undefined') {
+      localStorage.removeItem(GUEST_KEY);
+      localStorage.removeItem(OFFLINE_USER_KEY);
+    }
+    setIsGuest(false);
+    setUser(null);
+    try {
+      await supabase.auth.signOut();
+    } catch (err) {
+      console.warn('[Auth] SignOut error:', err);
+    }
+    router.push('/auth');
   };
 
   useEffect(() => {
@@ -112,7 +129,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   }, [user, loading, pathname, router]);
 
   return (
-    <AuthContext.Provider value={{ user, loading, isGuest, enableGuestMode }}>
+    <AuthContext.Provider value={{ user, loading, isGuest, enableGuestMode, signOut }}>
       {children}
     </AuthContext.Provider>
   );
