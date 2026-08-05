@@ -162,6 +162,7 @@ export default function SetlistPerformPage() {
   const [editingLines, setEditingLines] = useState<Line[]>([]);
   const [isSavingPerf, setIsSavingPerf] = useState(false);
 
+  const [showEndConfirmModal, setShowEndConfirmModal] = useState(false);
   const tabsRef = useRef<HTMLDivElement>(null);
   const activeTabRef = useRef<HTMLButtonElement>(null);
   const [barsVisible, setBarsVisible] = useState(false);
@@ -305,6 +306,24 @@ export default function SetlistPerformPage() {
     return () => window.removeEventListener('setlist-session-end', handler);
   }, []);
 
+  // Intercept browser back button when leading a setlist sync session
+  useEffect(() => {
+    if (!isLeader) return;
+    try {
+      window.history.pushState({ inSyncSession: true }, '');
+    } catch {}
+
+    const handlePopState = () => {
+      try {
+        window.history.pushState({ inSyncSession: true }, '');
+      } catch {}
+      setShowEndConfirmModal(true);
+    };
+
+    window.addEventListener('popstate', handlePopState);
+    return () => window.removeEventListener('popstate', handlePopState);
+  }, [isLeader]);
+
   // Keyboard nav (leader)
   useEffect(() => {
     if (!isLeader) return;
@@ -366,8 +385,9 @@ export default function SetlistPerformPage() {
         {/* Row 1: setlist name + controls */}
         <div className="flex items-center gap-3 px-3 py-2.5">
           <button
-            onClick={() => isLeader ? handleEndSession() : router.push(`/setlists/${setlistId}`)}
+            onClick={() => isLeader ? setShowEndConfirmModal(true) : router.push(`/setlists/${setlistId}`)}
             className="p-2 text-text-secondary hover:text-white bg-surface-raised border border-border rounded-lg transition-all shrink-0"
+            title="Close setlist performance"
           >
             <X size={16} />
           </button>
@@ -418,7 +438,7 @@ export default function SetlistPerformPage() {
             )}
             {/* End session (leader) */}
             {isLeader && (
-              <button onClick={handleEndSession} className="px-2 py-1 text-[9px] font-bold text-red-400 border border-red-500/30 bg-red-500/10 rounded-lg hover:bg-red-500 hover:text-white transition-all">
+              <button onClick={() => setShowEndConfirmModal(true)} className="px-2 py-1 text-[9px] font-bold text-red-400 border border-red-500/30 bg-red-500/10 rounded-lg hover:bg-red-500 hover:text-white transition-all">
                 End
               </button>
             )}
@@ -667,6 +687,43 @@ export default function SetlistPerformPage() {
                   <span>{isSavingPerf ? 'Saving...' : 'Save Performance Copy'}</span>
                 </button>
               </div>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* ── End Session Confirmation Modal ── */}
+      {showEndConfirmModal && (
+        <div 
+          className="fixed inset-0 z-[100] flex items-center justify-center bg-black/80 backdrop-blur-md p-4 animate-in fade-in duration-200"
+          onClick={(e) => e.stopPropagation()}
+        >
+          <div className="bg-surface border border-border shadow-2xl rounded-3xl p-6 sm:p-8 w-full max-w-sm flex flex-col gap-4 text-center">
+            <div className="w-14 h-14 rounded-2xl bg-red-500/10 border border-red-500/30 flex items-center justify-center mx-auto text-red-500">
+              <Radio size={32} />
+            </div>
+            <div>
+              <h3 className="text-xl font-bold text-text-primary">End Setlist Sync Session?</h3>
+              <p className="text-xs text-text-secondary mt-2 leading-relaxed font-medium">
+                Are you sure you want to end this performance session for all connected followers?
+              </p>
+            </div>
+            <div className="flex items-center gap-3 mt-3">
+              <button
+                onClick={() => setShowEndConfirmModal(false)}
+                className="flex-1 py-3 px-4 bg-surface-raised border border-border rounded-xl text-xs font-bold text-text-secondary hover:text-white transition-all"
+              >
+                Cancel
+              </button>
+              <button
+                onClick={() => {
+                  setShowEndConfirmModal(false);
+                  handleEndSession();
+                }}
+                className="flex-1 py-3 px-4 bg-red-600 hover:bg-red-500 rounded-xl text-xs font-bold text-white shadow-md hover:shadow-red-600/30 transition-all"
+              >
+                End Session
+              </button>
             </div>
           </div>
         </div>

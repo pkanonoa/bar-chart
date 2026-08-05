@@ -162,6 +162,26 @@ export default function PerformancePage() {
     return () => window.removeEventListener('keydown', handler);
   }, [mode, currentIndex, chartIds.length, goTo]);
 
+  const [showEndConfirmModal, setShowEndConfirmModal] = useState(false);
+
+  // Intercept browser back button when leading a sync session
+  useEffect(() => {
+    if (mode !== 'leader') return;
+    try {
+      window.history.pushState({ inSyncSession: true }, '');
+    } catch {}
+
+    const handlePopState = () => {
+      try {
+        window.history.pushState({ inSyncSession: true }, '');
+      } catch {}
+      setShowEndConfirmModal(true);
+    };
+
+    window.addEventListener('popstate', handlePopState);
+    return () => window.removeEventListener('popstate', handlePopState);
+  }, [mode]);
+
   const handleEndSession = () => {
     endSession();
     sessionStorage.removeItem(`perform-leader-${code}`);
@@ -222,8 +242,16 @@ export default function PerformancePage() {
       <div className={`fixed top-0 left-0 right-0 z-50 flex items-center justify-between px-4 py-3 bg-bg/80 backdrop-blur-md border-b border-border/50 transition-all duration-300 ${showHeader ? 'translate-y-0 opacity-100' : '-translate-y-full opacity-0'}`}>
         <div className="flex items-center gap-3 min-w-0">
           <button
-            onClick={(e) => { e.stopPropagation(); isLeader ? handleEndSession() : router.push('/perform'); }}
+            onClick={(e) => { 
+              e.stopPropagation(); 
+              if (isLeader) {
+                setShowEndConfirmModal(true);
+              } else {
+                router.push('/perform'); 
+              }
+            }}
             className="p-2 text-text-secondary hover:text-white bg-surface border border-border rounded-lg transition-all shrink-0"
+            title="Close performance session"
           >
             <X size={18} />
           </button>
@@ -271,7 +299,7 @@ export default function PerformancePage() {
           )}
           {isLeader && (
             <button
-              onClick={(e) => { e.stopPropagation(); handleEndSession(); }}
+              onClick={(e) => { e.stopPropagation(); setShowEndConfirmModal(true); }}
               className="px-3 py-2 text-xs font-bold text-red-400 border border-red-500/30 bg-red-500/10 rounded-lg hover:bg-red-500 hover:text-white transition-all"
             >
               End
@@ -354,6 +382,43 @@ export default function PerformancePage() {
             </>
           )}
         </>
+      )}
+
+      {/* ── End Session Confirmation Modal ── */}
+      {showEndConfirmModal && (
+        <div 
+          className="fixed inset-0 z-[100] flex items-center justify-center bg-black/80 backdrop-blur-md p-4 animate-in fade-in duration-200"
+          onClick={(e) => e.stopPropagation()}
+        >
+          <div className="bg-surface border border-border shadow-2xl rounded-3xl p-6 sm:p-8 w-full max-w-sm flex flex-col gap-4 text-center">
+            <div className="w-14 h-14 rounded-2xl bg-red-500/10 border border-red-500/30 flex items-center justify-center mx-auto text-red-500">
+              <StopCircle size={32} />
+            </div>
+            <div>
+              <h3 className="text-xl font-bold text-text-primary">End Live Session?</h3>
+              <p className="text-xs text-text-secondary mt-2 leading-relaxed font-medium">
+                Are you sure you want to end this performance session for all connected followers?
+              </p>
+            </div>
+            <div className="flex items-center gap-3 mt-3">
+              <button
+                onClick={() => setShowEndConfirmModal(false)}
+                className="flex-1 py-3 px-4 bg-surface-raised border border-border rounded-xl text-xs font-bold text-text-secondary hover:text-white transition-all"
+              >
+                Cancel
+              </button>
+              <button
+                onClick={() => {
+                  setShowEndConfirmModal(false);
+                  handleEndSession();
+                }}
+                className="flex-1 py-3 px-4 bg-red-600 hover:bg-red-500 rounded-xl text-xs font-bold text-white shadow-md hover:shadow-red-600/30 transition-all"
+              >
+                End Session
+              </button>
+            </div>
+          </div>
+        </div>
       )}
     </div>
   );
