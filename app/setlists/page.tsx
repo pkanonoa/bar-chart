@@ -225,14 +225,22 @@ function SetlistCard({
           </p>
         </div>
 
-        {/* Menu */}
-        <div className="relative shrink-0">
+        {/* Actions */}
+        <div className="flex items-center gap-1 shrink-0">
           <button
-            onClick={e => { e.stopPropagation(); setMenuOpen(v => !v); }}
-            className="p-2 text-text-secondary hover:text-white bg-surface-raised border border-border rounded-xl opacity-0 group-hover:opacity-100 transition-all"
+            onClick={e => { e.stopPropagation(); onDelete(); }}
+            className="p-2 text-text-secondary/50 hover:text-red-400 hover:bg-red-500/10 rounded-xl transition-all sm:opacity-0 sm:group-hover:opacity-100"
+            title="Delete Setlist"
           >
-            <MoreVertical size={16} />
+            <Trash2 size={18} />
           </button>
+          <div className="relative">
+            <button
+              onClick={e => { e.stopPropagation(); setMenuOpen(v => !v); }}
+              className="p-2 text-text-secondary hover:text-white bg-surface-raised border border-border rounded-xl transition-all"
+            >
+              <MoreVertical size={16} />
+            </button>
           {menuOpen && (
             <>
               <div className="fixed inset-0 z-10" onClick={() => setMenuOpen(false)} />
@@ -250,6 +258,7 @@ function SetlistCard({
               </div>
             </>
           )}
+          </div>
         </div>
       </div>
     </div>
