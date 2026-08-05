@@ -11,7 +11,7 @@ import { useAuth } from '@/components/AuthProvider';
 import {
   Folder as FolderIcon, FileText, MoreVertical, Search,
   Plus, CornerLeftUp, Trash2, Edit2, CornerRightDown, Download, X,
-  FolderPlus, FilePlus, Printer, Star
+  FolderPlus, FilePlus, Printer, Star, LayoutGrid, List
 } from 'lucide-react';
 
 interface Props {
@@ -26,6 +26,16 @@ export function FolderBrowser({ folderId, folderName, kind = 'chart' }: Props) {
   const [folders, setFolders] = useState<Folder[]>([]);
   const [charts, setCharts] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
+
+  // View state (Grid vs List)
+  const [viewMode, setViewMode] = useState<'grid' | 'list'>('grid');
+
+  useEffect(() => {
+    const saved = localStorage.getItem('chord-grid-view-mode') as 'grid' | 'list';
+    if (saved === 'grid' || saved === 'list') {
+      setViewMode(saved);
+    }
+  }, []);
 
   // Search state
   const [searchQuery, setSearchQuery] = useState('');
@@ -377,6 +387,19 @@ export function FolderBrowser({ folderId, folderName, kind = 'chart' }: Props) {
           />
         </div>
 
+        {/* View Mode Toggle Button */}
+        <button
+          onClick={() => {
+            const nextMode = viewMode === 'grid' ? 'list' : 'grid';
+            setViewMode(nextMode);
+            localStorage.setItem('chord-grid-view-mode', nextMode);
+          }}
+          title={viewMode === 'grid' ? 'Switch to List View' : 'Switch to Grid View'}
+          className="p-2.5 text-text-secondary bg-surface border border-border rounded-xl hover:text-white hover:bg-surface-raised transition-all shrink-0"
+        >
+          {viewMode === 'grid' ? <List size={18} /> : <LayoutGrid size={18} />}
+        </button>
+
         {/* New Folder icon */}
         <button
           onClick={handleCreateFolder}
@@ -400,114 +423,69 @@ export function FolderBrowser({ folderId, folderName, kind = 'chart' }: Props) {
       </div>
 
 
-      {/* List View */}
-      {/* Grid View */}
+      {/* Content Area */}
       <div className="pt-4 pb-20">
         {loading && !isSearching ? (
           <div className="p-12 text-center text-text-secondary font-medium">Loading...</div>
         ) : isSearching ? (
-          <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-6">
+          <div className={viewMode === 'list' ? 'flex flex-col gap-2.5' : 'grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-6'}>
             {searchResults.length === 0 ? (
               <div className="col-span-full p-12 text-center text-text-secondary font-medium">No charts found matching "{searchQuery}"</div>
             ) : (
               searchResults.map((chart) => (
-                <div
-                  key={chart.id}
-                  className={`bg-surface border rounded-xl p-5 flex flex-col items-center justify-center cursor-pointer group relative transition-all duration-200 select-none ${
-                    selectedItems.some(i => i.id === chart.id) ? 'border-accent-solid shadow-md bg-surface-raised before:absolute before:left-0 before:top-0 before:bottom-0 before:w-1 before:bg-accent-gradient before:rounded-l-xl' : 'border-border shadow-sm hover:shadow-hover hover:-translate-y-1'
-                  } ${activeDropdown === chart.id ? 'z-[999]' : ''}`}
-                  style={{ touchAction: 'manipulation', WebkitUserSelect: 'none', userSelect: 'none', WebkitTouchCallout: 'none' }}
-                  onPointerDown={(e) => handlePointerDown(chart.id, kind, e)}
-                  onPointerMove={handlePointerMove}
-                  onPointerUp={handlePointerUp}
-                  onPointerCancel={handlePointerUp}
-                  onClick={(e) => handleCardClick(chart.id, kind, e, () => router.push(kind === 'lyrics' ? `/lyrics/${chart.id}` : `/chart/${chart.id}`))}
-                  onContextMenu={(e) => { e.preventDefault(); }}
-                >
-                  <div className="absolute top-3 left-3 z-10" onClick={e => e.stopPropagation()}>
-                    <input
-                      type="checkbox"
-                      checked={selectedItems.some(i => i.id === chart.id)}
-                      onChange={() => {}}
-                      onClick={(e) => toggleSelection(chart.id, kind, e)}
-                      className="w-4 h-4 rounded border-border text-accent-solid focus:ring-accent-solid bg-transparent"
-                    />
-                  </div>
-                  <div className="absolute top-2 right-2 z-10" onClick={e => e.stopPropagation()}>
-                    <RowMenu id={chart.id} type={kind} name={chart.title} />
-                  </div>
-                  <div className="w-16 h-16 bg-surface-raised rounded-full flex items-center justify-center mb-4 mt-2 shadow-inner border border-border">
-                    <FileText size={24} className="text-accent-start" />
-                  </div>
-                  <p className="text-sm font-bold text-text-primary text-center w-full truncate">{chart.title}</p>
-                  <p className="text-[10px] text-text-secondary mt-1">{new Date(chart.updated_at).toLocaleDateString()}</p>
-                  <button
-                    className={`absolute bottom-3 right-3 z-10 p-1.5 rounded-full hover:bg-white/10 transition-all ${
-                      activeDropdown === chart.id
-                        ? 'opacity-0 pointer-events-none'
-                        : chart.is_bookmarked
-                        ? 'opacity-100 scale-100'
-                        : 'opacity-0 group-hover:opacity-100 scale-90 hover:scale-100'
-                    }`}
-                    onClick={(e) => {
-                      e.stopPropagation();
-                      handleToggleBookmark(chart);
-                    }}
-                    title={chart.is_bookmarked ? 'Remove Bookmark' : 'Bookmark Chart'}
-                  >
-                    <Star size={16} className={chart.is_bookmarked ? "text-yellow-400 fill-yellow-400 drop-shadow-[0_0_6px_rgba(250,204,21,0.4)]" : "text-text-secondary/40 hover:text-yellow-400"} />
-                  </button>
-                </div>
-              ))
-            )}
-          </div>
-        ) : (
-          <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-6">
-            {folders.length === 0 && charts.length === 0 ? (
-              <div className="col-span-full p-16 text-center">
-                <div className="mx-auto h-20 w-20 bg-surface-raised rounded-full shadow-inner border border-border flex items-center justify-center mb-6">
-                  <FolderIcon size={32} className="text-text-secondary opacity-50" strokeWidth={2} />
-                </div>
-                <h3 className="text-sm font-bold text-text-primary mb-2">This folder is empty</h3>
-                <p className="text-xs text-text-secondary">Get started by creating a new folder or chart.</p>
-              </div>
-            ) : (
-              <>
-                {folders.map(folder => (
+                viewMode === 'list' ? (
                   <div
-                    key={folder.id}
-                    className={`bg-surface border rounded-xl p-5 flex flex-col items-center justify-center cursor-pointer group relative transition-all duration-200 select-none ${
-                      selectedItems.some(i => i.id === folder.id) ? 'border-accent-solid shadow-md bg-surface-raised before:absolute before:left-0 before:top-0 before:bottom-0 before:w-1 before:bg-accent-gradient before:rounded-l-xl' : 'border-border shadow-sm hover:shadow-hover hover:-translate-y-1'
-                    } ${activeDropdown === folder.id ? 'z-[999]' : ''}`}
+                    key={chart.id}
+                    className={`bg-surface border rounded-xl px-4 py-3 flex items-center justify-between cursor-pointer group relative transition-all duration-200 select-none ${
+                      selectedItems.some(i => i.id === chart.id) ? 'border-accent-solid shadow-md bg-surface-raised' : 'border-border shadow-sm hover:bg-surface-raised hover:-translate-x-0.5'
+                    } ${activeDropdown === chart.id ? 'z-[999]' : ''}`}
                     style={{ touchAction: 'manipulation', WebkitUserSelect: 'none', userSelect: 'none', WebkitTouchCallout: 'none' }}
-                    onPointerDown={(e) => handlePointerDown(folder.id, 'folder', e)}
+                    onPointerDown={(e) => handlePointerDown(chart.id, kind, e)}
                     onPointerMove={handlePointerMove}
                     onPointerUp={handlePointerUp}
                     onPointerCancel={handlePointerUp}
-                    onClick={(e) => handleCardClick(folder.id, 'folder', e, () => router.push(kind === 'lyrics' ? `/lyrics/folder/${folder.id}` : `/folder/${folder.id}`))}
+                    onClick={(e) => handleCardClick(chart.id, kind, e, () => router.push(kind === 'lyrics' ? `/lyrics/${chart.id}` : `/chart/${chart.id}`))}
                     onContextMenu={(e) => { e.preventDefault(); }}
                   >
-                    <div className="absolute top-3 left-3 z-10" onClick={e => e.stopPropagation()}>
-                      <input
-                        type="checkbox"
-                        checked={selectedItems.some(i => i.id === folder.id)}
-                        onChange={() => {}}
-                        onClick={(e) => toggleSelection(folder.id, 'folder', e)}
-                        className="w-4 h-4 rounded border-border text-accent-solid focus:ring-accent-solid bg-transparent"
-                      />
+                    <div className="flex items-center gap-3 min-w-0 flex-1 pr-2">
+                      <div onClick={e => e.stopPropagation()} className="shrink-0">
+                        <input
+                          type="checkbox"
+                          checked={selectedItems.some(i => i.id === chart.id)}
+                          onChange={() => {}}
+                          onClick={(e) => toggleSelection(chart.id, kind, e)}
+                          className="w-4 h-4 rounded border-border text-accent-solid focus:ring-accent-solid bg-transparent"
+                        />
+                      </div>
+                      <div className="w-10 h-10 bg-surface-raised rounded-xl flex items-center justify-center shrink-0 border border-border">
+                        <FileText size={20} className="text-accent-start" />
+                      </div>
+                      <div className="min-w-0 flex-1">
+                        <p className="text-sm font-bold text-text-primary truncate">{chart.title}</p>
+                        <p className="text-[10px] text-text-secondary">{new Date(chart.updated_at).toLocaleDateString()}</p>
+                      </div>
                     </div>
-                    <div className="absolute top-2 right-2 z-10" onClick={e => e.stopPropagation()}>
-                      <RowMenu id={folder.id} type="folder" name={folder.name} />
+                    <div className="flex items-center gap-1 shrink-0" onClick={e => e.stopPropagation()}>
+                      <button
+                        className={`p-1.5 rounded-full hover:bg-white/10 transition-all ${
+                          activeDropdown === chart.id
+                            ? 'opacity-0 pointer-events-none'
+                            : chart.is_bookmarked
+                            ? 'opacity-100'
+                            : 'opacity-0 group-hover:opacity-100'
+                        }`}
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          handleToggleBookmark(chart);
+                        }}
+                        title={chart.is_bookmarked ? 'Remove Bookmark' : 'Bookmark Chart'}
+                      >
+                        <Star size={16} className={chart.is_bookmarked ? "text-yellow-400 fill-yellow-400 drop-shadow-[0_0_6px_rgba(250,204,21,0.4)]" : "text-text-secondary/40 hover:text-yellow-400"} />
+                      </button>
+                      <RowMenu id={chart.id} type={kind} name={chart.title} />
                     </div>
-                    <div className="w-16 h-16 bg-surface-raised rounded-full flex items-center justify-center mb-4 mt-2 shadow-inner border border-border">
-                      <FolderIcon size={24} className="text-text-primary opacity-50" fill="currentColor" fillOpacity={0.1} />
-                    </div>
-                    <p className="text-sm font-bold text-text-primary text-center w-full truncate">{folder.name}</p>
-                    <p className="text-[10px] text-text-secondary mt-1">{new Date(folder.updated_at).toLocaleDateString()}</p>
                   </div>
-                ))}
-                
-                {charts.map(chart => (
+                ) : (
                   <div
                     key={chart.id}
                     className={`bg-surface border rounded-xl p-5 flex flex-col items-center justify-center cursor-pointer group relative transition-all duration-200 select-none ${
@@ -555,6 +533,196 @@ export function FolderBrowser({ folderId, folderName, kind = 'chart' }: Props) {
                       <Star size={16} className={chart.is_bookmarked ? "text-yellow-400 fill-yellow-400 drop-shadow-[0_0_6px_rgba(250,204,21,0.4)]" : "text-text-secondary/40 hover:text-yellow-400"} />
                     </button>
                   </div>
+                )
+              ))
+            )}
+          </div>
+        ) : (
+          <div className={viewMode === 'list' ? 'flex flex-col gap-2.5' : 'grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-6'}>
+            {folders.length === 0 && charts.length === 0 ? (
+              <div className="col-span-full p-16 text-center">
+                <div className="mx-auto h-20 w-20 bg-surface-raised rounded-full shadow-inner border border-border flex items-center justify-center mb-6">
+                  <FolderIcon size={32} className="text-text-secondary opacity-50" strokeWidth={2} />
+                </div>
+                <h3 className="text-sm font-bold text-text-primary mb-2">This folder is empty</h3>
+                <p className="text-xs text-text-secondary">Get started by creating a new folder or chart.</p>
+              </div>
+            ) : (
+              <>
+                {folders.map(folder => (
+                  viewMode === 'list' ? (
+                    <div
+                      key={folder.id}
+                      className={`bg-surface border rounded-xl px-4 py-3 flex items-center justify-between cursor-pointer group relative transition-all duration-200 select-none ${
+                        selectedItems.some(i => i.id === folder.id) ? 'border-accent-solid shadow-md bg-surface-raised' : 'border-border shadow-sm hover:bg-surface-raised hover:-translate-x-0.5'
+                      } ${activeDropdown === folder.id ? 'z-[999]' : ''}`}
+                      style={{ touchAction: 'manipulation', WebkitUserSelect: 'none', userSelect: 'none', WebkitTouchCallout: 'none' }}
+                      onPointerDown={(e) => handlePointerDown(folder.id, 'folder', e)}
+                      onPointerMove={handlePointerMove}
+                      onPointerUp={handlePointerUp}
+                      onPointerCancel={handlePointerUp}
+                      onClick={(e) => handleCardClick(folder.id, 'folder', e, () => router.push(kind === 'lyrics' ? `/lyrics/folder/${folder.id}` : `/folder/${folder.id}`))}
+                      onContextMenu={(e) => { e.preventDefault(); }}
+                    >
+                      <div className="flex items-center gap-3 min-w-0 flex-1 pr-2">
+                        <div onClick={e => e.stopPropagation()} className="shrink-0">
+                          <input
+                            type="checkbox"
+                            checked={selectedItems.some(i => i.id === folder.id)}
+                            onChange={() => {}}
+                            onClick={(e) => toggleSelection(folder.id, 'folder', e)}
+                            className="w-4 h-4 rounded border-border text-accent-solid focus:ring-accent-solid bg-transparent"
+                          />
+                        </div>
+                        <div className="w-10 h-10 bg-surface-raised rounded-xl flex items-center justify-center shrink-0 border border-border">
+                          <FolderIcon size={20} className="text-text-primary opacity-60" fill="currentColor" fillOpacity={0.15} />
+                        </div>
+                        <div className="min-w-0 flex-1">
+                          <p className="text-sm font-bold text-text-primary truncate">{folder.name}</p>
+                          <p className="text-[10px] text-text-secondary">{new Date(folder.updated_at).toLocaleDateString()}</p>
+                        </div>
+                      </div>
+                      <div onClick={e => e.stopPropagation()} className="shrink-0">
+                        <RowMenu id={folder.id} type="folder" name={folder.name} />
+                      </div>
+                    </div>
+                  ) : (
+                    <div
+                      key={folder.id}
+                      className={`bg-surface border rounded-xl p-5 flex flex-col items-center justify-center cursor-pointer group relative transition-all duration-200 select-none ${
+                        selectedItems.some(i => i.id === folder.id) ? 'border-accent-solid shadow-md bg-surface-raised before:absolute before:left-0 before:top-0 before:bottom-0 before:w-1 before:bg-accent-gradient before:rounded-l-xl' : 'border-border shadow-sm hover:shadow-hover hover:-translate-y-1'
+                      } ${activeDropdown === folder.id ? 'z-[999]' : ''}`}
+                      style={{ touchAction: 'manipulation', WebkitUserSelect: 'none', userSelect: 'none', WebkitTouchCallout: 'none' }}
+                      onPointerDown={(e) => handlePointerDown(folder.id, 'folder', e)}
+                      onPointerMove={handlePointerMove}
+                      onPointerUp={handlePointerUp}
+                      onPointerCancel={handlePointerUp}
+                      onClick={(e) => handleCardClick(folder.id, 'folder', e, () => router.push(kind === 'lyrics' ? `/lyrics/folder/${folder.id}` : `/folder/${folder.id}`))}
+                      onContextMenu={(e) => { e.preventDefault(); }}
+                    >
+                      <div className="absolute top-3 left-3 z-10" onClick={e => e.stopPropagation()}>
+                        <input
+                          type="checkbox"
+                          checked={selectedItems.some(i => i.id === folder.id)}
+                          onChange={() => {}}
+                          onClick={(e) => toggleSelection(folder.id, 'folder', e)}
+                          className="w-4 h-4 rounded border-border text-accent-solid focus:ring-accent-solid bg-transparent"
+                        />
+                      </div>
+                      <div className="absolute top-2 right-2 z-10" onClick={e => e.stopPropagation()}>
+                        <RowMenu id={folder.id} type="folder" name={folder.name} />
+                      </div>
+                      <div className="w-16 h-16 bg-surface-raised rounded-full flex items-center justify-center mb-4 mt-2 shadow-inner border border-border">
+                        <FolderIcon size={24} className="text-text-primary opacity-50" fill="currentColor" fillOpacity={0.1} />
+                      </div>
+                      <p className="text-sm font-bold text-text-primary text-center w-full truncate">{folder.name}</p>
+                      <p className="text-[10px] text-text-secondary mt-1">{new Date(folder.updated_at).toLocaleDateString()}</p>
+                    </div>
+                  )
+                ))}
+                
+                {charts.map(chart => (
+                  viewMode === 'list' ? (
+                    <div
+                      key={chart.id}
+                      className={`bg-surface border rounded-xl px-4 py-3 flex items-center justify-between cursor-pointer group relative transition-all duration-200 select-none ${
+                        selectedItems.some(i => i.id === chart.id) ? 'border-accent-solid shadow-md bg-surface-raised' : 'border-border shadow-sm hover:bg-surface-raised hover:-translate-x-0.5'
+                      } ${activeDropdown === chart.id ? 'z-[999]' : ''}`}
+                      style={{ touchAction: 'manipulation', WebkitUserSelect: 'none', userSelect: 'none', WebkitTouchCallout: 'none' }}
+                      onPointerDown={(e) => handlePointerDown(chart.id, kind, e)}
+                      onPointerMove={handlePointerMove}
+                      onPointerUp={handlePointerUp}
+                      onPointerCancel={handlePointerUp}
+                      onClick={(e) => handleCardClick(chart.id, kind, e, () => router.push(kind === 'lyrics' ? `/lyrics/${chart.id}` : `/chart/${chart.id}`))}
+                      onContextMenu={(e) => { e.preventDefault(); }}
+                    >
+                      <div className="flex items-center gap-3 min-w-0 flex-1 pr-2">
+                        <div onClick={e => e.stopPropagation()} className="shrink-0">
+                          <input
+                            type="checkbox"
+                            checked={selectedItems.some(i => i.id === chart.id)}
+                            onChange={() => {}}
+                            onClick={(e) => toggleSelection(chart.id, kind, e)}
+                            className="w-4 h-4 rounded border-border text-accent-solid focus:ring-accent-solid bg-transparent"
+                          />
+                        </div>
+                        <div className="w-10 h-10 bg-surface-raised rounded-xl flex items-center justify-center shrink-0 border border-border">
+                          <FileText size={20} className="text-accent-start" />
+                        </div>
+                        <div className="min-w-0 flex-1">
+                          <p className="text-sm font-bold text-text-primary truncate">{chart.title}</p>
+                          <p className="text-[10px] text-text-secondary">{new Date(chart.updated_at).toLocaleDateString()}</p>
+                        </div>
+                      </div>
+                      <div className="flex items-center gap-1 shrink-0" onClick={e => e.stopPropagation()}>
+                        <button
+                          className={`p-1.5 rounded-full hover:bg-white/10 transition-all ${
+                            activeDropdown === chart.id
+                              ? 'opacity-0 pointer-events-none'
+                              : chart.is_bookmarked
+                              ? 'opacity-100 scale-100'
+                              : 'opacity-0 group-hover:opacity-100 scale-90 hover:scale-100'
+                          }`}
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            handleToggleBookmark(chart);
+                          }}
+                          title={chart.is_bookmarked ? 'Remove Bookmark' : 'Bookmark Chart'}
+                        >
+                          <Star size={16} className={chart.is_bookmarked ? "text-yellow-400 fill-yellow-400 drop-shadow-[0_0_6px_rgba(250,204,21,0.4)]" : "text-text-secondary/40 hover:text-yellow-400"} />
+                        </button>
+                        <RowMenu id={chart.id} type={kind} name={chart.title} />
+                      </div>
+                    </div>
+                  ) : (
+                    <div
+                      key={chart.id}
+                      className={`bg-surface border rounded-xl p-5 flex flex-col items-center justify-center cursor-pointer group relative transition-all duration-200 select-none ${
+                        selectedItems.some(i => i.id === chart.id) ? 'border-accent-solid shadow-md bg-surface-raised before:absolute before:left-0 before:top-0 before:bottom-0 before:w-1 before:bg-accent-gradient before:rounded-l-xl' : 'border-border shadow-sm hover:shadow-hover hover:-translate-y-1'
+                      } ${activeDropdown === chart.id ? 'z-[999]' : ''}`}
+                      style={{ touchAction: 'manipulation', WebkitUserSelect: 'none', userSelect: 'none', WebkitTouchCallout: 'none' }}
+                      onPointerDown={(e) => handlePointerDown(chart.id, kind, e)}
+                      onPointerMove={handlePointerMove}
+                      onPointerUp={handlePointerUp}
+                      onPointerCancel={handlePointerUp}
+                      onClick={(e) => handleCardClick(chart.id, kind, e, () => router.push(kind === 'lyrics' ? `/lyrics/${chart.id}` : `/chart/${chart.id}`))}
+                      onContextMenu={(e) => { e.preventDefault(); }}
+                    >
+                      <div className="absolute top-3 left-3 z-10" onClick={e => e.stopPropagation()}>
+                        <input
+                          type="checkbox"
+                          checked={selectedItems.some(i => i.id === chart.id)}
+                          onChange={() => {}}
+                          onClick={(e) => toggleSelection(chart.id, kind, e)}
+                          className="w-4 h-4 rounded border-border text-accent-solid focus:ring-accent-solid bg-transparent"
+                        />
+                      </div>
+                      <div className="absolute top-2 right-2 z-10" onClick={e => e.stopPropagation()}>
+                        <RowMenu id={chart.id} type={kind} name={chart.title} />
+                      </div>
+                      <div className="w-16 h-16 bg-surface-raised rounded-full flex items-center justify-center mb-4 mt-2 shadow-inner border border-border">
+                        <FileText size={24} className="text-accent-start" />
+                      </div>
+                      <p className="text-sm font-bold text-text-primary text-center w-full truncate">{chart.title}</p>
+                      <p className="text-[10px] text-text-secondary mt-1">{new Date(chart.updated_at).toLocaleDateString()}</p>
+                      <button
+                        className={`absolute bottom-3 right-3 z-10 p-1.5 rounded-full hover:bg-white/10 transition-all ${
+                          activeDropdown === chart.id
+                            ? 'opacity-0 pointer-events-none'
+                            : chart.is_bookmarked
+                            ? 'opacity-100 scale-100'
+                            : 'opacity-0 group-hover:opacity-100 scale-90 hover:scale-100'
+                        }`}
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          handleToggleBookmark(chart);
+                        }}
+                        title={chart.is_bookmarked ? 'Remove Bookmark' : 'Bookmark Chart'}
+                      >
+                        <Star size={16} className={chart.is_bookmarked ? "text-yellow-400 fill-yellow-400 drop-shadow-[0_0_6px_rgba(250,204,21,0.4)]" : "text-text-secondary/40 hover:text-yellow-400"} />
+                      </button>
+                    </div>
+                  )
                 ))}
               </>
             )}
