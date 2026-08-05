@@ -308,7 +308,7 @@ export function FolderBrowser({ folderId, folderName, kind = 'chart' }: Props) {
         </button>
 
         {isOpen && (
-          <div className={`absolute ${dropdownHorizontal === 'right' ? 'right-0' : 'left-0'} ${dropdownDirection === 'up' ? 'bottom-full mb-2' : 'top-full mt-2'} w-48 bg-[#181136] rounded-xl shadow-2xl z-[100] border border-white/15 py-1 backdrop-blur-xl`}>
+          <div className={`absolute ${dropdownHorizontal === 'right' ? 'right-0' : 'left-0'} ${dropdownDirection === 'up' ? 'bottom-full mb-2' : 'top-full mt-2'} w-48 bg-[#161033] rounded-xl shadow-2xl z-[9999] border border-white/20 py-1`}>
             <button
               onClick={(e) => { e.stopPropagation(); setActiveDropdown(null); setRenameItem({ id, type, currentName: name }); }}
               className="flex items-center w-full px-4 py-2 text-xs uppercase tracking-widest font-bold text-text-secondary hover:bg-white/5 hover:text-white"
@@ -420,7 +420,7 @@ export function FolderBrowser({ folderId, folderName, kind = 'chart' }: Props) {
                   key={chart.id}
                   className={`bg-surface border rounded-xl p-5 flex flex-col items-center justify-center cursor-pointer group relative transition-all duration-200 select-none ${
                     selectedItems.some(i => i.id === chart.id) ? 'border-accent-solid shadow-md bg-surface-raised before:absolute before:left-0 before:top-0 before:bottom-0 before:w-1 before:bg-accent-gradient before:rounded-l-xl' : 'border-border shadow-sm hover:shadow-hover hover:-translate-y-1'
-                  } ${activeDropdown === chart.id ? 'z-40' : ''}`}
+                  } ${activeDropdown === chart.id ? 'z-[999]' : ''}`}
                   style={{ touchAction: 'manipulation', WebkitUserSelect: 'none', userSelect: 'none', WebkitTouchCallout: 'none' }}
                   onPointerDown={(e) => handlePointerDown(chart.id, kind, e)}
                   onPointerMove={handlePointerMove}
@@ -479,7 +479,7 @@ export function FolderBrowser({ folderId, folderName, kind = 'chart' }: Props) {
                     key={folder.id}
                     className={`bg-surface border rounded-xl p-5 flex flex-col items-center justify-center cursor-pointer group relative transition-all duration-200 select-none ${
                       selectedItems.some(i => i.id === folder.id) ? 'border-accent-solid shadow-md bg-surface-raised before:absolute before:left-0 before:top-0 before:bottom-0 before:w-1 before:bg-accent-gradient before:rounded-l-xl' : 'border-border shadow-sm hover:shadow-hover hover:-translate-y-1'
-                    } ${activeDropdown === folder.id ? 'z-40' : ''}`}
+                    } ${activeDropdown === folder.id ? 'z-[999]' : ''}`}
                     style={{ touchAction: 'manipulation', WebkitUserSelect: 'none', userSelect: 'none', WebkitTouchCallout: 'none' }}
                     onPointerDown={(e) => handlePointerDown(folder.id, 'folder', e)}
                     onPointerMove={handlePointerMove}
@@ -513,7 +513,7 @@ export function FolderBrowser({ folderId, folderName, kind = 'chart' }: Props) {
                     key={chart.id}
                     className={`bg-surface border rounded-xl p-5 flex flex-col items-center justify-center cursor-pointer group relative transition-all duration-200 select-none ${
                       selectedItems.some(i => i.id === chart.id) ? 'border-accent-solid shadow-md bg-surface-raised before:absolute before:left-0 before:top-0 before:bottom-0 before:w-1 before:bg-accent-gradient before:rounded-l-xl' : 'border-border shadow-sm hover:shadow-hover hover:-translate-y-1'
-                    } ${activeDropdown === chart.id ? 'z-40' : ''}`}
+                    } ${activeDropdown === chart.id ? 'z-[999]' : ''}`}
                     style={{ touchAction: 'manipulation', WebkitUserSelect: 'none', userSelect: 'none', WebkitTouchCallout: 'none' }}
                     onPointerDown={(e) => handlePointerDown(chart.id, kind, e)}
                     onPointerMove={handlePointerMove}

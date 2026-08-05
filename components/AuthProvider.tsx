@@ -76,10 +76,9 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   useEffect(() => {
     const fetchUser = async () => {
       try {
-        const isOffline = typeof navigator !== 'undefined' && !navigator.onLine;
         const guestPref = typeof window !== 'undefined' && localStorage.getItem(GUEST_KEY) === 'true';
 
-        if (guestPref || isOffline) {
+        if (guestPref) {
           setIsGuest(true);
           setUser(getOrCreateOfflineUser());
           setLoading(false);
