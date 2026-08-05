@@ -132,7 +132,7 @@ export function ChartRenderer({
                                 {parseChord(bar || '_')}
                               </span>
                               {barIdx < block.bars.length - 1 && (
-                                <span className="inline-flex items-center justify-center text-indigo-600 font-bold px-1 text-base sm:text-xl print:text-black">|</span>
+                                <span className="inline-flex items-center justify-center text-indigo-600 font-black text-[1.15em] sm:text-[1.25em] px-1 print:text-black">|</span>
                               )}
                             </React.Fragment>
                           ))}
