@@ -303,12 +303,48 @@ export default function PrinterPage() {
       </main>
 
       {/* Hidden Print Container - outside scrollable main wrapper to prevent clipping */}
-      <div className="hidden print:block w-full max-w-none m-0 p-0 overflow-visible">
+      <div className="hidden print:block w-full max-w-none m-0 p-0 overflow-visible text-black">
+        {queue.length > 0 && (
+          <div className="page-break-after w-[min(100%,60rem)] mx-auto px-12 pt-20 pb-16 text-black block">
+            <h1 className="text-4xl sm:text-5xl font-extrabold print:!font-bold tracking-normal text-black mb-3">
+              {setlistName || 'Setlist Print Queue'}
+            </h1>
+            <p className="text-xl font-medium text-slate-700 print:text-black mb-8">
+              {new Date().toLocaleDateString(undefined, { weekday: 'long', month: 'long', day: 'numeric', year: 'numeric' })}
+            </p>
+
+            <div className="mt-8 border-t-2 border-slate-300 print:border-black pt-8">
+              <p className="text-sm font-bold uppercase tracking-widest text-slate-700 print:text-black mb-6">Setlist Contents ({queue.length} Songs)</p>
+              <ol className="space-y-4">
+                {queue.map((id, idx) => {
+                  const chart = charts[id];
+                  return (
+                    <li key={id} className="flex items-baseline justify-between gap-4 pb-3 border-b border-slate-200 print:border-slate-300 text-lg print:text-base text-black">
+                      <div className="flex items-baseline gap-3 min-w-0">
+                        <span className="w-8 shrink-0 text-right font-mono font-bold text-slate-700 print:text-black">{idx + 1}.</span>
+                        <span className="font-bold tracking-tight print:!tracking-normal text-black text-xl print:text-lg">{chart ? chart.title : 'Unknown Song'}</span>
+                        <span className="text-xs font-semibold text-slate-600 print:text-slate-800 uppercase tracking-wider px-2 py-0.5 bg-slate-100 print:bg-transparent rounded">
+                          Chart
+                        </span>
+                      </div>
+                      {chart && (
+                        <div className="flex items-baseline gap-4 shrink-0 text-sm font-mono font-bold text-slate-700 print:text-black">
+                          {chart.time_sig || '4/4'} • t={chart.tempo || 120}
+                        </div>
+                      )}
+                    </li>
+                  );
+                })}
+              </ol>
+            </div>
+          </div>
+        )}
+
         {queue.map((id, index) => {
           const chart = charts[id];
           if (!chart) return null;
           return (
-            <div key={id} style={{ breakAfter: 'page', pageBreakAfter: 'always', marginBottom: '2rem' }} className="w-full max-w-none overflow-visible">
+            <div key={id} className="page-break print:break-before-page w-full max-w-none overflow-visible pt-4">
               <ChartRenderer chart={chart as any} selectedFont={font} watermark={watermark} />
             </div>
           );

@@ -379,35 +379,7 @@ export default function PerformancePage() {
         </div>
       )}
 
-      {/* ── Side Floating Navigation Arrows ── */}
-      {showHeader && (
-        <>
-          <button
-            onClick={(e) => {
-              e.stopPropagation();
-              if (isLeader) goTo(Math.max(0, currentIndex - 1));
-              else { setLocalIndex(idx => Math.max(0, idx - 1)); stopFollowing(); }
-            }}
-            disabled={currentIndex === 0}
-            className="fixed top-1/2 left-3 -translate-y-1/2 z-40 w-12 h-12 flex items-center justify-center text-text-secondary bg-surface/80 border border-border backdrop-blur-md rounded-2xl shadow-2xl hover:text-white hover:bg-surface-raised disabled:opacity-20 transition-all"
-            title="Previous Page / Song"
-          >
-            <ChevronLeft size={24} />
-          </button>
-          <button
-            onClick={(e) => {
-              e.stopPropagation();
-              if (isLeader) goTo(Math.min(totalCharts - 1, currentIndex + 1));
-              else { setLocalIndex(idx => Math.min(totalCharts - 1, idx + 1)); stopFollowing(); }
-            }}
-            disabled={currentIndex >= totalCharts - 1}
-            className="fixed top-1/2 right-3 -translate-y-1/2 z-40 w-12 h-12 flex items-center justify-center text-white bg-accent-gradient backdrop-blur-md rounded-2xl shadow-2xl hover:brightness-110 disabled:opacity-20 transition-all"
-            title="Next Page / Song"
-          >
-            <ChevronRight size={24} />
-          </button>
-        </>
-      )}
+
 
       {/* ── Follower: status badge + back-to-leader pill ── */}
       {!isLeader && (
