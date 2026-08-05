@@ -85,7 +85,15 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
           return;
         }
 
-        const { data: { session } } = await supabase.auth.getSession();
+        // Race supabase session fetch against a 3s timeout so we don't hang forever when offline
+        const timeout = new Promise<{ data: { session: null } }>((resolve) =>
+          setTimeout(() => resolve({ data: { session: null } }), 3000)
+        );
+        const { data: { session } } = await Promise.race([
+          supabase.auth.getSession(),
+          timeout,
+        ]);
+
         if (session?.user) {
           setUser(session.user);
           setIsGuest(false);
@@ -95,9 +103,8 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
           setUser(null);
         }
       } catch (err) {
-        console.warn('[Auth] Error fetching session, enabling offline fallback:', err);
-        setIsGuest(true);
-        setUser(getOrCreateOfflineUser());
+        console.warn('[Auth] Error fetching session:', err);
+        setUser(null);
       } finally {
         setLoading(false);
       }
