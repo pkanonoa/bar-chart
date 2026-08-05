@@ -305,35 +305,14 @@ export default function PerformancePage() {
         </TransformWrapper>
       </main>
 
-      {/* ── Leader: Prev / Next + counter ── */}
-      {isLeader && totalCharts > 0 && (
-        <>
-          <button
-            onClick={(e) => { e.stopPropagation(); if (currentIndex > 0) goTo(currentIndex - 1); }}
-            disabled={currentIndex === 0}
-            className="fixed bottom-8 left-5 z-50 w-16 h-16 flex items-center justify-center text-white bg-accent-gradient rounded-2xl shadow-popover hover:brightness-110 transition-all disabled:opacity-30 disabled:cursor-not-allowed"
-            title="Previous chart (←)"
-          >
-            <ChevronLeft size={32} />
-          </button>
-
-          <button
-            onClick={(e) => { e.stopPropagation(); if (currentIndex < totalCharts - 1) goTo(currentIndex + 1); }}
-            disabled={currentIndex >= totalCharts - 1}
-            className="fixed bottom-8 right-5 z-50 w-16 h-16 flex items-center justify-center text-white bg-accent-gradient rounded-2xl shadow-popover hover:brightness-110 transition-all disabled:opacity-30 disabled:cursor-not-allowed"
-            title="Next chart (→)"
-          >
-            <ChevronRight size={32} />
-          </button>
-
-          {/* Chart counter + title */}
-          <div className="fixed bottom-8 left-1/2 -translate-x-1/2 z-50 max-w-[50vw] text-center pointer-events-none">
-            <div className="px-4 py-2 bg-surface border border-border rounded-full text-xs font-bold tracking-widest uppercase text-text-secondary shadow-popover whitespace-nowrap">
-              {currentIndex + 1} / {totalCharts}
-              {currentChart && <span className="text-text-primary ml-2">· {currentChart.title}</span>}
-            </div>
+      {/* ── Bottom Indicator ── */}
+      {showHeader && (
+        <div className="fixed bottom-6 left-1/2 -translate-x-1/2 z-50 flex items-center gap-3 transition-all duration-300">
+          <div className="px-4 py-2 bg-surface border border-border rounded-full text-xs font-bold tracking-widest uppercase text-text-secondary shadow-popover whitespace-nowrap">
+            {currentIndex + 1} / {totalCharts}
+            {currentChart && <span className="text-text-primary ml-2">· {currentChart.title}</span>}
           </div>
-        </>
+        </div>
       )}
 
       {/* ── Follower: status badge + back-to-leader pill ── */}
