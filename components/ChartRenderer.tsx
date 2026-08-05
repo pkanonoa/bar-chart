@@ -58,24 +58,24 @@ export function ChartRenderer({
         </div>
 
         {/* Lines */}
-        <div className="flex flex-col w-full items-center">
-          <div className="flex flex-col gap-4 sm:gap-6 print:gap-8 w-full max-w-full justify-center mx-auto print:mx-0 overflow-x-auto scrollbar-none">
+        <div className="flex flex-col w-full">
+          <div className="flex flex-col gap-4 sm:gap-6 print:gap-8 w-full justify-center mx-auto print:mx-0 overflow-x-auto scrollbar-none px-1">
             {chartData.lines.map((line, lIdx) => {
               if (line.blocks.length === 0) {
                 return (
-                  <div key={lIdx} className={`flex flex-row items-center justify-center w-full flex-nowrap whitespace-nowrap rounded-lg transition-all duration-300 ${
+                  <div key={lIdx} className={`flex flex-row items-center justify-start md:justify-center w-full flex-nowrap whitespace-nowrap rounded-lg transition-all duration-300 ${
                     activeSectionIndex === lIdx ? 'ring-2 ring-indigo-500/40 bg-indigo-50/50 px-2 -mx-2' : ''
                   }`} id={`chart-line-${lIdx}`}>
                     {/* Left Label */}
                     {line.label ? (
                       <div 
-                        className="shrink-0 text-slate-700 font-bold text-base sm:text-xl print:text-[1em] text-right pr-3 sm:pr-5 flex items-center justify-end"
-                        style={{ width: `${labelCh}ch`, minWidth: '5.5rem' }}
+                        className="shrink-0 text-slate-800 font-extrabold text-base sm:text-xl print:text-[1em] text-right pr-3 sm:pr-5 flex items-center justify-end font-sans select-none"
+                        style={{ width: `${Math.max(7, labelCh)}ch`, minWidth: '5rem' }}
                       >
                         {line.label.charAt(0).toUpperCase()}{line.label.slice(1).toLowerCase()}:
                       </div>
                     ) : (
-                      <div className="shrink-0" style={{ width: `${labelCh}ch`, minWidth: '5.5rem' }}></div>
+                      <div className="shrink-0" style={{ width: `${Math.max(7, labelCh)}ch`, minWidth: '5rem' }}></div>
                     )}
 
                     {/* Right Label (Annotation) */}
@@ -92,19 +92,19 @@ export function ChartRenderer({
               }
 
               return (
-                <div key={lIdx} className={`flex flex-row items-center justify-center flex-nowrap whitespace-nowrap rounded-lg transition-all duration-300 ${
+                <div key={lIdx} className={`flex flex-row items-center justify-start md:justify-center flex-nowrap whitespace-nowrap rounded-lg transition-all duration-300 ${
                   activeSectionIndex === lIdx ? 'ring-2 ring-indigo-500/40 bg-indigo-50/50 px-2 -mx-2' : ''
                 }`} id={`chart-line-${lIdx}`}>
                   {/* Left Label */}
                   <div 
-                    className="shrink-0 text-slate-700 font-bold text-base sm:text-xl print:text-[1em] text-right pr-3 sm:pr-5 flex items-center justify-end"
-                    style={{ width: `${labelCh}ch`, minWidth: '5.5rem' }}
+                    className="shrink-0 text-slate-800 font-extrabold text-base sm:text-xl print:text-[1em] text-right pr-3 sm:pr-5 flex items-center justify-end font-sans select-none"
+                    style={{ width: `${Math.max(7, labelCh)}ch`, minWidth: '5rem' }}
                   >
                     {line.label ? `${line.label.charAt(0).toUpperCase()}${line.label.slice(1).toLowerCase()}:` : ''}
                   </div>
 
                   {/* Chords Container */}
-                  <div className="flex items-center justify-center flex-nowrap shrink-0 text-lg sm:text-2xl print:text-[1.1em]">
+                  <div className="flex items-center justify-start md:justify-center flex-nowrap shrink-0 text-lg sm:text-2xl print:text-[1.1em]">
                     {line.blocks.map((block, bIdx) => {
                       const isFirst = bIdx === 0;
                       let prefix = '';
@@ -174,7 +174,7 @@ export function ChartRenderer({
     <div 
       id={id}
       onClick={onClick}
-      className="flex text-left flex-col w-full max-w-4xl min-h-full p-6 sm:p-12 print:p-0 bg-white shadow-2xl border border-slate-200/80 rounded-2xl sm:rounded-3xl relative mx-auto my-auto print:min-h-[28cm] print:w-full print:border-none print:shadow-none print:rounded-none"
+      className="flex text-left flex-col w-full min-h-full p-4 sm:p-8 md:p-10 print:p-0 bg-white print:bg-transparent rounded-2xl print:rounded-none relative mx-auto my-auto print:min-h-[28cm] print:w-full border-none shadow-none"
     >
       {watermark && (
         <div className="hidden print:grid absolute inset-0 grid-cols-4 gap-y-6 gap-x-4 items-center justify-items-center pointer-events-none overflow-hidden z-[1] opacity-[0.04] rotate-[-30deg] scale-150 select-none">

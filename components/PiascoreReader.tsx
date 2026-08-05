@@ -427,15 +427,7 @@ export function PiascoreReader({ initialChart, folderId, onLeaderStart, onFollow
             </button>
           </div>
 
-          {/* BPM Slider */}
-          <input
-            type="range"
-            min="40"
-            max="240"
-            value={bpm}
-            onChange={(e) => setBpm(Number(e.target.value))}
-            className="w-full accent-accent-start"
-          />
+
 
           {/* Time Signature Options */}
           <div className="flex items-center justify-between gap-1 text-xs">
@@ -491,14 +483,14 @@ export function PiascoreReader({ initialChart, folderId, onLeaderStart, onFollow
         >
           <TransformComponent
             wrapperClass="!w-full !h-full"
-            contentClass="w-max min-w-full min-h-full flex items-center justify-center p-4 sm:p-12 pt-24 pb-24"
+            contentClass="w-full min-w-full min-h-full flex items-stretch justify-center p-2 sm:p-4 md:p-6 pt-16 sm:pt-20 pb-16 sm:pb-20"
           >
             <div
               onClick={(e) => {
                 e.stopPropagation();
                 toggleUI();
               }}
-              className="bg-white text-slate-900 shadow-2xl rounded-sm p-4 sm:p-8 max-w-4xl w-full border border-slate-200"
+              className="bg-white text-slate-900 shadow-2xl rounded-2xl p-4 sm:p-8 md:p-10 w-full max-w-none border border-slate-200/80 flex items-stretch"
             >
               <ChartContentWrapper chart={currentChart} selectedFont={selectedFont} />
             </div>
