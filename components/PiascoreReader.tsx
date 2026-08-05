@@ -94,7 +94,27 @@ export function PiascoreReader({ initialChart, folderId, onLeaderStart, onFollow
 
   // ── UI Auto-hide / Header Toggle ────────────────────────────────────────────
   const [showUI, setShowUI] = useState(true);
-  const toggleUI = () => setShowUI((prev) => !prev);
+  
+  const closeAllPopups = () => {
+    setIsBookmarkOpen(false);
+    setIsAdjustOpen(false);
+    setIsPageOverviewOpen(false);
+    setIsInfoOpen(false);
+    setIsMetronomeOpen(false);
+  };
+
+  const handleCanvasClick = () => {
+    const hasOpenPopup = isBookmarkOpen || isAdjustOpen || isPageOverviewOpen || isInfoOpen || isMetronomeOpen;
+    if (hasOpenPopup) {
+      closeAllPopups();
+      return;
+    }
+    setShowUI((prev) => {
+      if (prev) closeAllPopups();
+      return !prev;
+    });
+  };
+  const toggleUI = handleCanvasClick;
 
   // ── Page Position / Line Slider ─────────────────────────────────────────────
   const [currentLineIndex, setCurrentLineIndex] = useState(0);
