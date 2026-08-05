@@ -55,17 +55,25 @@ function ColorPickerPopover({
   itemKey,
   activePickerKey,
   onSetColor,
+  position = 'above',
 }: {
   itemKey: string;
   activePickerKey: string | null;
   onSetColor: (key: string, color: string | null) => void;
+  position?: 'above' | 'below' | 'right';
 }) {
   if (activePickerKey !== itemKey) return null;
+
+  const posClasses = position === 'below' 
+    ? 'top-full mt-2 left-0 z-50' 
+    : position === 'right'
+    ? 'top-1/2 -translate-y-1/2 left-full ml-3 z-50'
+    : '-top-12 left-0 sm:left-1/2 sm:-translate-x-1/2 z-50';
 
   return (
     <div
       onClick={(e) => e.stopPropagation()}
-      className="absolute -top-11 left-1/2 -translate-x-1/2 z-50 flex items-center gap-1.5 p-1.5 bg-slate-900/95 backdrop-blur-md rounded-full shadow-2xl border border-slate-700 animate-in fade-in zoom-in-95 duration-150 print:hidden"
+      className={`absolute ${posClasses} flex items-center gap-1.5 p-2 bg-slate-900/95 backdrop-blur-md rounded-full shadow-2xl border border-slate-700 animate-in fade-in zoom-in-95 duration-150 print:hidden min-w-max`}
     >
       {COLOR_SWATCHES.map((swatch) => (
         <button
@@ -75,8 +83,8 @@ function ColorPickerPopover({
             e.stopPropagation();
             onSetColor(itemKey, swatch.isReset ? null : swatch.color);
           }}
-          className={`w-5 h-5 rounded-full border transition-transform hover:scale-125 ${
-            swatch.isReset ? 'border-slate-500 bg-slate-800 text-[9px] text-white flex items-center justify-center font-bold' : 'border-white/30'
+          className={`w-6 h-6 rounded-full border transition-transform hover:scale-125 ${
+            swatch.isReset ? 'border-slate-500 bg-slate-800 text-[10px] text-white flex items-center justify-center font-bold' : 'border-white/40 shadow-sm'
           }`}
           style={!swatch.isReset ? { backgroundColor: swatch.color } : {}}
         >
@@ -175,10 +183,12 @@ export function ChartRenderer({
 
         {/* Lines */}
         <div className="flex flex-col w-full items-center justify-center">
-          <div className="flex flex-col gap-5 sm:gap-8 print:gap-10 w-fit mx-auto print:mx-0 max-w-full overflow-x-auto scrollbar-none px-2 py-2">
+          <div className="flex flex-col gap-5 sm:gap-8 print:gap-10 w-fit mx-auto print:mx-0 max-w-full overflow-visible scrollbar-none px-2 py-2">
             {chartData.lines.map((line, lIdx) => {
-              const labelKey = `label-${lIdx}-${line.label || 'none'}`;
-              const customLabelColor = itemColors[labelKey] || (chordColor !== '#0f172a' ? chordColor : undefined);
+              const secName = line.label ? line.label.trim().toLowerCase() : '';
+              const sectionKey = secName ? `section-${secName}` : `label-${lIdx}`;
+              const customLabelColor = itemColors[sectionKey] || itemColors[`label-${lIdx}`] || (chordColor !== '#0f172a' ? chordColor : undefined);
+              const popoverPos = lIdx === 0 ? 'below' : 'above';
 
               if (line.blocks.length === 0) {
                 return (
@@ -190,13 +200,13 @@ export function ChartRenderer({
                       <div 
                         onClick={(e) => {
                           e.stopPropagation();
-                          setActivePickerKey(activePickerKey === labelKey ? null : labelKey);
+                          setActivePickerKey(activePickerKey === sectionKey ? null : sectionKey);
                         }}
                         className="relative shrink-0 font-extrabold text-lg sm:text-2xl md:text-3xl print:text-[1em] text-right pr-3 sm:pr-6 flex items-center justify-end font-sans select-none cursor-pointer hover:opacity-75 transition-opacity"
                         style={{ width: `${Math.max(7, labelCh)}ch`, minWidth: '6rem', color: customLabelColor || '#0f172a' }}
                         title="Click to color this section label"
                       >
-                        <ColorPickerPopover itemKey={labelKey} activePickerKey={activePickerKey} onSetColor={handleSetColor} />
+                        <ColorPickerPopover itemKey={sectionKey} activePickerKey={activePickerKey} onSetColor={handleSetColor} position={popoverPos} />
                         {line.label.charAt(0).toUpperCase()}{line.label.slice(1).toLowerCase()}:
                       </div>
                     ) : (
@@ -234,13 +244,13 @@ export function ChartRenderer({
                   <div 
                     onClick={(e) => {
                       e.stopPropagation();
-                      setActivePickerKey(activePickerKey === labelKey ? null : labelKey);
+                      setActivePickerKey(activePickerKey === sectionKey ? null : sectionKey);
                     }}
                     className="relative shrink-0 font-extrabold text-lg sm:text-2xl md:text-3xl print:text-[1em] text-right pr-3 sm:pr-6 flex items-center justify-end font-sans select-none cursor-pointer hover:opacity-75 transition-opacity"
                     style={{ width: `${Math.max(7, labelCh)}ch`, minWidth: '6rem', color: customLabelColor || '#0f172a' }}
                     title="Click to color this section label"
                   >
-                    <ColorPickerPopover itemKey={labelKey} activePickerKey={activePickerKey} onSetColor={handleSetColor} />
+                    <ColorPickerPopover itemKey={sectionKey} activePickerKey={activePickerKey} onSetColor={handleSetColor} position={popoverPos} />
                     {line.label ? `${line.label.charAt(0).toUpperCase()}${line.label.slice(1).toLowerCase()}:` : ''}
                   </div>
 
