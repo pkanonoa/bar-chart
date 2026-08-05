@@ -3,6 +3,42 @@ import { Cloud } from 'lucide-react';
 import { parseChord } from '@/lib/chord-parser';
 import { ChartData } from '@/lib/chart-types';
 
+/** Renders a bar-line marker (e.g. "||:", ":||:", "||") so that
+ *  the || double-bars are black/bold and only the : repeat dots are indigo. */
+function BarMarker({ marker, side }: { marker: string; side: 'left' | 'right' }) {
+  const barClass = 'text-slate-900 font-black text-[1.2em] sm:text-[1.35em] print:text-black';
+  const dotClass = 'text-indigo-500 font-black text-[1.0em] sm:text-[1.1em] print:text-black';
+
+  // Split into segments: leading ':', '||', trailing ':'
+  const parts: { ch: string; isColon: boolean }[] = [];
+  let i = 0;
+  while (i < marker.length) {
+    if (marker[i] === ':') {
+      parts.push({ ch: ':', isColon: true });
+      i++;
+    } else if (marker[i] === '|') {
+      // grab the run of | characters
+      let run = '';
+      while (i < marker.length && marker[i] === '|') { run += marker[i]; i++; }
+      parts.push({ ch: run, isColon: false });
+    } else {
+      i++;
+    }
+  }
+
+  const pad = side === 'left'
+    ? 'inline-flex items-center pr-1.5 sm:pr-2.5 print:pr-1 tracking-tighter'
+    : 'inline-flex items-center pl-1.5 sm:pl-2.5 print:pl-1 tracking-tighter';
+
+  return (
+    <span className={pad}>
+      {parts.map((p, idx) => (
+        <span key={idx} className={p.isColon ? dotClass : barClass}>{p.ch}</span>
+      ))}
+    </span>
+  );
+}
+
 interface ChartRendererProps {
   chart: ChartData;
   showUI?: boolean;
@@ -125,21 +161,9 @@ export function ChartRenderer({
                         }
                       }
 
-                      // Distinguish repeat markers from plain bars
-                      const isRepeatMarker = prefix.includes(':');
-
                       return (
                         <React.Fragment key={bIdx}>
-                          {/* Bar-line prefix: repeat markers are indigo, plain bars are muted slate */}
-                          <span
-                            className={`inline-block pr-1.5 sm:pr-3 print:pr-1 text-left tracking-tighter print:!tracking-normal print:!font-normal print:!text-[1em] ${
-                              isRepeatMarker
-                                ? 'text-indigo-500 font-black text-[1.3em] sm:text-[1.45em] print:text-black'
-                                : 'text-slate-400 font-semibold text-[1.1em] sm:text-[1.2em] print:text-black'
-                            }`}
-                          >
-                            {prefix}
-                          </span>
+                          <BarMarker marker={prefix} side="left" />
                           {block.bars.map((bar, barIdx) => (
                             <React.Fragment key={barIdx}>
                               <span
@@ -161,18 +185,7 @@ export function ChartRenderer({
                     {line.blocks.length > 0 && (() => {
                       const lastBlock = line.blocks[line.blocks.length - 1];
                       const suffix = lastBlock.endRepeat ? ':||' : '||';
-                      const isSuffixRepeat = suffix.includes(':');
-                      return (
-                        <span
-                          className={`inline-block pl-1.5 sm:pl-3 print:pl-1 text-left tracking-tighter print:!tracking-normal print:!font-normal print:!text-[1em] ${
-                            isSuffixRepeat
-                              ? 'text-indigo-500 font-black text-[1.3em] sm:text-[1.45em] print:text-black'
-                              : 'text-slate-400 font-semibold text-[1.1em] sm:text-[1.2em] print:text-black'
-                          }`}
-                        >
-                          {suffix}
-                        </span>
-                      );
+                      return <BarMarker marker={suffix} side="right" />;
                     })()}
                   </div>
                   
