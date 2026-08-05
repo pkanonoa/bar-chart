@@ -145,34 +145,6 @@ export function PiascoreLyricsReader({ initialLyric, folderId }: Props) {
     }
   }, [activeTabId, activeTab]);
 
-  // ── Scroll Mode & Auto-Scroll Engine ──────────────────────────────────────
-  const [viewMode, setViewMode] = useState<'scroll' | 'fit'>('scroll');
-  const [isAutoScrolling, setIsAutoScrolling] = useState(false);
-  const [scrollSpeed, setScrollSpeed] = useState<number>(1.5);
-  const scrollContainerRef = useRef<HTMLDivElement>(null);
-
-  useEffect(() => {
-    if (!isAutoScrolling) return;
-    let animId: number;
-
-    const step = () => {
-      const el = scrollContainerRef.current;
-      if (el) {
-        el.scrollTop += scrollSpeed * 0.8;
-        if (el.scrollTop + el.clientHeight >= el.scrollHeight - 5) {
-          setIsAutoScrolling(false);
-          return;
-        }
-      } else {
-        window.scrollBy({ top: scrollSpeed * 0.8, behavior: 'instant' });
-      }
-      animId = requestAnimationFrame(step);
-    };
-
-    animId = requestAnimationFrame(step);
-    return () => cancelAnimationFrame(animId);
-  }, [isAutoScrolling, scrollSpeed]);
-
   // ── UI Auto-hide / Popups Handler ──────────────────────────────────────────
   const [showUI, setShowUI] = useState(true);
 
@@ -546,113 +518,40 @@ export function PiascoreLyricsReader({ initialLyric, folderId }: Props) {
         </div>
       )}
 
-      {/* ── FLOATING SCROLL & AUTO-SCROLL QUICK CONTROL ────────────────────── */}
-      <div className={`fixed top-14 right-4 z-40 transition-all duration-300 ${
-        showUI || isAutoScrolling ? 'opacity-100 translate-y-0 pointer-events-auto' : 'opacity-0 -translate-y-2 pointer-events-none'
-      }`}>
-        <div className="flex items-center gap-2 p-1.5 bg-[#1e1e24]/90 backdrop-blur-md rounded-2xl border border-slate-700/80 shadow-2xl text-xs font-bold text-white select-none">
-          <button
-            onClick={() => setViewMode(v => v === 'scroll' ? 'fit' : 'scroll')}
-            className={`flex items-center gap-1.5 px-3 py-1.5 rounded-xl transition-all ${
-              viewMode === 'scroll' ? 'bg-[#007aff] text-white shadow-sm' : 'bg-slate-800 text-slate-300 hover:text-white'
-            }`}
-            title="Toggle Vertical Scroll / Fit Canvas"
-          >
-            <ScrollText size={14} />
-            <span>{viewMode === 'scroll' ? 'Scroll' : 'Fit Canvas'}</span>
-          </button>
-
-          {viewMode === 'scroll' && (
-            <>
-              <div className="w-[1px] h-4 bg-slate-700 mx-0.5" />
-              <button
-                onClick={() => setIsAutoScrolling(p => !p)}
-                className={`flex items-center gap-1.5 px-3 py-1.5 rounded-xl transition-all ${
-                  isAutoScrolling ? 'bg-emerald-600 text-white animate-pulse' : 'bg-slate-800 text-slate-300 hover:text-white'
-                }`}
-                title={isAutoScrolling ? 'Pause Auto-Scroll' : 'Start Auto-Scroll'}
-              >
-                {isAutoScrolling ? <Pause size={14} /> : <Play size={14} />}
-                <span>{isAutoScrolling ? 'Auto-Scrolling' : 'Auto Scroll'}</span>
-              </button>
-
-              {isAutoScrolling && (
-                <div className="flex items-center gap-1 bg-slate-800/80 px-2 py-1 rounded-xl">
-                  {[0.5, 1, 1.5, 2, 3].map((s) => (
-                    <button
-                      key={s}
-                      onClick={() => setScrollSpeed(s)}
-                      className={`px-1.5 py-0.5 rounded text-[10px] font-bold ${
-                        scrollSpeed === s ? 'bg-[#007aff] text-white' : 'text-slate-400 hover:text-white'
-                      }`}
-                    >
-                      {s}x
-                    </button>
-                  ))}
-                </div>
-              )}
-            </>
-          )}
-        </div>
-      </div>
-
       {/* ── 4. MAIN LYRICS READER CANVAS ───────────────────────────────────── */}
-      {viewMode === 'scroll' ? (
-        <main
-          ref={scrollContainerRef}
-          className="flex-1 w-full h-full relative overflow-y-auto scroll-smooth flex flex-col items-center justify-start p-2 sm:p-6 pt-16 sm:pt-20 pb-20 cursor-pointer"
-          onClick={handleCanvasClick}
+      <main
+        className="flex-1 w-full h-full relative overflow-hidden flex items-stretch justify-center cursor-pointer"
+        onClick={handleCanvasClick}
+      >
+        <TransformWrapper
+          initialScale={1}
+          minScale={0.2}
+          maxScale={4}
+          centerOnInit={true}
+          centerZoomedOut={true}
+          doubleClick={{ disabled: true }}
         >
-          <div
-            onClick={(e) => {
-              e.stopPropagation();
-              handleCanvasClick();
-            }}
-            className="w-full max-w-4xl flex items-stretch justify-center my-2"
+          <TransformComponent
+            wrapperClass="!w-full !h-full"
+            contentClass="w-full min-w-full min-h-full flex items-stretch justify-center p-2 sm:p-4 md:p-6 pt-16 sm:pt-20 pb-16 sm:pb-20"
           >
-            <PlainLyricsCard
-              lyric={currentLyric}
-              selectedFont={selectedFont}
-              textColor={textColor}
-              textAlign={textAlign}
-            />
-          </div>
-        </main>
-      ) : (
-        <main
-          className="flex-1 w-full h-full relative overflow-hidden flex items-stretch justify-center cursor-pointer"
-          onClick={handleCanvasClick}
-        >
-          <TransformWrapper
-            initialScale={1}
-            minScale={0.2}
-            maxScale={4}
-            centerOnInit={true}
-            centerZoomedOut={true}
-            doubleClick={{ disabled: true }}
-          >
-            <TransformComponent
-              wrapperClass="!w-full !h-full"
-              contentClass="w-full min-w-full min-h-full flex items-stretch justify-center p-2 sm:p-4 md:p-6 pt-16 sm:pt-20 pb-16 sm:pb-20"
+            <div
+              onClick={(e) => {
+                e.stopPropagation();
+                handleCanvasClick();
+              }}
+              className="w-full flex items-stretch justify-center"
             >
-              <div
-                onClick={(e) => {
-                  e.stopPropagation();
-                  handleCanvasClick();
-                }}
-                className="w-full flex items-stretch justify-center"
-              >
-                <LyricsContentWrapper
-                  lyric={currentLyric}
-                  selectedFont={selectedFont}
-                  textColor={textColor}
-                  textAlign={textAlign}
-                />
-              </div>
-            </TransformComponent>
-          </TransformWrapper>
-        </main>
-      )}
+              <LyricsContentWrapper
+                lyric={currentLyric}
+                selectedFont={selectedFont}
+                textColor={textColor}
+                textAlign={textAlign}
+              />
+            </div>
+          </TransformComponent>
+        </TransformWrapper>
+      </main>
 
       {/* ── 5. BOTTOM ACTION TOOLBAR (5 Icons matching Piascore) ────────── */}
       <footer

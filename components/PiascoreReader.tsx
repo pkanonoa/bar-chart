@@ -120,34 +120,6 @@ export function PiascoreReader({ initialChart, folderId, onLeaderStart, onFollow
   const [currentLineIndex, setCurrentLineIndex] = useState(0);
   const totalLines = currentChart.lines?.length || 1;
 
-  // ── Scroll Mode & Auto-Scroll Engine ──────────────────────────────────────
-  const [viewMode, setViewMode] = useState<'scroll' | 'fit'>('scroll');
-  const [isAutoScrolling, setIsAutoScrolling] = useState(false);
-  const [scrollSpeed, setScrollSpeed] = useState<number>(1.5);
-  const scrollContainerRef = useRef<HTMLDivElement>(null);
-
-  useEffect(() => {
-    if (!isAutoScrolling) return;
-    let animId: number;
-
-    const step = () => {
-      const el = scrollContainerRef.current;
-      if (el) {
-        el.scrollTop += scrollSpeed * 0.8;
-        if (el.scrollTop + el.clientHeight >= el.scrollHeight - 5) {
-          setIsAutoScrolling(false);
-          return;
-        }
-      } else {
-        window.scrollBy({ top: scrollSpeed * 0.8, behavior: 'instant' });
-      }
-      animId = requestAnimationFrame(step);
-    };
-
-    animId = requestAnimationFrame(step);
-    return () => cancelAnimationFrame(animId);
-  }, [isAutoScrolling, scrollSpeed]);
-
   // ── Metronome State & Engine ────────────────────────────────────────────────
   const [isMetronomeOpen, setIsMetronomeOpen] = useState(false);
   const [bpm, setBpm] = useState<number>(currentChart.tempo || 120);
@@ -541,103 +513,35 @@ export function PiascoreReader({ initialChart, folderId, onLeaderStart, onFollow
         </div>
       )}
 
-      {/* ── FLOATING SCROLL & AUTO-SCROLL QUICK CONTROL ────────────────────── */}
-      <div className={`fixed top-14 right-4 z-40 transition-all duration-300 ${
-        showUI || isAutoScrolling ? 'opacity-100 translate-y-0 pointer-events-auto' : 'opacity-0 -translate-y-2 pointer-events-none'
-      }`}>
-        <div className="flex items-center gap-2 p-1.5 bg-[#1e1e24]/90 backdrop-blur-md rounded-2xl border border-slate-700/80 shadow-2xl text-xs font-bold text-white select-none">
-          <button
-            onClick={() => setViewMode(v => v === 'scroll' ? 'fit' : 'scroll')}
-            className={`flex items-center gap-1.5 px-3 py-1.5 rounded-xl transition-all ${
-              viewMode === 'scroll' ? 'bg-[#007aff] text-white shadow-sm' : 'bg-slate-800 text-slate-300 hover:text-white'
-            }`}
-            title="Toggle Vertical Scroll / Fit Canvas"
-          >
-            <ScrollText size={14} />
-            <span>{viewMode === 'scroll' ? 'Scroll' : 'Fit Canvas'}</span>
-          </button>
-
-          {viewMode === 'scroll' && (
-            <>
-              <div className="w-[1px] h-4 bg-slate-700 mx-0.5" />
-              <button
-                onClick={() => setIsAutoScrolling(p => !p)}
-                className={`flex items-center gap-1.5 px-3 py-1.5 rounded-xl transition-all ${
-                  isAutoScrolling ? 'bg-emerald-600 text-white animate-pulse' : 'bg-slate-800 text-slate-300 hover:text-white'
-                }`}
-                title={isAutoScrolling ? 'Pause Auto-Scroll' : 'Start Auto-Scroll'}
-              >
-                {isAutoScrolling ? <Pause size={14} /> : <Play size={14} />}
-                <span>{isAutoScrolling ? 'Auto-Scrolling' : 'Auto Scroll'}</span>
-              </button>
-
-              {isAutoScrolling && (
-                <div className="flex items-center gap-1 bg-slate-800/80 px-2 py-1 rounded-xl">
-                  {[0.5, 1, 1.5, 2, 3].map((s) => (
-                    <button
-                      key={s}
-                      onClick={() => setScrollSpeed(s)}
-                      className={`px-1.5 py-0.5 rounded text-[10px] font-bold ${
-                        scrollSpeed === s ? 'bg-[#007aff] text-white' : 'text-slate-400 hover:text-white'
-                      }`}
-                    >
-                      {s}x
-                    </button>
-                  ))}
-                </div>
-              )}
-            </>
-          )}
-        </div>
-      </div>
-
       {/* ── 4. MAIN SCORE READER CANVAS ───────────────────────────────────── */}
-      {viewMode === 'scroll' ? (
-        <main
-          ref={scrollContainerRef}
-          className="flex-1 w-full h-full relative overflow-y-auto overflow-x-auto scroll-smooth flex flex-col items-center justify-start p-2 sm:p-6 pt-16 sm:pt-20 pb-20 cursor-pointer"
-          onClick={toggleUI}
+      <main
+        className="flex-1 w-full h-full relative overflow-hidden flex items-stretch justify-center cursor-pointer"
+        onClick={toggleUI}
+      >
+        <TransformWrapper
+          initialScale={1}
+          minScale={0.2}
+          maxScale={4}
+          centerOnInit={true}
+          centerZoomedOut={true}
+          doubleClick={{ disabled: true }}
         >
-          <div
-            onClick={(e) => {
-              e.stopPropagation();
-              toggleUI();
-            }}
-            className="bg-white text-slate-900 shadow-2xl rounded-2xl p-4 sm:p-8 md:p-10 w-fit min-w-full max-w-none border border-slate-200/80 my-2"
+          <TransformComponent
+            wrapperClass="!w-full !h-full"
+            contentClass="w-full min-w-full min-h-full flex items-stretch justify-center p-2 sm:p-4 md:p-6 pt-16 sm:pt-20 pb-16 sm:pb-20"
           >
-            <ChartRenderer chart={currentChart} selectedFont={selectedFont} chordColor={chordColor} id="piascore-chart-card" />
-          </div>
-        </main>
-      ) : (
-        <main
-          className="flex-1 w-full h-full relative overflow-hidden flex items-stretch justify-center cursor-pointer"
-          onClick={toggleUI}
-        >
-          <TransformWrapper
-            initialScale={1}
-            minScale={0.2}
-            maxScale={4}
-            centerOnInit={true}
-            centerZoomedOut={true}
-            doubleClick={{ disabled: true }}
-          >
-            <TransformComponent
-              wrapperClass="!w-full !h-full"
-              contentClass="w-full min-w-full min-h-full flex items-stretch justify-center p-2 sm:p-4 md:p-6 pt-16 sm:pt-20 pb-16 sm:pb-20"
+            <div
+              onClick={(e) => {
+                e.stopPropagation();
+                toggleUI();
+              }}
+              className="bg-white text-slate-900 shadow-2xl rounded-2xl p-4 sm:p-8 md:p-10 w-full max-w-none border border-slate-200/80 flex items-stretch"
             >
-              <div
-                onClick={(e) => {
-                  e.stopPropagation();
-                  toggleUI();
-                }}
-                className="bg-white text-slate-900 shadow-2xl rounded-2xl p-4 sm:p-8 md:p-10 w-full max-w-none border border-slate-200/80 flex items-stretch"
-              >
-                <ChartContentWrapper chart={currentChart} selectedFont={selectedFont} chordColor={chordColor} />
-              </div>
-            </TransformComponent>
-          </TransformWrapper>
-        </main>
-      )}
+              <ChartContentWrapper chart={currentChart} selectedFont={selectedFont} chordColor={chordColor} />
+            </div>
+          </TransformComponent>
+        </TransformWrapper>
+      </main>
 
 
 
@@ -846,76 +750,7 @@ export function PiascoreReader({ initialChart, folderId, onLeaderStart, onFollow
             </button>
           </div>
 
-          {/* View Mode Toggle: Scroll vs Fit */}
-          <div className="flex flex-col gap-1.5">
-            <label className="text-xs font-bold text-slate-500 uppercase">View Mode</label>
-            <div className="grid grid-cols-2 gap-2 bg-slate-100 dark:bg-slate-800 p-1.5 rounded-xl">
-              <button
-                onClick={() => setViewMode('scroll')}
-                className={`py-2 px-3 rounded-lg text-xs font-bold flex items-center justify-center gap-1.5 transition-all ${
-                  viewMode === 'scroll'
-                    ? 'bg-[#007aff] text-white shadow-sm'
-                    : 'text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white'
-                }`}
-              >
-                <ScrollText size={15} /> Vertical Scroll
-              </button>
-              <button
-                onClick={() => {
-                  setViewMode('fit');
-                  setIsAutoScrolling(false);
-                }}
-                className={`py-2 px-3 rounded-lg text-xs font-bold flex items-center justify-center gap-1.5 transition-all ${
-                  viewMode === 'fit'
-                    ? 'bg-[#007aff] text-white shadow-sm'
-                    : 'text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white'
-                }`}
-              >
-                <Crop size={15} /> Fit Canvas
-              </button>
-            </div>
-          </div>
 
-          {/* Auto Scroll Controls */}
-          {viewMode === 'scroll' && (
-            <div className="flex flex-col gap-1.5 p-3 bg-slate-50 dark:bg-slate-800/50 border border-slate-200 dark:border-slate-700/60 rounded-xl">
-              <div className="flex items-center justify-between">
-                <label className="text-xs font-bold text-slate-500 uppercase flex items-center gap-1.5">
-                  <Play size={13} className="text-emerald-500" /> Auto-Scroll
-                </label>
-                <button
-                  onClick={() => setIsAutoScrolling((p) => !p)}
-                  className={`px-3 py-1 rounded-lg text-xs font-bold flex items-center gap-1 transition-all ${
-                    isAutoScrolling
-                      ? 'bg-emerald-600 text-white animate-pulse'
-                      : 'bg-emerald-500/10 border border-emerald-500/30 text-emerald-600 dark:text-emerald-400 hover:bg-emerald-500 hover:text-white'
-                  }`}
-                >
-                  {isAutoScrolling ? <Pause size={12} /> : <Play size={12} />}
-                  <span>{isAutoScrolling ? 'Pause' : 'Start'}</span>
-                </button>
-              </div>
-
-              <div className="flex items-center justify-between mt-1">
-                <span className="text-[11px] font-semibold text-slate-500">Speed</span>
-                <div className="flex items-center gap-1">
-                  {[0.5, 1, 1.5, 2, 3].map((s) => (
-                    <button
-                      key={s}
-                      onClick={() => setScrollSpeed(s)}
-                      className={`px-2 py-0.5 rounded text-[10px] font-bold transition-all ${
-                        scrollSpeed === s
-                          ? 'bg-[#007aff] text-white'
-                          : 'bg-slate-200 dark:bg-slate-700 text-slate-600 dark:text-slate-300 hover:bg-slate-300'
-                      }`}
-                    >
-                      {s}x
-                    </button>
-                  ))}
-                </div>
-              </div>
-            </div>
-          )}
 
           {/* Transpose Key */}
           <div className="flex flex-col gap-1.5">
