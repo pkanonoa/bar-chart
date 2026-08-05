@@ -1,7 +1,25 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { Cloud } from 'lucide-react';
 import { parseChord } from '@/lib/chord-parser';
 import { ChartData } from '@/lib/chart-types';
+import { getChordNotes } from '@/lib/chord-notes';
+
+function ChordNoteTooltip({ chord }: { chord: string }) {
+  const info = getChordNotes(chord);
+  if (!info) return null;
+
+  return (
+    <div
+      onClick={(e) => e.stopPropagation()}
+      className="absolute -top-11 left-1/2 -translate-x-1/2 z-[100] flex items-center gap-2 px-3 py-1.5 bg-slate-900/95 backdrop-blur-md rounded-xl shadow-2xl border border-slate-700/80 animate-in fade-in zoom-in-95 duration-150 print:hidden min-w-max text-xs sm:text-sm tracking-normal select-none pointer-events-none"
+    >
+      <span className="font-bold text-indigo-300 font-sans">{info.chordName}</span>
+      <span className="text-slate-500 text-xs">→</span>
+      <span className="font-mono font-bold text-emerald-300 drop-shadow">{info.formattedNotes}</span>
+    </div>
+  );
+}
+
 
 /** Renders a bar-line marker (e.g. "||:", ":||:", "||") so that
  *  the || double-bars are black/bold and only the : repeat dots are indigo. */
@@ -122,6 +140,18 @@ export function ChartRenderer({
   // Individual element color overrides
   const [itemColors, setItemColors] = useState<Record<string, string>>({});
   const [activePickerKey, setActivePickerKey] = useState<string | null>(null);
+
+  // Chord note voicing tooltip state and double-tap tracker
+  const [activeNoteTooltipKey, setActiveNoteTooltipKey] = useState<string | null>(null);
+  const lastTouchTimestampRef = useRef<Record<string, number>>({});
+
+  useEffect(() => {
+    const handleGlobalClick = () => {
+      if (activeNoteTooltipKey) setActiveNoteTooltipKey(null);
+    };
+    window.addEventListener('click', handleGlobalClick);
+    return () => window.removeEventListener('click', handleGlobalClick);
+  }, [activeNoteTooltipKey]);
 
   useEffect(() => {
     if (!chart?.id) return;
@@ -277,19 +307,53 @@ export function ChartRenderer({
                       return (
                         <React.Fragment key={bIdx}>
                           <BarMarker marker={prefix} side="left" />
-                          {block.bars.map((bar, barIdx) => (
-                            <React.Fragment key={barIdx}>
-                              <span
-                                className="inline-flex items-center justify-center min-w-[4rem] sm:min-w-[5.8rem] md:min-w-[6.8rem] px-1 sm:px-2.5 text-center font-extrabold transition-colors duration-150 text-lg sm:text-3xl md:text-[2rem] font-mono sm:font-sans"
-                                style={{ color: '#0f172a' }}
-                              >
-                                {parseChord(bar || '_')}
-                              </span>
-                              {barIdx < block.bars.length - 1 && (
-                                <span className="inline-flex items-center justify-center text-slate-500 font-medium px-1 sm:px-2 text-lg sm:text-2xl md:text-3xl print:text-black">|</span>
-                              )}
-                            </React.Fragment>
-                          ))}
+                          {block.bars.map((bar, barIdx) => {
+                            const barKey = `chord-note-${lIdx}-${bIdx}-${barIdx}`;
+                            const isTooltipActive = activeNoteTooltipKey === barKey;
+
+                            return (
+                              <React.Fragment key={barIdx}>
+                                <span
+                                  onMouseEnter={() => {
+                                    if (typeof window !== 'undefined' && window.matchMedia('(hover: hover) and (pointer: fine)').matches) {
+                                      setActiveNoteTooltipKey(barKey);
+                                    }
+                                  }}
+                                  onMouseLeave={() => {
+                                    if (typeof window !== 'undefined' && window.matchMedia('(hover: hover) and (pointer: fine)').matches) {
+                                      setActiveNoteTooltipKey((prev) => (prev === barKey ? null : prev));
+                                    }
+                                  }}
+                                  onDoubleClick={(e) => {
+                                    e.stopPropagation();
+                                    setActiveNoteTooltipKey((prev) => (prev === barKey ? null : barKey));
+                                  }}
+                                  onTouchStart={(e) => {
+                                    const now = Date.now();
+                                    const last = lastTouchTimestampRef.current[barKey] || 0;
+                                    if (now - last < 350) {
+                                      e.stopPropagation();
+                                      setActiveNoteTooltipKey((prev) => (prev === barKey ? null : barKey));
+                                      lastTouchTimestampRef.current[barKey] = 0;
+                                    } else {
+                                      lastTouchTimestampRef.current[barKey] = now;
+                                    }
+                                  }}
+                                  className={`relative inline-flex items-center justify-center min-w-[4rem] sm:min-w-[5.8rem] md:min-w-[6.8rem] px-1 sm:px-2.5 text-center font-extrabold transition-all duration-150 text-lg sm:text-3xl md:text-[2rem] font-mono sm:font-sans rounded select-none ${
+                                    isTooltipActive ? 'bg-indigo-50/90 ring-2 ring-indigo-400/50' : 'hover:bg-slate-50/50'
+                                  }`}
+                                  style={{ color: '#0f172a' }}
+                                  title="Double-tap or double-click to view chord notes"
+                                >
+                                  {isTooltipActive && <ChordNoteTooltip chord={bar || ''} />}
+                                  {parseChord(bar || '_')}
+                                </span>
+                                {barIdx < block.bars.length - 1 && (
+                                  <span className="inline-flex items-center justify-center text-slate-500 font-medium px-1 sm:px-2 text-lg sm:text-2xl md:text-3xl print:text-black">|</span>
+                                )}
+                              </React.Fragment>
+                            );
+                          })}
                         </React.Fragment>
                       );
                     })}

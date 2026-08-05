@@ -11,7 +11,7 @@ import { ChartRenderer } from '@/components/ChartRenderer';
 import { TransformWrapper, TransformComponent, useControls } from 'react-zoom-pan-pinch';
 import {
   ChevronLeft, ChevronRight, X, Edit2, Copy, Check,
-  Users, Radio, StopCircle, WifiOff, RefreshCw,
+  Users, Radio, StopCircle, WifiOff, RefreshCw, ScrollText, Play, Pause, Crop
 } from 'lucide-react';
 
 // ─── Inner chart wrapper (needs access to zoom controls) ──────────────────────
@@ -164,6 +164,34 @@ export default function PerformancePage() {
 
   const [showEndConfirmModal, setShowEndConfirmModal] = useState(false);
 
+  // ── Scroll Mode & Auto-Scroll Engine ──────────────────────────────────────
+  const [viewMode, setViewMode] = useState<'scroll' | 'fit'>('scroll');
+  const [isAutoScrolling, setIsAutoScrolling] = useState(false);
+  const [scrollSpeed, setScrollSpeed] = useState<number>(1.5);
+  const scrollContainerRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    if (!isAutoScrolling) return;
+    let animId: number;
+
+    const step = () => {
+      const el = scrollContainerRef.current;
+      if (el) {
+        el.scrollTop += scrollSpeed * 0.8;
+        if (el.scrollTop + el.clientHeight >= el.scrollHeight - 5) {
+          setIsAutoScrolling(false);
+          return;
+        }
+      } else {
+        window.scrollBy({ top: scrollSpeed * 0.8, behavior: 'instant' });
+      }
+      animId = requestAnimationFrame(step);
+    };
+
+    animId = requestAnimationFrame(step);
+    return () => cancelAnimationFrame(animId);
+  }, [isAutoScrolling, scrollSpeed]);
+
   // Intercept browser back button when leading a sync session
   useEffect(() => {
     if (mode !== 'leader') return;
@@ -308,30 +336,107 @@ export default function PerformancePage() {
         </div>
       </div>
 
-      {/* ── Chart Canvas ── */}
-      <main className="flex-1 w-full h-screen overflow-hidden" onClick={toggleHeader}>
-        <TransformWrapper
-          initialScale={1} minScale={0.1} maxScale={5}
-          centerOnInit={true} centerZoomedOut={true}
-          wheel={{ step: 0.1 }} pinch={{ step: 5 }}
-          doubleClick={{ disabled: true }}
-        >
-          <TransformComponent
-            wrapperClass="!w-full !h-screen cursor-pointer"
-            contentClass="w-max min-w-full min-h-screen flex items-start justify-center p-4 sm:p-16 pt-24 pb-32"
+      {/* ── Floating Scroll & Auto-Scroll Controls ── */}
+      <div className={`fixed top-16 right-4 z-40 transition-all duration-300 ${
+        showHeader || isAutoScrolling ? 'opacity-100 translate-y-0 pointer-events-auto' : 'opacity-0 -translate-y-2 pointer-events-none'
+      }`}>
+        <div className="flex items-center gap-2 p-1.5 bg-surface/90 backdrop-blur-md rounded-2xl border border-border shadow-2xl text-xs font-bold text-text-primary select-none">
+          <button
+            onClick={(e) => {
+              e.stopPropagation();
+              setViewMode(v => v === 'scroll' ? 'fit' : 'scroll');
+            }}
+            className={`flex items-center gap-1.5 px-3 py-1.5 rounded-xl transition-all ${
+              viewMode === 'scroll' ? 'bg-accent-gradient text-white shadow-sm' : 'bg-surface-raised text-text-secondary hover:text-white'
+            }`}
+            title="Toggle Vertical Scroll / Fit Canvas"
           >
-            <div onClick={(e) => { e.stopPropagation(); toggleHeader(); }} className="w-full h-full flex items-center justify-center">
-              {chartLoading || !currentChart ? (
-                <div className="flex items-center justify-center w-64 h-64 text-text-secondary">
-                  <div className="w-8 h-8 rounded-full border-2 border-accent-start border-t-transparent animate-spin" />
+            <ScrollText size={14} />
+            <span>{viewMode === 'scroll' ? 'Scroll' : 'Fit Canvas'}</span>
+          </button>
+
+          {viewMode === 'scroll' && (
+            <>
+              <div className="w-[1px] h-4 bg-border mx-0.5" />
+              <button
+                onClick={(e) => {
+                  e.stopPropagation();
+                  setIsAutoScrolling(p => !p);
+                }}
+                className={`flex items-center gap-1.5 px-3 py-1.5 rounded-xl transition-all ${
+                  isAutoScrolling ? 'bg-emerald-600 text-white animate-pulse' : 'bg-surface-raised text-text-secondary hover:text-white'
+                }`}
+                title={isAutoScrolling ? 'Pause Auto-Scroll' : 'Start Auto-Scroll'}
+              >
+                {isAutoScrolling ? <Pause size={14} /> : <Play size={14} />}
+                <span>{isAutoScrolling ? 'Auto-Scrolling' : 'Auto Scroll'}</span>
+              </button>
+
+              {isAutoScrolling && (
+                <div className="flex items-center gap-1 bg-surface-raised px-2 py-1 rounded-xl">
+                  {[0.5, 1, 1.5, 2, 3].map((s) => (
+                    <button
+                      key={s}
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        setScrollSpeed(s);
+                      }}
+                      className={`px-1.5 py-0.5 rounded text-[10px] font-bold ${
+                        scrollSpeed === s ? 'bg-accent-gradient text-white' : 'text-text-secondary hover:text-white'
+                      }`}
+                    >
+                      {s}x
+                    </button>
+                  ))}
                 </div>
-              ) : (
-                <PerformChartWrapper chart={currentChart} />
               )}
-            </div>
-          </TransformComponent>
-        </TransformWrapper>
-      </main>
+            </>
+          )}
+        </div>
+      </div>
+
+      {/* ── Chart Canvas ── */}
+      {viewMode === 'scroll' ? (
+        <main
+          ref={scrollContainerRef}
+          className="flex-1 w-full h-screen overflow-y-auto scroll-smooth flex flex-col items-center justify-start p-4 sm:p-12 pt-24 pb-32 cursor-pointer"
+          onClick={toggleHeader}
+        >
+          <div onClick={(e) => { e.stopPropagation(); toggleHeader(); }} className="w-full max-w-5xl my-auto">
+            {chartLoading || !currentChart ? (
+              <div className="flex items-center justify-center w-64 h-64 mx-auto text-text-secondary">
+                <div className="w-8 h-8 rounded-full border-2 border-accent-start border-t-transparent animate-spin" />
+              </div>
+            ) : (
+              <PerformChartWrapper chart={currentChart} />
+            )}
+          </div>
+        </main>
+      ) : (
+        <main className="flex-1 w-full h-screen overflow-hidden" onClick={toggleHeader}>
+          <TransformWrapper
+            initialScale={1} minScale={0.1} maxScale={5}
+            centerOnInit={true} centerZoomedOut={true}
+            wheel={{ step: 0.1 }} pinch={{ step: 5 }}
+            doubleClick={{ disabled: true }}
+          >
+            <TransformComponent
+              wrapperClass="!w-full !h-screen cursor-pointer"
+              contentClass="w-max min-w-full min-h-screen flex items-start justify-center p-4 sm:p-16 pt-24 pb-32"
+            >
+              <div onClick={(e) => { e.stopPropagation(); toggleHeader(); }} className="w-full h-full flex items-center justify-center">
+                {chartLoading || !currentChart ? (
+                  <div className="flex items-center justify-center w-64 h-64 text-text-secondary">
+                    <div className="w-8 h-8 rounded-full border-2 border-accent-start border-t-transparent animate-spin" />
+                  </div>
+                ) : (
+                  <PerformChartWrapper chart={currentChart} />
+                )}
+              </div>
+            </TransformComponent>
+          </TransformWrapper>
+        </main>
+      )}
 
       {/* ── Bottom Indicator ── */}
       {showHeader && (
