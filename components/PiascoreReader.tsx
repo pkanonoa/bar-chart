@@ -316,7 +316,7 @@ export function PiascoreReader({ initialChart, folderId, onLeaderStart, onFollow
       {/* ── 2. DOCUMENT TAB NAVIGATION BAR (Below Header) ──────────────────── */}
       <nav
         className={`fixed top-12 left-0 right-0 z-40 bg-[#dedede] dark:bg-[#202024] border-b border-slate-300 dark:border-slate-800 flex items-center px-2 h-9 gap-1 overflow-x-auto scrollbar-none transition-transform duration-300 ${
-          showUI ? 'translate-y-0' : '-translate-y-full'
+          showUI ? 'translate-y-0' : '-translate-y-[5.25rem]'
         }`}
       >
         {tabs.map((tab) => {

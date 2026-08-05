@@ -47,19 +47,19 @@ export function ChartRenderer({
         style={selectedFont !== 'system' ? { fontFamily: selectedFont } : {}}
       >
         {/* Header */}
-        <div className="relative flex items-center justify-center mb-6 sm:mb-8 pb-4 border-b border-slate-200 print:border-none w-full text-slate-900 print:text-black print:pt-24">
+        <div className="relative flex items-center justify-center mb-8 sm:mb-12 pb-5 border-b border-slate-200 print:border-none w-full text-slate-900 print:text-black print:pt-24">
           <div className="flex items-baseline gap-4 sm:gap-6">
-            <h1 className="text-2xl sm:text-3xl md:text-4xl font-extrabold print:!font-bold tracking-tight print:!tracking-normal text-slate-900">{chartData.title || 'Untitled Chart'}</h1>
-            <span className="font-bold text-slate-500 print:!font-normal text-lg sm:text-2xl print:text-2xl">{chartData.time_sig || '4/4'}</span>
+            <h1 className="text-3xl sm:text-4xl md:text-5xl font-extrabold print:!font-bold tracking-tight print:!tracking-normal text-slate-900">{chartData.title || 'Untitled Chart'}</h1>
+            <span className="font-bold text-slate-500 print:!font-normal text-xl sm:text-3xl print:text-3xl">{chartData.time_sig || '4/4'}</span>
           </div>
-          <div className="absolute right-0 print:right-24 font-bold text-slate-500 print:!font-normal text-base sm:text-xl print:text-xl">
+          <div className="absolute right-0 print:right-24 font-bold text-slate-500 print:!font-normal text-lg sm:text-2xl print:text-2xl">
             t={chartData.tempo || 120}
           </div>
         </div>
 
         {/* Lines */}
         <div className="flex flex-col w-full items-center justify-center">
-          <div className="flex flex-col gap-4 sm:gap-6 print:gap-8 w-fit mx-auto print:mx-0 max-w-full overflow-x-auto scrollbar-none px-2">
+          <div className="flex flex-col gap-5 sm:gap-8 print:gap-10 w-fit mx-auto print:mx-0 max-w-full overflow-x-auto scrollbar-none px-2 py-2">
             {chartData.lines.map((line, lIdx) => {
               if (line.blocks.length === 0) {
                 return (
@@ -69,19 +69,19 @@ export function ChartRenderer({
                     {/* Left Label */}
                     {line.label ? (
                       <div 
-                        className="shrink-0 text-slate-800 font-extrabold text-base sm:text-xl print:text-[1em] text-right pr-3 sm:pr-5 flex items-center justify-end font-sans select-none"
-                        style={{ width: `${Math.max(7, labelCh)}ch`, minWidth: '5rem' }}
+                        className="shrink-0 text-slate-800 font-extrabold text-lg sm:text-2xl md:text-3xl print:text-[1em] text-right pr-3 sm:pr-6 flex items-center justify-end font-sans select-none"
+                        style={{ width: `${Math.max(7, labelCh)}ch`, minWidth: '6rem' }}
                       >
                         {line.label.charAt(0).toUpperCase()}{line.label.slice(1).toLowerCase()}:
                       </div>
                     ) : (
-                      <div className="shrink-0" style={{ width: `${Math.max(7, labelCh)}ch`, minWidth: '5rem' }}></div>
+                      <div className="shrink-0" style={{ width: `${Math.max(7, labelCh)}ch`, minWidth: '6rem' }}></div>
                     )}
 
                     {/* Right Label (Annotation) */}
                     {line.labelRight && (
                       <div 
-                        className="shrink-0 text-slate-500 font-semibold print:text-black text-base sm:text-xl print:text-[1em] text-left pl-3 sm:pl-6 flex items-center ml-auto"
+                        className="shrink-0 text-slate-500 font-semibold print:text-black text-lg sm:text-2xl print:text-[1em] text-left pl-3 sm:pl-6 flex items-center ml-auto"
                         style={{ width: `${labelRightCh}ch` }}
                       >
                         {line.labelRight}
@@ -97,14 +97,14 @@ export function ChartRenderer({
                 }`} id={`chart-line-${lIdx}`}>
                   {/* Left Label */}
                   <div 
-                    className="shrink-0 text-slate-800 font-extrabold text-base sm:text-xl print:text-[1em] text-right pr-3 sm:pr-5 flex items-center justify-end font-sans select-none"
-                    style={{ width: `${Math.max(7, labelCh)}ch`, minWidth: '5rem' }}
+                    className="shrink-0 text-slate-800 font-extrabold text-lg sm:text-2xl md:text-3xl print:text-[1em] text-right pr-3 sm:pr-6 flex items-center justify-end font-sans select-none"
+                    style={{ width: `${Math.max(7, labelCh)}ch`, minWidth: '6rem' }}
                   >
                     {line.label ? `${line.label.charAt(0).toUpperCase()}${line.label.slice(1).toLowerCase()}:` : ''}
                   </div>
 
                   {/* Chords Container */}
-                  <div className="flex items-center justify-start flex-nowrap shrink-0 text-lg sm:text-2xl print:text-[1.1em]">
+                  <div className="flex items-center justify-start flex-nowrap shrink-0 text-xl sm:text-3xl md:text-[2rem] print:text-[1.2em]">
                     {line.blocks.map((block, bIdx) => {
                       const isFirst = bIdx === 0;
                       let prefix = '';
@@ -125,14 +125,14 @@ export function ChartRenderer({
 
                       return (
                         <React.Fragment key={bIdx}>
-                          <span className={`inline-block pr-1 sm:pr-2 print:pr-1 text-left tracking-tighter print:!tracking-normal print:!font-normal print:!text-[1em] ${prefix.includes('||') ? 'text-slate-700 font-bold text-[1.1em] sm:text-[1.15em] print:text-black' : 'text-slate-700 font-semibold print:text-black'}`}>{prefix}</span>
+                          <span className={`inline-block pr-1.5 sm:pr-3 print:pr-1 text-left tracking-tighter print:!tracking-normal print:!font-normal print:!text-[1em] ${prefix.includes('||') ? 'text-slate-800 font-extrabold text-[1.2em] sm:text-[1.35em] print:text-black' : 'text-slate-800 font-bold print:text-black'}`}>{prefix}</span>
                           {block.bars.map((bar, barIdx) => (
                             <React.Fragment key={barIdx}>
-                              <span className="inline-flex items-center justify-center min-w-[3.5rem] sm:min-w-[4.8rem] px-1 sm:px-2 text-center font-bold text-slate-900 hover:text-indigo-600 transition-colors duration-150 text-base sm:text-2xl font-mono sm:font-sans">
+                              <span className="inline-flex items-center justify-center min-w-[4rem] sm:min-w-[5.8rem] md:min-w-[6.8rem] px-1 sm:px-2.5 text-center font-extrabold text-slate-900 hover:text-indigo-600 transition-colors duration-150 text-lg sm:text-3xl md:text-[2rem] font-mono sm:font-sans">
                                 {parseChord(bar || '_')}
                               </span>
                               {barIdx < block.bars.length - 1 && (
-                                <span className="inline-flex items-center justify-center text-slate-400 font-medium px-1 text-base sm:text-xl print:text-black">|</span>
+                                <span className="inline-flex items-center justify-center text-slate-400 font-medium px-1 sm:px-2 text-lg sm:text-2xl md:text-3xl print:text-black">|</span>
                               )}
                             </React.Fragment>
                           ))}
@@ -145,7 +145,7 @@ export function ChartRenderer({
                       const lastBlock = line.blocks[line.blocks.length - 1];
                       const suffix = lastBlock.endRepeat ? ':||' : '||';
                       return (
-                        <span className={`inline-block pl-1 sm:pl-2 print:pl-1 text-left tracking-tighter print:!tracking-normal print:!font-normal print:!text-[1em] ${suffix.includes('||') ? 'text-slate-700 font-bold text-[1.1em] sm:text-[1.15em] print:text-black' : 'text-slate-700 font-semibold print:text-black'}`}>
+                        <span className={`inline-block pl-1.5 sm:pl-3 print:pl-1 text-left tracking-tighter print:!tracking-normal print:!font-normal print:!text-[1em] ${suffix.includes('||') ? 'text-slate-800 font-extrabold text-[1.2em] sm:text-[1.35em] print:text-black' : 'text-slate-800 font-bold print:text-black'}`}>
                           {suffix}
                         </span>
                       );
@@ -155,7 +155,7 @@ export function ChartRenderer({
                   {/* Right Label */}
                   {maxLabelRightLen > 0 && (
                     <div 
-                      className="shrink-0 text-slate-500 font-semibold print:text-black text-base sm:text-xl print:text-[1em] text-left pl-3 sm:pl-6 flex items-center"
+                      className="shrink-0 text-slate-500 font-semibold print:text-black text-lg sm:text-2xl print:text-[1em] text-left pl-3 sm:pl-6 flex items-center"
                       style={{ width: `${labelRightCh}ch` }}
                     >
                       {line.labelRight}
