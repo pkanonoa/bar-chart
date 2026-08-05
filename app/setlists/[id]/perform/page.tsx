@@ -543,23 +543,23 @@ export default function SetlistPerformPage() {
         )}
       </div>
 
-      {/* ── Leader prev / next ────────────────────────────────────────────── */}
-      {isLeader && (
-        <>
-          <button
-            onClick={() => goTo(Math.max(0, songPosition - 1))}
-            disabled={songPosition === 0}
-            className="fixed bottom-8 left-5 z-50 w-16 h-16 flex items-center justify-center text-white bg-accent-gradient rounded-2xl shadow-popover hover:brightness-110 disabled:opacity-30 transition-all"
-            title="Previous (←)"
-          ><ChevronLeft size={32} /></button>
-          <button
-            onClick={() => goTo(Math.min(items.length - 1, songPosition + 1))}
-            disabled={songPosition >= items.length - 1}
-            className="fixed bottom-8 right-5 z-50 w-16 h-16 flex items-center justify-center text-white bg-accent-gradient rounded-2xl shadow-popover hover:brightness-110 disabled:opacity-30 transition-all"
-            title="Next (→)"
-          ><ChevronRight size={32} /></button>
-        </>
-      )}
+      {/* ── Side Prev / Next Navigation Buttons ───────────────────────────── */}
+      <button
+        onClick={() => goTo(Math.max(0, songPosition - 1))}
+        disabled={songPosition === 0}
+        className="fixed bottom-8 left-5 z-50 w-14 h-14 sm:w-16 sm:h-16 flex items-center justify-center text-white bg-accent-gradient rounded-2xl shadow-popover hover:brightness-110 disabled:opacity-20 transition-all"
+        title="Previous Page / Song (←)"
+      >
+        <ChevronLeft size={28} />
+      </button>
+      <button
+        onClick={() => goTo(Math.min(items.length - 1, songPosition + 1))}
+        disabled={songPosition >= items.length - 1}
+        className="fixed bottom-8 right-5 z-50 w-14 h-14 sm:w-16 sm:h-16 flex items-center justify-center text-white bg-accent-gradient rounded-2xl shadow-popover hover:brightness-110 disabled:opacity-20 transition-all"
+        title="Next Page / Song (→)"
+      >
+        <ChevronRight size={28} />
+      </button>
 
       {/* ── Follower: back to leader ──────────────────────────────────────── */}
       {!isLeader && !isFollowing && (

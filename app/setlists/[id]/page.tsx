@@ -231,33 +231,41 @@ function PrintView({ setlist, items, charts, lyricsMap }: {
   lyricsMap: Record<string, any>;
 }) {
   return (
-    <div className="print-only">
+    <div className="print-only text-black w-full max-w-none m-0 p-0">
       {/* Cover page */}
-      <div className="page-break-after min-h-screen flex flex-col justify-center px-16 py-24">
-        <h1 className="text-5xl font-bold mb-3">{setlist.name}</h1>
+      <div className="page-break-after w-[min(100%,60rem)] mx-auto px-12 pt-20 pb-16 text-black block">
+        <h1 className="text-4xl sm:text-5xl font-extrabold print:!font-bold tracking-normal text-black mb-3">{setlist.name}</h1>
         {setlist.date && (
-          <p className="text-2xl text-gray-600 mb-2">
+          <p className="text-xl font-medium text-slate-700 print:text-black mb-2">
             {new Date(setlist.date).toLocaleDateString(undefined, { weekday: 'long', month: 'long', day: 'numeric', year: 'numeric' })}
           </p>
         )}
-        {setlist.notes && <p className="text-base text-gray-500 mt-2 mb-8">{setlist.notes}</p>}
+        {setlist.notes && <p className="text-base text-slate-600 print:text-black mt-2 mb-8 italic">{setlist.notes}</p>}
 
-        <div className="mt-12 border-t border-gray-200 pt-8">
-          <p className="text-xs font-bold uppercase tracking-widest text-gray-400 mb-4">Contents</p>
-          <ol className="space-y-2">
+        <div className="mt-12 border-t-2 border-slate-300 print:border-black pt-8">
+          <p className="text-sm font-bold uppercase tracking-widest text-slate-700 print:text-black mb-6">Setlist Contents ({items.length} Songs)</p>
+          <ol className="space-y-4">
             {items.map((item, i) => (
-              <li key={item.id} className="flex items-center gap-3 text-base">
-                <span className="w-7 text-right font-bold text-gray-400">{i + 1}.</span>
-                <span className="font-semibold">{item.title}</span>
-                <span className="text-xs text-gray-400">({item.item_type === 'chart' ? 'Chart' : 'Lyrics'})</span>
-                {item.transpose_override !== null && item.transpose_override !== undefined && item.item_type === 'chart' && (
-                  <span className="text-xs text-gray-500 ml-auto">
-                    Transpose: {item.transpose_override > 0 ? '+' : ''}{item.transpose_override}
+              <li key={item.id} className="flex items-baseline justify-between gap-4 pb-3 border-b border-slate-200 print:border-slate-300 text-lg print:text-base text-black">
+                <div className="flex items-baseline gap-3 min-w-0">
+                  <span className="w-8 shrink-0 text-right font-mono font-bold text-slate-700 print:text-black">{i + 1}.</span>
+                  <span className="font-bold tracking-tight print:!tracking-normal text-black text-xl print:text-lg">{item.title}</span>
+                  <span className="text-xs font-semibold text-slate-600 print:text-slate-800 uppercase tracking-wider px-2 py-0.5 bg-slate-100 print:bg-transparent rounded">
+                    {item.item_type === 'chart' ? 'Chart' : 'Lyrics'}
                   </span>
-                )}
-                {item.notes && (
-                  <span className="text-xs italic text-gray-400 ml-auto">{item.notes}</span>
-                )}
+                </div>
+                <div className="flex items-baseline gap-4 shrink-0 text-sm">
+                  {item.transpose_override !== null && item.transpose_override !== undefined && item.item_type === 'chart' && item.transpose_override !== 0 && (
+                    <span className="font-mono font-bold text-slate-700 print:text-black">
+                      Transpose: {item.transpose_override > 0 ? '+' : ''}{item.transpose_override}
+                    </span>
+                  )}
+                  {item.notes && (
+                    <span className="italic text-slate-600 print:text-black max-w-xs truncate">
+                      {item.notes}
+                    </span>
+                  )}
+                </div>
               </li>
             ))}
           </ol>
@@ -265,7 +273,7 @@ function PrintView({ setlist, items, charts, lyricsMap }: {
       </div>
 
       {/* One page per item */}
-      {items.map((item, i) => {
+      {items.map((item) => {
         if (item.item_type === 'chart') {
           let chart = charts[item.item_id];
           if (!chart) return null;
@@ -273,9 +281,11 @@ function PrintView({ setlist, items, charts, lyricsMap }: {
             chart = transposeChart(chart, item.transpose_override, chart.prefer_flats);
           }
           return (
-            <div key={item.id} className={i < items.length - 1 ? 'page-break' : ''}>
+            <div key={item.id} className="page-break print:break-before-page w-full max-w-none overflow-visible pt-4">
               {item.notes && (
-                <div className="px-8 pt-6 text-sm italic text-gray-500">Note: {item.notes}</div>
+                <div className="px-8 pt-4 pb-2 text-base font-semibold italic text-black border-b border-slate-200 print:border-slate-300 w-[min(100%,64rem)] mx-auto">
+                  Note: {item.notes}
+                </div>
               )}
               <ChartRenderer chart={chart} />
             </div>
@@ -284,10 +294,10 @@ function PrintView({ setlist, items, charts, lyricsMap }: {
           const lyr = lyricsMap[item.item_id];
           if (!lyr) return null;
           return (
-            <div key={item.id} className={`${i < items.length - 1 ? 'page-break' : ''} px-8 py-12`}>
-              <h1 className="text-4xl font-bold mb-8 border-b border-gray-200 pb-4">{lyr.title}</h1>
-              {item.notes && <p className="text-sm italic text-gray-500 mb-4">Note: {item.notes}</p>}
-              <pre className="font-sans text-base leading-relaxed whitespace-pre-wrap">{lyr.body}</pre>
+            <div key={item.id} className="page-break print:break-before-page px-12 py-16 text-black w-[min(100%,60rem)] mx-auto">
+              <h1 className="text-4xl font-extrabold print:!font-bold mb-6 border-b-2 border-slate-300 print:border-black pb-4 text-black">{lyr.title}</h1>
+              {item.notes && <p className="text-base font-semibold italic text-black mb-6">Note: {item.notes}</p>}
+              <pre className="font-sans print:font-sans text-lg leading-relaxed whitespace-pre-wrap text-black">{lyr.body}</pre>
             </div>
           );
         }
@@ -434,9 +444,11 @@ export default function SetlistDetailPage() {
   if (!setlist) return null;
 
   return (
-    <div className="min-h-screen flex flex-col">
-      <Header />
-      <main className="flex-1 w-full max-w-3xl mx-auto px-4 pt-[max(env(safe-area-inset-top,2rem),2rem)] pb-32">
+    <div className="min-h-screen flex flex-col print:min-h-0 print:block w-full print:w-full print:m-0 print:p-0">
+      <div className="no-print print:!hidden">
+        <Header />
+      </div>
+      <main className="flex-1 w-full max-w-3xl mx-auto px-4 pt-[max(env(safe-area-inset-top,2rem),2rem)] pb-32 no-print print:!hidden">
 
         {/* Page header */}
         <div className="flex items-start gap-3 mb-8 mt-4">

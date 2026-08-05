@@ -331,14 +331,82 @@ export default function PerformancePage() {
         </TransformWrapper>
       </main>
 
-      {/* ── Bottom Indicator ── */}
+      {/* ── Bottom Interactive Navigation Pill ── */}
       {showHeader && (
-        <div className="fixed bottom-6 left-1/2 -translate-x-1/2 z-50 flex items-center gap-3 transition-all duration-300">
-          <div className="px-4 py-2 bg-surface border border-border rounded-full text-xs font-bold tracking-widest uppercase text-text-secondary shadow-popover whitespace-nowrap">
-            {currentIndex + 1} / {totalCharts}
-            {currentChart && <span className="text-text-primary ml-2">· {currentChart.title}</span>}
+        <div className="fixed bottom-6 left-1/2 -translate-x-1/2 z-50 flex items-center gap-2 transition-all duration-300">
+          <div className="flex items-center gap-1.5 px-2 py-1.5 bg-surface/90 backdrop-blur-md border border-border rounded-full text-xs font-bold shadow-2xl text-text-primary select-none">
+            <button
+              onClick={(e) => {
+                e.stopPropagation();
+                if (isLeader) goTo(Math.max(0, currentIndex - 1));
+                else { setLocalIndex(idx => Math.max(0, idx - 1)); stopFollowing(); }
+              }}
+              disabled={currentIndex === 0}
+              className="p-1.5 rounded-full hover:bg-surface-raised disabled:opacity-30 transition-all text-text-secondary hover:text-white"
+              title="Previous Page / Song (←)"
+            >
+              <ChevronLeft size={18} />
+            </button>
+
+            <button
+              onClick={(e) => {
+                e.stopPropagation();
+                if (currentIndex < totalCharts - 1) {
+                  if (isLeader) goTo(currentIndex + 1);
+                  else { setLocalIndex(idx => Math.min(totalCharts - 1, idx + 1)); stopFollowing(); }
+                }
+              }}
+              className="px-3 py-1 rounded-full bg-surface-raised hover:bg-border transition-all text-text-primary flex items-center gap-1.5 cursor-pointer"
+              title="Click to go to Next Page / Song"
+            >
+              <span className="text-accent-start font-black">{currentIndex + 1} / {totalCharts}</span>
+              {currentChart && <span className="text-text-primary truncate max-w-[160px]">· {currentChart.title}</span>}
+            </button>
+
+            <button
+              onClick={(e) => {
+                e.stopPropagation();
+                if (isLeader) goTo(Math.min(totalCharts - 1, currentIndex + 1));
+                else { setLocalIndex(idx => Math.min(totalCharts - 1, idx + 1)); stopFollowing(); }
+              }}
+              disabled={currentIndex >= totalCharts - 1}
+              className="p-1.5 rounded-full bg-accent-gradient text-white hover:brightness-110 disabled:opacity-30 transition-all shadow-md"
+              title="Next Page / Song (→)"
+            >
+              <ChevronRight size={18} />
+            </button>
           </div>
         </div>
+      )}
+
+      {/* ── Side Floating Navigation Arrows ── */}
+      {showHeader && (
+        <>
+          <button
+            onClick={(e) => {
+              e.stopPropagation();
+              if (isLeader) goTo(Math.max(0, currentIndex - 1));
+              else { setLocalIndex(idx => Math.max(0, idx - 1)); stopFollowing(); }
+            }}
+            disabled={currentIndex === 0}
+            className="fixed top-1/2 left-3 -translate-y-1/2 z-40 w-12 h-12 flex items-center justify-center text-text-secondary bg-surface/80 border border-border backdrop-blur-md rounded-2xl shadow-2xl hover:text-white hover:bg-surface-raised disabled:opacity-20 transition-all"
+            title="Previous Page / Song"
+          >
+            <ChevronLeft size={24} />
+          </button>
+          <button
+            onClick={(e) => {
+              e.stopPropagation();
+              if (isLeader) goTo(Math.min(totalCharts - 1, currentIndex + 1));
+              else { setLocalIndex(idx => Math.min(totalCharts - 1, idx + 1)); stopFollowing(); }
+            }}
+            disabled={currentIndex >= totalCharts - 1}
+            className="fixed top-1/2 right-3 -translate-y-1/2 z-40 w-12 h-12 flex items-center justify-center text-white bg-accent-gradient backdrop-blur-md rounded-2xl shadow-2xl hover:brightness-110 disabled:opacity-20 transition-all"
+            title="Next Page / Song"
+          >
+            <ChevronRight size={24} />
+          </button>
+        </>
       )}
 
       {/* ── Follower: status badge + back-to-leader pill ── */}
@@ -356,28 +424,10 @@ export default function PerformancePage() {
           {!isFollowing && (
             <button
               onClick={(e) => { e.stopPropagation(); resumeFollowing(); }}
-              className="fixed bottom-8 left-1/2 -translate-x-1/2 z-50 flex items-center gap-2 px-5 py-3 text-xs font-bold tracking-widest uppercase text-white bg-accent-gradient rounded-full shadow-popover hover:brightness-110 transition-all animate-bounce"
+              className="fixed bottom-20 left-1/2 -translate-x-1/2 z-50 flex items-center gap-2 px-5 py-3 text-xs font-bold tracking-widest uppercase text-white bg-accent-gradient rounded-full shadow-popover hover:brightness-110 transition-all animate-bounce"
             >
               <Radio size={14} /> Back to {leaderName}'s chart
             </button>
-          )}
-
-          {/* Manual prev/next for browsing (when not following) */}
-          {!isFollowing && (
-            <>
-              <button
-                onClick={(e) => { e.stopPropagation(); setLocalIndex(idx => Math.max(0, idx - 1)); stopFollowing(); }}
-                className="fixed bottom-8 left-5 z-40 w-14 h-14 flex items-center justify-center text-text-secondary bg-surface border border-border rounded-2xl shadow-md hover:text-white hover:bg-surface-raised transition-all"
-              >
-                <ChevronLeft size={26} />
-              </button>
-              <button
-                onClick={(e) => { e.stopPropagation(); setLocalIndex(idx => Math.min(chartIds.length - 1, idx + 1)); stopFollowing(); }}
-                className="fixed bottom-8 right-5 z-40 w-14 h-14 flex items-center justify-center text-text-secondary bg-surface border border-border rounded-2xl shadow-md hover:text-white hover:bg-surface-raised transition-all"
-              >
-                <ChevronRight size={26} />
-              </button>
-            </>
           )}
         </>
       )}
