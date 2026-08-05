@@ -277,30 +277,19 @@ export function ChartRenderer({
                       return (
                         <React.Fragment key={bIdx}>
                           <BarMarker marker={prefix} side="left" />
-                          {block.bars.map((bar, barIdx) => {
-                            const barKey = `bar-${lIdx}-${bIdx}-${barIdx}`;
-                            const customBarColor = itemColors[barKey] || (chordColor !== '#0f172a' ? chordColor : undefined);
-
-                            return (
-                              <React.Fragment key={barIdx}>
-                                <span
-                                  onClick={(e) => {
-                                    e.stopPropagation();
-                                    setActivePickerKey(activePickerKey === barKey ? null : barKey);
-                                  }}
-                                  className="relative inline-flex items-center justify-center min-w-[4rem] sm:min-w-[5.8rem] md:min-w-[6.8rem] px-1 sm:px-2.5 text-center font-extrabold transition-colors duration-150 text-lg sm:text-3xl md:text-[2rem] font-mono sm:font-sans cursor-pointer hover:bg-slate-100/80 rounded"
-                                  style={{ color: customBarColor || '#0f172a' }}
-                                  title="Click to color this chord"
-                                >
-                                  <ColorPickerPopover itemKey={barKey} activePickerKey={activePickerKey} onSetColor={handleSetColor} />
-                                  {parseChord(bar || '_')}
-                                </span>
-                                {barIdx < block.bars.length - 1 && (
-                                  <span className="inline-flex items-center justify-center text-slate-500 font-medium px-1 sm:px-2 text-lg sm:text-2xl md:text-3xl print:text-black">|</span>
-                                )}
-                              </React.Fragment>
-                            );
-                          })}
+                          {block.bars.map((bar, barIdx) => (
+                            <React.Fragment key={barIdx}>
+                              <span
+                                className="inline-flex items-center justify-center min-w-[4rem] sm:min-w-[5.8rem] md:min-w-[6.8rem] px-1 sm:px-2.5 text-center font-extrabold transition-colors duration-150 text-lg sm:text-3xl md:text-[2rem] font-mono sm:font-sans"
+                                style={{ color: '#0f172a' }}
+                              >
+                                {parseChord(bar || '_')}
+                              </span>
+                              {barIdx < block.bars.length - 1 && (
+                                <span className="inline-flex items-center justify-center text-slate-500 font-medium px-1 sm:px-2 text-lg sm:text-2xl md:text-3xl print:text-black">|</span>
+                              )}
+                            </React.Fragment>
+                          ))}
                         </React.Fragment>
                       );
                     })}
