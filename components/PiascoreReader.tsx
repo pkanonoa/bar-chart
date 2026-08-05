@@ -260,11 +260,33 @@ export function PiascoreReader({ initialChart, folderId, onLeaderStart, onFollow
     }
   };
 
-  // Bookmark toggle
+  // Bookmark toggle & opening in tab
   const handleAddCurrentBookmark = async () => {
     if (!currentChart) return;
-    await toggleBookmark(currentChart.id, 'chart', true);
+    const isBookmarked = bookmarksList.some((b) => b.id === currentChart.id);
+    await toggleBookmark(currentChart.id, 'chart', !isBookmarked);
     await refreshBookmarks();
+  };
+
+  const handleOpenBookmarkInTab = async (bm: any) => {
+    const existingTab = tabs.find((t) => t.id === bm.id);
+    if (existingTab) {
+      setActiveTabId(existingTab.id);
+    } else {
+      const c = await readChart(bm.id);
+      if (c) {
+        const chartData = c as ChartData;
+        const newTab: TabItem = {
+          id: chartData.id,
+          title: chartData.title || 'Untitled',
+          artist: chartData.custom_text || 'Composer',
+          chart: chartData,
+        };
+        setTabs((prev) => [...prev, newTab]);
+        setActiveTabId(newTab.id);
+      }
+    }
+    setIsBookmarkOpen(false);
   };
 
   // Leader / Follow session trigger
@@ -622,10 +644,18 @@ export function PiascoreReader({ initialChart, folderId, onLeaderStart, onFollow
             <h2 className="text-sm font-bold text-slate-900 dark:text-white">Bookmark</h2>
             <button
               onClick={handleAddCurrentBookmark}
-              className="p-1 text-[#007aff] hover:bg-black/5 dark:hover:bg-white/5 rounded-lg active:scale-95"
-              title="Bookmark current chart"
+              className={`p-1 rounded-lg active:scale-95 transition-all ${
+                bookmarksList.some((b) => b.id === currentChart.id)
+                  ? 'text-accent-start bg-accent-start/10 font-bold'
+                  : 'text-[#007aff] hover:bg-black/5 dark:hover:bg-white/5'
+              }`}
+              title={
+                bookmarksList.some((b) => b.id === currentChart.id)
+                  ? 'Remove from bookmarks'
+                  : 'Add to bookmarks'
+              }
             >
-              <Plus size={20} />
+              <Plus size={20} className={bookmarksList.some((b) => b.id === currentChart.id) ? 'rotate-45 transition-transform' : ''} />
             </button>
           </div>
 
@@ -639,18 +669,11 @@ export function PiascoreReader({ initialChart, folderId, onLeaderStart, onFollow
               bookmarksList.map((bm) => (
                 <div
                   key={bm.id}
-                  onClick={() => {
-                    readChart(bm.id).then((c) => {
-                      if (c) {
-                        setCurrentChart(c as ChartData);
-                        setIsBookmarkOpen(false);
-                      }
-                    });
-                  }}
+                  onClick={() => handleOpenBookmarkInTab(bm)}
                   className="flex items-center justify-between p-3 hover:bg-slate-50 dark:hover:bg-white/5 rounded-xl cursor-pointer transition-colors"
                 >
                   <div className="flex items-center gap-3 truncate">
-                    <BookmarkIcon size={16} className="text-[#007aff] shrink-0" />
+                    <BookmarkIcon size={16} className="text-[#007aff] shrink-0 fill-[#007aff]" />
                     <span className="text-xs font-bold text-slate-800 dark:text-slate-200 truncate">
                       {bm.title}
                     </span>

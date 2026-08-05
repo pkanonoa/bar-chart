@@ -292,8 +292,29 @@ export function PiascoreLyricsReader({ initialLyric, folderId }: Props) {
 
   const handleAddCurrentBookmark = async () => {
     if (!currentLyric) return;
-    await toggleBookmark(currentLyric.id, 'lyrics', true);
+    const isBookmarked = bookmarksList.some((b) => b.id === currentLyric.id);
+    await toggleBookmark(currentLyric.id, 'lyrics', !isBookmarked);
     await refreshBookmarks();
+  };
+
+  const handleOpenBookmarkInTab = async (bm: any) => {
+    const existingTab = tabs.find((t) => t.id === bm.id);
+    if (existingTab) {
+      setActiveTabId(existingTab.id);
+    } else {
+      const l = await readLyrics(bm.id);
+      if (l) {
+        const lyricData = l as Lyric;
+        const newTab: TabItem = {
+          id: lyricData.id,
+          title: lyricData.title || 'Untitled',
+          lyric: lyricData,
+        };
+        setTabs((prev) => [...prev, newTab]);
+        setActiveTabId(newTab.id);
+      }
+    }
+    setIsBookmarkOpen(false);
   };
 
   const paragraphs = currentLyric.body ? currentLyric.body.split('\n\n') : [];
@@ -628,10 +649,18 @@ export function PiascoreLyricsReader({ initialLyric, folderId }: Props) {
             <h2 className="text-sm font-bold text-slate-900 dark:text-white">Bookmark</h2>
             <button
               onClick={handleAddCurrentBookmark}
-              className="p-1 text-accent-start hover:bg-black/5 dark:hover:bg-white/5 rounded-lg active:scale-95"
-              title="Bookmark current lyrics"
+              className={`p-1 rounded-lg active:scale-95 transition-all ${
+                bookmarksList.some((b) => b.id === currentLyric.id)
+                  ? 'text-accent-start bg-accent-start/10 font-bold'
+                  : 'text-accent-start hover:bg-black/5 dark:hover:bg-white/5'
+              }`}
+              title={
+                bookmarksList.some((b) => b.id === currentLyric.id)
+                  ? 'Remove from bookmarks'
+                  : 'Add to bookmarks'
+              }
             >
-              <Plus size={20} />
+              <Plus size={20} className={bookmarksList.some((b) => b.id === currentLyric.id) ? 'rotate-45 transition-transform' : ''} />
             </button>
           </div>
 
@@ -644,18 +673,11 @@ export function PiascoreLyricsReader({ initialLyric, folderId }: Props) {
               bookmarksList.map((bm) => (
                 <div
                   key={bm.id}
-                  onClick={() => {
-                    readLyrics(bm.id).then((l) => {
-                      if (l) {
-                        setCurrentLyric(l);
-                        setIsBookmarkOpen(false);
-                      }
-                    });
-                  }}
+                  onClick={() => handleOpenBookmarkInTab(bm)}
                   className="flex items-center justify-between p-3 hover:bg-slate-50 dark:hover:bg-white/5 rounded-xl cursor-pointer transition-colors"
                 >
                   <div className="flex items-center gap-3 truncate">
-                    <BookmarkIcon size={16} className="text-accent-start shrink-0" />
+                    <BookmarkIcon size={16} className="text-accent-start shrink-0 fill-accent-start" />
                     <span className="text-xs font-bold text-slate-800 dark:text-slate-200 truncate">
                       {bm.title}
                     </span>
