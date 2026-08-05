@@ -27,7 +27,7 @@ export default function AuthPage() {
 
   const handleGuestClick = () => {
     enableGuestMode();
-    router.push('/');
+    window.location.href = '/';
   };
 
   const handleAuth = async (e: React.FormEvent) => {

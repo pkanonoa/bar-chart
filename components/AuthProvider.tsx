@@ -70,7 +70,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     } catch (err) {
       console.warn('[Auth] SignOut error:', err);
     }
-    router.push('/auth');
+    window.location.href = '/auth';
   };
 
   useEffect(() => {
@@ -124,9 +124,9 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
   useEffect(() => {
     if (!loading && !user && pathname !== '/auth') {
-      router.push('/auth');
+      window.location.href = '/auth';
     }
-  }, [user, loading, pathname, router]);
+  }, [user, loading, pathname]);
 
   return (
     <AuthContext.Provider value={{ user, loading, isGuest, enableGuestMode, signOut }}>
