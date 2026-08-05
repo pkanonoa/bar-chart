@@ -107,8 +107,8 @@ export function ChartRenderer({
                     {/* Left Label */}
                     {line.label ? (
                       <div 
-                        className="shrink-0 text-slate-800 font-extrabold text-lg sm:text-2xl md:text-3xl print:text-[1em] text-right pr-3 sm:pr-6 flex items-center justify-end font-sans select-none"
-                        style={{ width: `${Math.max(7, labelCh)}ch`, minWidth: '6rem' }}
+                        className="shrink-0 font-extrabold text-lg sm:text-2xl md:text-3xl print:text-[1em] text-right pr-3 sm:pr-6 flex items-center justify-end font-sans select-none"
+                        style={{ width: `${Math.max(7, labelCh)}ch`, minWidth: '6rem', color: chordColor }}
                       >
                         {line.label.charAt(0).toUpperCase()}{line.label.slice(1).toLowerCase()}:
                       </div>
@@ -135,8 +135,8 @@ export function ChartRenderer({
                 }`} id={`chart-line-${lIdx}`}>
                   {/* Left Label */}
                   <div 
-                    className="shrink-0 text-slate-800 font-extrabold text-lg sm:text-2xl md:text-3xl print:text-[1em] text-right pr-3 sm:pr-6 flex items-center justify-end font-sans select-none"
-                    style={{ width: `${Math.max(7, labelCh)}ch`, minWidth: '6rem' }}
+                    className="shrink-0 font-extrabold text-lg sm:text-2xl md:text-3xl print:text-[1em] text-right pr-3 sm:pr-6 flex items-center justify-end font-sans select-none"
+                    style={{ width: `${Math.max(7, labelCh)}ch`, minWidth: '6rem', color: chordColor }}
                   >
                     {line.label ? `${line.label.charAt(0).toUpperCase()}${line.label.slice(1).toLowerCase()}:` : ''}
                   </div>
@@ -173,7 +173,7 @@ export function ChartRenderer({
                                 {parseChord(bar || '_')}
                               </span>
                               {barIdx < block.bars.length - 1 && (
-                                <span className="inline-flex items-center justify-center text-slate-300 font-medium px-1 sm:px-2 text-lg sm:text-2xl md:text-3xl print:text-black">|</span>
+                                <span className="inline-flex items-center justify-center text-slate-500 font-medium px-1 sm:px-2 text-lg sm:text-2xl md:text-3xl print:text-black">|</span>
                               )}
                             </React.Fragment>
                           ))}
