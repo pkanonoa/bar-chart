@@ -24,8 +24,8 @@ interface Props {
   folderId?: string | null;
 }
 
-// ── Inner lyrics zoom reset wrapper ─────────────────────────────────────────────
-function LyricsContentWrapper({
+// ── Inner lyrics card component (no zoom controls hook dependency) ─────────────────
+function PlainLyricsCard({
   lyric,
   selectedFont,
   textColor,
@@ -36,26 +36,6 @@ function LyricsContentWrapper({
   textColor: string;
   textAlign?: 'center' | 'left' | 'right';
 }) {
-  const { zoomToElement } = useControls();
-
-  useEffect(() => {
-    let t: any;
-    const fit = () => {
-      clearTimeout(t);
-      t = setTimeout(() => {
-        zoomToElement('piascore-lyrics-card', undefined, 0);
-      }, 150);
-    };
-    fit();
-    window.addEventListener('resize', fit);
-    window.addEventListener('orientationchange', fit);
-    return () => {
-      clearTimeout(t);
-      window.removeEventListener('resize', fit);
-      window.removeEventListener('orientationchange', fit);
-    };
-  }, [zoomToElement, lyric.id]);
-
   const paragraphs = lyric.body ? lyric.body.split('\n\n') : [];
 
   return (
@@ -95,6 +75,36 @@ function LyricsContentWrapper({
       </div>
     </div>
   );
+}
+
+// ── Inner lyrics zoom reset wrapper ─────────────────────────────────────────────
+function LyricsContentWrapper(props: {
+  lyric: Lyric;
+  selectedFont: string;
+  textColor: string;
+  textAlign?: 'center' | 'left' | 'right';
+}) {
+  const { zoomToElement } = useControls();
+
+  useEffect(() => {
+    let t: any;
+    const fit = () => {
+      clearTimeout(t);
+      t = setTimeout(() => {
+        zoomToElement('piascore-lyrics-card', undefined, 0);
+      }, 150);
+    };
+    fit();
+    window.addEventListener('resize', fit);
+    window.addEventListener('orientationchange', fit);
+    return () => {
+      clearTimeout(t);
+      window.removeEventListener('resize', fit);
+      window.removeEventListener('orientationchange', fit);
+    };
+  }, [zoomToElement, props.lyric.id]);
+
+  return <PlainLyricsCard {...props} />;
 }
 
 export function PiascoreLyricsReader({ initialLyric, folderId }: Props) {
@@ -600,7 +610,7 @@ export function PiascoreLyricsReader({ initialLyric, folderId }: Props) {
             }}
             className="w-full max-w-4xl flex items-stretch justify-center my-2"
           >
-            <LyricsContentWrapper
+            <PlainLyricsCard
               lyric={currentLyric}
               selectedFont={selectedFont}
               textColor={textColor}

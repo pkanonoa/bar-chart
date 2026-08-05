@@ -24,8 +24,8 @@ function ChordNoteTooltip({ chord }: { chord: string }) {
 /** Renders a bar-line marker (e.g. "||:", ":||:", "||") so that
  *  the || double-bars are black/bold and only the : repeat dots are indigo. */
 function BarMarker({ marker, side }: { marker: string; side: 'left' | 'right' }) {
-  const barClass = 'text-slate-500 font-medium text-[1.0em] sm:text-[1.1em] print:text-black';
-  const dotClass = 'text-indigo-500 font-black text-[1.0em] sm:text-[1.1em] print:text-black';
+  const barClass = 'text-slate-500 font-medium text-[1.0em] sm:text-[1.1em] print:text-black print:!text-base print:!font-bold';
+  const dotClass = 'text-indigo-500 font-black text-[1.0em] sm:text-[1.1em] print:text-black print:!text-base';
 
   // Split into segments: leading ':', '||', trailing ':'
   const parts: { ch: string; isColon: boolean }[] = [];
@@ -45,8 +45,8 @@ function BarMarker({ marker, side }: { marker: string; side: 'left' | 'right' })
   }
 
   const pad = side === 'left'
-    ? 'inline-flex items-center pr-1.5 sm:pr-2.5 print:pr-1 tracking-tighter'
-    : 'inline-flex items-center pl-1.5 sm:pl-2.5 print:pl-1 tracking-tighter';
+    ? 'inline-flex items-center pr-1.5 sm:pr-2.5 print:!pr-0.5 tracking-tighter'
+    : 'inline-flex items-center pl-1.5 sm:pl-2.5 print:!pl-0.5 tracking-tighter';
 
   return (
     <span className={pad}>
@@ -201,19 +201,19 @@ export function ChartRenderer({
         style={selectedFont !== 'system' ? { fontFamily: selectedFont } : {}}
       >
         {/* Header */}
-        <div className="relative flex items-center justify-center mb-8 sm:mb-12 pb-5 border-b border-slate-200 print:border-none w-full text-slate-900 print:text-black print:pt-24">
-          <div className="flex items-baseline gap-4 sm:gap-6">
-            <h1 className="text-3xl sm:text-4xl md:text-5xl font-extrabold print:!font-bold tracking-tight print:!tracking-normal text-slate-900">{chartData.title || 'Untitled Chart'}</h1>
-            <span className="font-bold text-slate-500 print:!font-normal text-xl sm:text-3xl print:text-3xl">{chartData.time_sig || '4/4'}</span>
+        <div className="relative flex items-center justify-between mb-8 sm:mb-12 pb-5 border-b border-slate-200 print:border-none w-full text-slate-900 print:text-black print:pt-4 print:mb-6 print:!pb-0">
+          <div className="flex items-baseline gap-4 sm:gap-6 print:gap-3">
+            <h1 className="text-3xl sm:text-4xl md:text-5xl font-extrabold print:!font-bold tracking-tight print:!tracking-normal text-slate-900 print:!text-2xl">{chartData.title || 'Untitled Chart'}</h1>
+            <span className="font-bold text-slate-500 print:!font-normal text-xl sm:text-3xl print:!text-lg">{chartData.time_sig || '4/4'}</span>
           </div>
-          <div className="absolute right-0 print:right-24 font-bold text-slate-500 print:!font-normal text-lg sm:text-2xl print:text-2xl">
+          <div className="absolute right-0 print:!right-0 font-bold text-slate-500 print:!font-normal text-lg sm:text-2xl print:!text-lg">
             t={chartData.tempo || 120}
           </div>
         </div>
 
         {/* Lines */}
-        <div className="flex flex-col w-full items-center justify-center">
-          <div className="flex flex-col gap-5 sm:gap-8 print:gap-10 w-fit mx-auto print:mx-0 max-w-full overflow-visible scrollbar-none px-2 py-2">
+        <div className="flex flex-col w-full items-center justify-center print:items-start">
+          <div className="flex flex-col gap-5 sm:gap-8 print:!gap-4 w-fit mx-auto print:!mx-0 print:!w-full max-w-full overflow-visible scrollbar-none px-2 py-2 print:!p-0">
             {chartData.lines.map((line, lIdx) => {
               const secName = line.label ? line.label.trim().toLowerCase() : '';
               const sectionKey = secName ? `section-${secName}` : `label-${lIdx}`;
@@ -222,7 +222,7 @@ export function ChartRenderer({
 
               if (line.blocks.length === 0) {
                 return (
-                  <div key={lIdx} className={`flex flex-row items-center justify-start w-full flex-nowrap whitespace-nowrap rounded-lg transition-all duration-300 ${
+                  <div key={lIdx} className={`flex flex-row items-center justify-start w-full flex-nowrap whitespace-nowrap print:!whitespace-normal print:!w-full rounded-lg transition-all duration-300 ${
                     activeSectionIndex === lIdx ? 'ring-2 ring-indigo-500/40 bg-indigo-50/50 px-2 -mx-2' : ''
                   }`} id={`chart-line-${lIdx}`}>
                     {/* Left Label */}
@@ -232,7 +232,7 @@ export function ChartRenderer({
                           e.stopPropagation();
                           setActivePickerKey(activePickerKey === sectionKey ? null : sectionKey);
                         }}
-                        className="relative shrink-0 font-extrabold text-lg sm:text-2xl md:text-3xl print:text-[1em] text-right pr-3 sm:pr-6 flex items-center justify-end font-sans select-none cursor-pointer hover:opacity-75 transition-opacity"
+                        className="relative shrink-0 font-extrabold text-lg sm:text-2xl md:text-3xl print:!text-base print:!font-bold text-right pr-3 sm:pr-6 print:!pr-2 print:!min-w-[3.5rem] print:!w-auto flex items-center justify-end font-sans select-none cursor-pointer hover:opacity-75 transition-opacity"
                         style={{ width: `${Math.max(7, labelCh)}ch`, minWidth: '6rem', color: customLabelColor || '#0f172a' }}
                         title="Click to color this section label"
                       >
@@ -240,7 +240,7 @@ export function ChartRenderer({
                         {line.label.charAt(0).toUpperCase()}{line.label.slice(1).toLowerCase()}:
                       </div>
                     ) : (
-                      <div className="shrink-0" style={{ width: `${Math.max(7, labelCh)}ch`, minWidth: '6rem' }}></div>
+                      <div className="shrink-0 print:!min-w-[3.5rem] print:!w-auto" style={{ width: `${Math.max(7, labelCh)}ch`, minWidth: '6rem' }}></div>
                     )}
 
                     {/* Right Label (Annotation text after || bar) */}
@@ -253,7 +253,7 @@ export function ChartRenderer({
                             e.stopPropagation();
                             setActivePickerKey(activePickerKey === labelRightKey ? null : labelRightKey);
                           }}
-                          className="relative shrink-0 font-semibold print:text-black text-lg sm:text-2xl print:text-[1em] text-left pl-3 sm:pl-6 flex items-center ml-auto cursor-pointer hover:opacity-75 transition-opacity"
+                          className="relative shrink-0 font-semibold print:text-black text-lg sm:text-2xl print:!text-base text-left pl-3 sm:pl-6 print:!pl-2 print:!w-auto flex items-center ml-auto cursor-pointer hover:opacity-75 transition-opacity"
                           style={{ width: `${labelRightCh}ch`, color: customLabelRightColor || '#64748b' }}
                           title="Click to color this text"
                         >
@@ -267,7 +267,7 @@ export function ChartRenderer({
               }
 
               return (
-                <div key={lIdx} className={`flex flex-row items-center justify-start flex-nowrap whitespace-nowrap rounded-lg transition-all duration-300 ${
+                <div key={lIdx} className={`flex flex-row items-center justify-start flex-nowrap whitespace-nowrap print:!whitespace-normal print:!w-full rounded-lg transition-all duration-300 ${
                   activeSectionIndex === lIdx ? 'ring-2 ring-indigo-500/40 bg-indigo-50/50 px-2 -mx-2' : ''
                 }`} id={`chart-line-${lIdx}`}>
                   {/* Left Label */}
@@ -276,7 +276,7 @@ export function ChartRenderer({
                       e.stopPropagation();
                       setActivePickerKey(activePickerKey === sectionKey ? null : sectionKey);
                     }}
-                    className="relative shrink-0 font-extrabold text-lg sm:text-2xl md:text-3xl print:text-[1em] text-right pr-3 sm:pr-6 flex items-center justify-end font-sans select-none cursor-pointer hover:opacity-75 transition-opacity"
+                    className="relative shrink-0 font-extrabold text-lg sm:text-2xl md:text-3xl print:!text-base print:!font-bold text-right pr-3 sm:pr-6 print:!pr-2 print:!min-w-[3.5rem] print:!w-auto flex items-center justify-end font-sans select-none cursor-pointer hover:opacity-75 transition-opacity"
                     style={{ width: `${Math.max(7, labelCh)}ch`, minWidth: '6rem', color: customLabelColor || '#0f172a' }}
                     title="Click to color this section label"
                   >
@@ -285,7 +285,7 @@ export function ChartRenderer({
                   </div>
 
                   {/* Chords Container */}
-                  <div className="flex items-center justify-start flex-nowrap shrink-0 text-xl sm:text-3xl md:text-[2rem] print:text-[1.2em]">
+                  <div className="flex items-center justify-start flex-nowrap shrink-0 text-xl sm:text-3xl md:text-[2rem] print:!text-base print:!flex-wrap">
                     {line.blocks.map((block, bIdx) => {
                       const isFirst = bIdx === 0;
                       let prefix = '';
@@ -339,7 +339,7 @@ export function ChartRenderer({
                                       lastTouchTimestampRef.current[barKey] = now;
                                     }
                                   }}
-                                  className={`relative inline-flex items-center justify-center min-w-[4rem] sm:min-w-[5.8rem] md:min-w-[6.8rem] px-1 sm:px-2.5 text-center font-extrabold transition-all duration-150 text-lg sm:text-3xl md:text-[2rem] font-mono sm:font-sans rounded select-none ${
+                                  className={`relative inline-flex items-center justify-center min-w-[4rem] sm:min-w-[5.8rem] md:min-w-[6.8rem] print:!min-w-[2.2rem] px-1 sm:px-2.5 print:!px-0.5 text-center font-extrabold transition-all duration-150 text-lg sm:text-3xl md:text-[2rem] print:!text-base print:!font-bold font-mono sm:font-sans rounded select-none ${
                                     isTooltipActive ? 'bg-indigo-50/90 ring-2 ring-indigo-400/50' : 'hover:bg-slate-50/50'
                                   }`}
                                   style={{ color: '#0f172a' }}
@@ -349,7 +349,7 @@ export function ChartRenderer({
                                   {parseChord(bar || '_')}
                                 </span>
                                 {barIdx < block.bars.length - 1 && (
-                                  <span className="inline-flex items-center justify-center text-slate-500 font-medium px-1 sm:px-2 text-lg sm:text-2xl md:text-3xl print:text-black">|</span>
+                                  <span className="inline-flex items-center justify-center text-slate-500 font-medium px-1 sm:px-2 text-lg sm:text-2xl md:text-3xl print:text-black print:!text-base print:!px-0.5">|</span>
                                 )}
                               </React.Fragment>
                             );
@@ -376,7 +376,7 @@ export function ChartRenderer({
                           e.stopPropagation();
                           setActivePickerKey(activePickerKey === labelRightKey ? null : labelRightKey);
                         }}
-                        className="relative shrink-0 font-semibold print:text-black text-lg sm:text-2xl print:text-[1em] text-left pl-3 sm:pl-6 flex items-center cursor-pointer hover:opacity-75 transition-opacity"
+                        className="relative shrink-0 font-semibold print:text-black text-lg sm:text-2xl print:!text-base text-left pl-3 sm:pl-6 print:!pl-2 print:!w-auto flex items-center cursor-pointer hover:opacity-75 transition-opacity"
                         style={{ width: `${labelRightCh}ch`, color: customLabelRightColor || '#64748b' }}
                         title="Click to color this text"
                       >

@@ -74,8 +74,8 @@ body {
 
 @media print {
   @page {
-    margin: 1cm;
-    size: auto;
+    margin: 0;
+    size: portrait;
   }
   
   :root {
@@ -106,19 +106,15 @@ body {
   main {
     padding: 0 !important;
     margin: 0 !important;
-    width: 100% !important;
-    max-width: 100% !important;
-    box-sizing: border-box !important;
+    width: max-content !important;
     overflow: visible !important;
   }
   
   /* Reset dynamic scaling bounds for print so it fits page width */
   .print-reset-scale {
-    font-size: 16pt !important;
-    width: 100% !important;
-    max-width: 100% !important;
-    box-sizing: border-box !important;
-    margin: 0 !important;
+    font-size: 34px !important;
+    width: max-content !important;
+    margin: 0 auto !important;
     padding: 0 !important;
     overflow: visible !important;
   }

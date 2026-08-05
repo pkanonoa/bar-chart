@@ -605,7 +605,7 @@ export function PiascoreReader({ initialChart, folderId, onLeaderStart, onFollow
             }}
             className="bg-white text-slate-900 shadow-2xl rounded-2xl p-4 sm:p-8 md:p-10 w-full max-w-5xl border border-slate-200/80 my-2"
           >
-            <ChartContentWrapper chart={currentChart} selectedFont={selectedFont} chordColor={chordColor} />
+            <ChartRenderer chart={currentChart} selectedFont={selectedFont} chordColor={chordColor} id="piascore-chart-card" />
           </div>
         </main>
       ) : (
