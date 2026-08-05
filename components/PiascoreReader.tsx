@@ -331,9 +331,9 @@ export function PiascoreReader({ initialChart, folderId, onLeaderStart, onFollow
                   : 'bg-[#cfcfd3] dark:bg-[#2a2a2e] text-slate-600 dark:text-slate-400 border-transparent hover:bg-white/50'
               }`}
             >
-              {/* Active Blue Line Indicator */}
+              {/* Active Gradient Line Indicator */}
               {isActive && (
-                <span className="absolute top-0 left-0 right-0 h-[2px] bg-[#007aff]" />
+                <span className="absolute top-0 left-0 right-0 h-[2.5px] bg-accent-gradient shadow-[0_0_8px_rgba(117,52,255,0.6)]" />
               )}
               <span className="truncate flex-1">{tab.title}</span>
               {tabs.length > 1 && (
@@ -351,7 +351,7 @@ export function PiascoreReader({ initialChart, folderId, onLeaderStart, onFollow
         {/* Plus Tab Button */}
         <button
           onClick={() => setIsSongPickerOpen(true)}
-          className="p-1.5 text-slate-600 dark:text-slate-400 hover:text-[#007aff] hover:bg-black/5 dark:hover:bg-white/5 rounded-md transition-all shrink-0 ml-1"
+          className="p-1.5 text-slate-600 dark:text-slate-400 hover:text-accent-start hover:bg-black/5 dark:hover:bg-white/5 rounded-md transition-all shrink-0 ml-1"
           title="Open song in new tab"
         >
           <Plus size={15} />
@@ -361,7 +361,7 @@ export function PiascoreReader({ initialChart, folderId, onLeaderStart, onFollow
       {/* ── 3. FLOATING LEFT METRONOME TAB BUTTON ────────────────────────── */}
       <button
         onClick={() => setIsMetronomeOpen((prev) => !prev)}
-        className={`fixed left-0 top-1/2 -translate-y-1/2 z-40 bg-white/90 dark:bg-[#1a1a1e]/90 backdrop-blur-md border border-l-0 border-slate-300 dark:border-slate-700 shadow-md rounded-r-xl px-2 py-3 flex flex-col items-center gap-1.5 text-[#007aff] hover:px-3 transition-all ${
+        className={`fixed left-0 top-1/2 -translate-y-1/2 z-40 bg-white/90 dark:bg-[#1a1a1e]/90 backdrop-blur-md border border-l-0 border-slate-300 dark:border-slate-700 shadow-md rounded-r-xl px-2 py-3 flex flex-col items-center gap-1.5 text-accent-start hover:px-3 transition-all ${
           showUI ? 'opacity-100 translate-x-0' : 'opacity-0 -translate-x-full'
         }`}
       >
@@ -379,7 +379,7 @@ export function PiascoreReader({ initialChart, folderId, onLeaderStart, onFollow
         <div className="fixed left-12 top-1/2 -translate-y-1/2 z-50 w-72 bg-white dark:bg-[#1e1e24] border border-slate-300 dark:border-slate-700 shadow-2xl rounded-2xl p-4 flex flex-col gap-3">
           <div className="flex items-center justify-between border-b border-slate-200 dark:border-slate-800 pb-2">
             <h3 className="text-sm font-bold flex items-center gap-2">
-              <Volume2 size={16} className="text-[#007aff]" /> Metronome
+              <Volume2 size={16} className="text-accent-start" /> Metronome
             </h3>
             <button
               onClick={() => setIsMetronomeOpen(false)}
@@ -398,7 +398,7 @@ export function PiascoreReader({ initialChart, folderId, onLeaderStart, onFollow
                   isPlayingMetronome && currentBeat === idx
                     ? idx === 0
                       ? 'bg-red-500 scale-125 shadow-[0_0_10px_rgba(239,68,68,0.8)]'
-                      : 'bg-[#007aff] scale-110 shadow-[0_0_8px_rgba(0,122,255,0.8)]'
+                      : 'bg-accent-start scale-110 shadow-[0_0_8px_rgba(117,52,255,0.8)]'
                     : 'bg-slate-300 dark:bg-slate-700'
                 }`}
               />
@@ -434,7 +434,7 @@ export function PiascoreReader({ initialChart, folderId, onLeaderStart, onFollow
             max="240"
             value={bpm}
             onChange={(e) => setBpm(Number(e.target.value))}
-            className="w-full accent-[#007aff]"
+            className="w-full accent-accent-start"
           />
 
           {/* Time Signature Options */}
@@ -445,7 +445,7 @@ export function PiascoreReader({ initialChart, folderId, onLeaderStart, onFollow
                 onClick={() => setTimeSig(ts)}
                 className={`flex-1 py-1.5 rounded-lg font-bold transition-all ${
                   timeSig === ts
-                    ? 'bg-[#007aff] text-white shadow-md'
+                    ? 'bg-accent-gradient text-white shadow-md'
                     : 'bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300'
                 }`}
               >
@@ -460,7 +460,7 @@ export function PiascoreReader({ initialChart, folderId, onLeaderStart, onFollow
             className={`w-full py-2.5 rounded-xl font-bold flex items-center justify-center gap-2 text-white shadow-md transition-all active:scale-98 ${
               isPlayingMetronome
                 ? 'bg-red-500 hover:bg-red-600'
-                : 'bg-[#007aff] hover:bg-[#0066cc]'
+                : 'bg-accent-gradient hover:brightness-110'
             }`}
           >
             {isPlayingMetronome ? (
@@ -478,7 +478,7 @@ export function PiascoreReader({ initialChart, folderId, onLeaderStart, onFollow
 
       {/* ── 4. MAIN SCORE READER CANVAS ───────────────────────────────────── */}
       <main
-        className="flex-1 w-full h-full relative overflow-hidden flex items-center justify-center cursor-pointer"
+        className="flex-1 w-full h-full relative overflow-hidden flex items-stretch justify-center cursor-pointer"
         onClick={toggleUI}
       >
         <TransformWrapper
@@ -506,22 +506,7 @@ export function PiascoreReader({ initialChart, folderId, onLeaderStart, onFollow
         </TransformWrapper>
       </main>
 
-      {/* ── 5. BOTTOM PAGE POSITION SLIDER ──────────────────────────────── */}
-      <div
-        className={`fixed bottom-14 left-4 right-4 z-40 bg-white/80 dark:bg-[#1e1e24]/80 backdrop-blur-md border border-slate-300 dark:border-slate-700 rounded-full px-4 py-2 flex items-center gap-3 shadow-lg transition-transform duration-300 ${
-          showUI ? 'translate-y-0' : 'translate-y-24'
-        }`}
-      >
-        <input
-          type="range"
-          min="0"
-          max={totalLines - 1}
-          value={currentLineIndex}
-          onChange={(e) => setCurrentLineIndex(Number(e.target.value))}
-          className="w-full accent-[#007aff] cursor-pointer"
-        />
-        <div className="w-2.5 h-2.5 rounded-full bg-[#007aff] shrink-0" />
-      </div>
+
 
       {/* ── 6. BOTTOM ACTION TOOLBAR (5 Icons matching Piascore) ────────── */}
       <footer

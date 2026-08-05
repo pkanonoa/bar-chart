@@ -29,59 +29,59 @@ export function ChartRenderer({
     if (!chartData) return null;
     if (chartData.custom_text !== undefined && chartData.custom_text !== null) {
       return (
-        <pre className="font-sans text-accent-start font-medium text-[10px] sm:text-xs md:text-[15px] leading-normal whitespace-pre min-w-max" style={selectedFont !== 'system' ? { fontFamily: selectedFont } : {}}>
+        <pre className="font-sans text-indigo-600 font-medium text-[10px] sm:text-xs md:text-[15px] leading-normal whitespace-pre min-w-max" style={selectedFont !== 'system' ? { fontFamily: selectedFont } : {}}>
           {chartData.custom_text}
         </pre>
       );
     }
 
     const maxLabelLen = Math.max(...chartData.lines.map(l => l.label ? l.label.length : 0));
-    const labelCh = Math.max(4, maxLabelLen) + 4; 
+    const labelCh = Math.max(7, maxLabelLen + 1); 
     
     const maxLabelRightLen = Math.max(...chartData.lines.map(l => l.labelRight ? l.labelRight.length : 0));
     const labelRightCh = Math.max(4, maxLabelRightLen) + 2;
 
     return (
       <div 
-        className="flex flex-col gap-4 font-sans print:!font-mono w-max min-w-full leading-relaxed text-text-primary print-reset-scale print:text-black" 
+        className="flex flex-col gap-4 font-sans print:!font-mono w-full leading-relaxed text-slate-900 print-reset-scale print:text-black" 
         style={selectedFont !== 'system' ? { fontFamily: selectedFont } : {}}
       >
         {/* Header */}
-        <div className="relative flex items-center justify-center mb-6 sm:mb-10 pb-4 border-b border-border print:border-none w-full text-text-primary print:text-black print:pt-24">
+        <div className="relative flex items-center justify-center mb-6 sm:mb-8 pb-4 border-b border-slate-200 print:border-none w-full text-slate-900 print:text-black print:pt-24">
           <div className="flex items-baseline gap-4 sm:gap-6">
-            <h1 className="text-2xl sm:text-4xl print:text-4xl font-bold print:!font-bold tracking-wide print:!tracking-normal">{chartData.title || 'Untitled Chart'}</h1>
-            <span className="font-semibold print:!font-normal text-lg sm:text-2xl print:text-2xl">{chartData.time_sig || '4/4'}</span>
+            <h1 className="text-2xl sm:text-3xl md:text-4xl font-extrabold print:!font-bold tracking-tight print:!tracking-normal text-slate-900">{chartData.title || 'Untitled Chart'}</h1>
+            <span className="font-bold text-slate-500 print:!font-normal text-lg sm:text-2xl print:text-2xl">{chartData.time_sig || '4/4'}</span>
           </div>
-          <div className="absolute right-0 print:right-24 font-semibold print:!font-normal text-base sm:text-xl print:text-xl">
+          <div className="absolute right-0 print:right-24 font-bold text-slate-500 print:!font-normal text-base sm:text-xl print:text-xl">
             t={chartData.tempo || 120}
           </div>
         </div>
 
         {/* Lines */}
-        <div className="flex flex-col w-full">
-          <div className="flex flex-col gap-4 sm:gap-6 print:gap-8 w-fit mx-auto print:mx-0 overflow-x-visible">
+        <div className="flex flex-col w-full items-center">
+          <div className="flex flex-col gap-4 sm:gap-6 print:gap-8 w-full max-w-full justify-center mx-auto print:mx-0 overflow-x-auto scrollbar-none">
             {chartData.lines.map((line, lIdx) => {
               if (line.blocks.length === 0) {
                 return (
-                <div key={lIdx} className={`flex flex-row items-center w-full flex-nowrap whitespace-nowrap rounded-lg transition-all duration-300 ${
-                  activeSectionIndex === lIdx ? 'ring-2 ring-accent-start/50 bg-accent-start/5 px-2 -mx-2' : ''
-                }`} id={`chart-line-${lIdx}`}>
+                  <div key={lIdx} className={`flex flex-row items-center justify-center w-full flex-nowrap whitespace-nowrap rounded-lg transition-all duration-300 ${
+                    activeSectionIndex === lIdx ? 'ring-2 ring-indigo-500/40 bg-indigo-50/50 px-2 -mx-2' : ''
+                  }`} id={`chart-line-${lIdx}`}>
                     {/* Left Label */}
                     {line.label ? (
                       <div 
-                        className="shrink-0 text-text-primary print:text-black text-base sm:text-xl print:text-[1em] text-right pr-2 sm:pr-4 flex items-center justify-end"
-                        style={{ width: `${labelCh}ch` }}
+                        className="shrink-0 text-slate-700 font-bold text-base sm:text-xl print:text-[1em] text-right pr-3 sm:pr-5 flex items-center justify-end"
+                        style={{ width: `${labelCh}ch`, minWidth: '5.5rem' }}
                       >
                         {line.label.charAt(0).toUpperCase()}{line.label.slice(1).toLowerCase()}:
                       </div>
                     ) : (
-                      <div className="shrink-0" style={{ width: `${labelCh}ch` }}></div>
+                      <div className="shrink-0" style={{ width: `${labelCh}ch`, minWidth: '5.5rem' }}></div>
                     )}
 
                     {/* Right Label (Annotation) */}
                     {line.labelRight && (
                       <div 
-                        className="shrink-0 text-text-primary print:text-black text-base sm:text-xl print:text-[1em] text-left pl-3 sm:pl-6 flex items-center ml-auto"
+                        className="shrink-0 text-slate-500 font-semibold print:text-black text-base sm:text-xl print:text-[1em] text-left pl-3 sm:pl-6 flex items-center ml-auto"
                         style={{ width: `${labelRightCh}ch` }}
                       >
                         {line.labelRight}
@@ -92,19 +92,19 @@ export function ChartRenderer({
               }
 
               return (
-                <div key={lIdx} className={`flex flex-row items-center flex-nowrap whitespace-nowrap rounded-lg transition-all duration-300 ${
-                  activeSectionIndex === lIdx ? 'ring-2 ring-accent-start/50 bg-accent-start/5 px-2 -mx-2' : ''
+                <div key={lIdx} className={`flex flex-row items-center justify-center flex-nowrap whitespace-nowrap rounded-lg transition-all duration-300 ${
+                  activeSectionIndex === lIdx ? 'ring-2 ring-indigo-500/40 bg-indigo-50/50 px-2 -mx-2' : ''
                 }`} id={`chart-line-${lIdx}`}>
                   {/* Left Label */}
                   <div 
-                    className="shrink-0 text-text-primary print:text-black text-base sm:text-xl print:text-[1em] text-right pr-2 sm:pr-4 flex items-center justify-end"
-                    style={{ width: `${labelCh}ch` }}
+                    className="shrink-0 text-slate-700 font-bold text-base sm:text-xl print:text-[1em] text-right pr-3 sm:pr-5 flex items-center justify-end"
+                    style={{ width: `${labelCh}ch`, minWidth: '5.5rem' }}
                   >
                     {line.label ? `${line.label.charAt(0).toUpperCase()}${line.label.slice(1).toLowerCase()}:` : ''}
                   </div>
 
                   {/* Chords Container */}
-                  <div className="flex items-center flex-nowrap shrink-0 text-lg sm:text-2xl print:text-[1.1em]">
+                  <div className="flex items-center justify-center flex-nowrap shrink-0 text-lg sm:text-2xl print:text-[1.1em]">
                     {line.blocks.map((block, bIdx) => {
                       const isFirst = bIdx === 0;
                       let prefix = '';
@@ -123,22 +123,16 @@ export function ChartRenderer({
                         }
                       }
 
-                      const isLast = bIdx === line.blocks.length - 1;
-                      let suffix = '';
-                      if (isLast) {
-                        suffix = block.endRepeat ? ':||' : '||';
-                      }
-
                       return (
                         <React.Fragment key={bIdx}>
-                          <span className={`inline-block pr-2 sm:pr-3 print:pr-1 text-left tracking-tighter print:!tracking-normal print:!font-normal print:!text-[1em] ${prefix.includes('||') ? 'text-cyan-400 font-black text-[1.2em] print:text-black' : 'text-text-primary font-semibold print:text-black'}`}>{prefix}</span>
+                          <span className={`inline-block pr-1 sm:pr-2 print:pr-1 text-left tracking-tighter print:!tracking-normal print:!font-normal print:!text-[1em] ${prefix.includes('||') ? 'text-indigo-600 font-black text-[1.15em] sm:text-[1.25em] print:text-black' : 'text-slate-900 font-bold print:text-black'}`}>{prefix}</span>
                           {block.bars.map((bar, barIdx) => (
                             <React.Fragment key={barIdx}>
-                              <span className="inline-block px-1.5 sm:px-2.5 print:px-1 text-center font-bold print:!font-normal hover:text-accent-start transition-colors duration-150 text-text-primary print:text-black">
+                              <span className="inline-flex items-center justify-center min-w-[3.5rem] sm:min-w-[4.8rem] px-1 sm:px-2 text-center font-bold text-slate-900 hover:text-indigo-600 transition-colors duration-150 text-base sm:text-2xl font-mono sm:font-sans">
                                 {parseChord(bar || '_')}
                               </span>
                               {barIdx < block.bars.length - 1 && (
-                                <span className="inline-block px-1.5 sm:px-2.5 print:px-1 text-center text-text-primary print:text-black print:!font-normal print:!tracking-normal">|</span>
+                                <span className="inline-flex items-center justify-center text-slate-300 font-medium px-1 text-base sm:text-xl print:text-black">|</span>
                               )}
                             </React.Fragment>
                           ))}
@@ -151,7 +145,7 @@ export function ChartRenderer({
                       const lastBlock = line.blocks[line.blocks.length - 1];
                       const suffix = lastBlock.endRepeat ? ':||' : '||';
                       return (
-                        <span className={`inline-block pl-2 sm:pl-3 print:pl-1 text-left tracking-tighter print:!tracking-normal print:!font-normal print:!text-[1em] ${suffix.includes('||') ? 'text-cyan-400 font-black text-[1.2em] print:text-black' : 'text-text-primary font-semibold print:text-black'}`}>
+                        <span className={`inline-block pl-1 sm:pl-2 print:pl-1 text-left tracking-tighter print:!tracking-normal print:!font-normal print:!text-[1em] ${suffix.includes('||') ? 'text-indigo-600 font-black text-[1.15em] sm:text-[1.25em] print:text-black' : 'text-slate-900 font-bold print:text-black'}`}>
                           {suffix}
                         </span>
                       );
@@ -161,7 +155,7 @@ export function ChartRenderer({
                   {/* Right Label */}
                   {maxLabelRightLen > 0 && (
                     <div 
-                      className="shrink-0 text-text-primary print:text-black text-base sm:text-xl print:text-[1em] text-left pl-3 sm:pl-6 flex items-center"
+                      className="shrink-0 text-slate-500 font-semibold print:text-black text-base sm:text-xl print:text-[1em] text-left pl-3 sm:pl-6 flex items-center"
                       style={{ width: `${labelRightCh}ch` }}
                     >
                       {line.labelRight}
@@ -180,7 +174,7 @@ export function ChartRenderer({
     <div 
       id={id}
       onClick={onClick}
-      className="inline-flex text-left flex-col w-max min-w-[min(100%,64rem)] max-w-none p-6 sm:p-12 print:p-0 bg-surface print:bg-transparent border border-border print:border-none shadow-card print:shadow-none rounded-3xl print:rounded-none relative print:min-h-[28cm] print:w-full"
+      className="flex text-left flex-col w-full max-w-4xl min-h-full p-6 sm:p-12 print:p-0 bg-white shadow-2xl border border-slate-200/80 rounded-2xl sm:rounded-3xl relative mx-auto my-auto print:min-h-[28cm] print:w-full print:border-none print:shadow-none print:rounded-none"
     >
       {watermark && (
         <div className="hidden print:grid absolute inset-0 grid-cols-4 gap-y-6 gap-x-4 items-center justify-items-center pointer-events-none overflow-hidden z-[1] opacity-[0.04] rotate-[-30deg] scale-150 select-none">
@@ -194,11 +188,11 @@ export function ChartRenderer({
       {renderTextFlow(chart)}
 
       {/* Footer Info */}
-      <div className={`print:hidden mt-auto pt-6 border-t border-border flex flex-col sm:flex-row sm:items-center justify-between gap-3 text-[10px] text-text-secondary font-bold tracking-widest uppercase transition-opacity duration-300 ${showUI ? 'opacity-100' : 'opacity-0 pointer-events-none'}`}>
+      <div className={`print:hidden mt-auto pt-6 border-t border-slate-200 flex flex-col sm:flex-row sm:items-center justify-between gap-3 text-[10px] text-slate-400 font-bold tracking-widest uppercase transition-opacity duration-300 ${showUI ? 'opacity-100' : 'opacity-0 pointer-events-none'}`}>
         <div className="flex items-center space-x-4">
-          <span className="flex items-center text-accent-start"><Cloud size={14} className="mr-2" /> Live Sync</span>
+          <span className="flex items-center text-indigo-600"><Cloud size={14} className="mr-2" /> Live Sync</span>
           {collaborators.length > 0 && (
-            <span className="text-accent-solid">
+            <span className="text-indigo-600">
               {collaborators.length} viewing
             </span>
           )}
