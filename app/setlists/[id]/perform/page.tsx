@@ -309,13 +309,14 @@ export default function SetlistPerformPage() {
   // Intercept browser back button when leading a setlist sync session
   useEffect(() => {
     if (!isLeader) return;
+    const currentUrl = window.location.href;
     try {
-      window.history.pushState({ inSyncSession: true }, '');
+      window.history.pushState({ inSyncSession: true }, '', currentUrl);
     } catch {}
 
     const handlePopState = () => {
       try {
-        window.history.pushState({ inSyncSession: true }, '');
+        window.history.pushState({ inSyncSession: true }, '', currentUrl);
       } catch {}
       setShowEndConfirmModal(true);
     };
