@@ -770,9 +770,9 @@ export function PiascoreReader({ initialChart, folderId, onLeaderStart, onFollow
             </select>
           </div>
 
-          {/* Chord Color */}
+          {/* Part Name & Chord Color */}
           <div className="flex flex-col gap-2">
-            <label className="text-xs font-bold text-slate-500 uppercase">Chord Color</label>
+            <label className="text-xs font-bold text-slate-500 uppercase">Part Name & Chord Color</label>
             <div className="flex items-center gap-2 flex-wrap">
               {[
                 { label: 'Ink',     color: '#0f172a' },
