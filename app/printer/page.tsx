@@ -478,9 +478,9 @@ export default function PrinterPage() {
           const lyr = lyrics[id];
           if (!lyr) return null;
           return (
-            <div key={id} className="page-break print:break-before-page px-12 py-16 text-black w-[min(100%,60rem)] mx-auto">
-              <h1 className="text-4xl font-extrabold print:!font-bold mb-6 border-b-2 border-slate-300 print:border-black pb-4 text-black">{lyr.title}</h1>
-              <pre className="font-sans print:font-sans text-lg print:text-base leading-relaxed whitespace-pre-wrap text-black">{lyr.body}</pre>
+            <div key={id} className="page-break print:break-before-page w-full px-8 py-12 print:py-16 text-black flex flex-col items-center text-center">
+              <h1 className="text-4xl sm:text-5xl print:!text-4xl font-extrabold print:!font-bold mb-8 text-black text-center tracking-tight print:!tracking-normal">{lyr.title}</h1>
+              <pre className="font-sans print:font-sans text-2xl print:!text-2xl leading-[1.8] print:!leading-[1.8] whitespace-pre-wrap text-black text-center w-full max-w-4xl mx-auto font-medium print:!font-medium">{lyr.body}</pre>
             </div>
           );
         })}
