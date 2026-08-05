@@ -125,14 +125,14 @@ export function ChartRenderer({
 
                       return (
                         <React.Fragment key={bIdx}>
-                          <span className={`inline-block pr-1 sm:pr-2 print:pr-1 text-left tracking-tighter print:!tracking-normal print:!font-normal print:!text-[1em] ${prefix.includes('||') ? 'text-indigo-600 font-black text-[1.15em] sm:text-[1.25em] print:text-black' : 'text-slate-900 font-bold print:text-black'}`}>{prefix}</span>
+                          <span className={`inline-block pr-1 sm:pr-2 print:pr-1 text-left tracking-tighter print:!tracking-normal print:!font-normal print:!text-[1em] ${prefix.includes('||') ? 'text-slate-900 font-black text-[1.15em] sm:text-[1.25em] print:text-black' : 'text-slate-900 font-bold print:text-black'}`}>{prefix}</span>
                           {block.bars.map((bar, barIdx) => (
                             <React.Fragment key={barIdx}>
                               <span className="inline-flex items-center justify-center min-w-[3.5rem] sm:min-w-[4.8rem] px-1 sm:px-2 text-center font-bold text-slate-900 hover:text-indigo-600 transition-colors duration-150 text-base sm:text-2xl font-mono sm:font-sans">
                                 {parseChord(bar || '_')}
                               </span>
                               {barIdx < block.bars.length - 1 && (
-                                <span className="inline-flex items-center justify-center text-indigo-600 font-black text-[1.15em] sm:text-[1.25em] px-1 print:text-black">|</span>
+                                <span className="inline-flex items-center justify-center text-slate-900 font-black text-[1.15em] sm:text-[1.25em] px-1 print:text-black">|</span>
                               )}
                             </React.Fragment>
                           ))}
@@ -145,7 +145,7 @@ export function ChartRenderer({
                       const lastBlock = line.blocks[line.blocks.length - 1];
                       const suffix = lastBlock.endRepeat ? ':||' : '||';
                       return (
-                        <span className={`inline-block pl-1 sm:pl-2 print:pl-1 text-left tracking-tighter print:!tracking-normal print:!font-normal print:!text-[1em] ${suffix.includes('||') ? 'text-indigo-600 font-black text-[1.15em] sm:text-[1.25em] print:text-black' : 'text-slate-900 font-bold print:text-black'}`}>
+                        <span className={`inline-block pl-1 sm:pl-2 print:pl-1 text-left tracking-tighter print:!tracking-normal print:!font-normal print:!text-[1em] ${suffix.includes('||') ? 'text-slate-900 font-black text-[1.15em] sm:text-[1.25em] print:text-black' : 'text-slate-900 font-bold print:text-black'}`}>
                           {suffix}
                         </span>
                       );
