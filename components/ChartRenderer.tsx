@@ -6,7 +6,7 @@ import { ChartData } from '@/lib/chart-types';
 /** Renders a bar-line marker (e.g. "||:", ":||:", "||") so that
  *  the || double-bars are black/bold and only the : repeat dots are indigo. */
 function BarMarker({ marker, side }: { marker: string; side: 'left' | 'right' }) {
-  const barClass = 'text-slate-900 font-black text-[1.2em] sm:text-[1.35em] print:text-black';
+  const barClass = 'text-slate-500 font-medium text-[1.0em] sm:text-[1.1em] print:text-black';
   const dotClass = 'text-indigo-500 font-black text-[1.0em] sm:text-[1.1em] print:text-black';
 
   // Split into segments: leading ':', '||', trailing ':'
