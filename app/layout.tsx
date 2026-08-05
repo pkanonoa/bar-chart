@@ -2,6 +2,7 @@ import type { Metadata, Viewport } from "next";
 import { Outfit, Geist_Mono } from "next/font/google";
 import "./globals.css";
 import { AuthProvider } from "@/components/AuthProvider";
+import { OfflineSyncProvider } from "@/components/OfflineSyncContext";
 import { Navigation } from "@/components/Navigation";
 import Script from "next/script";
 
@@ -58,6 +59,7 @@ export default function RootLayout({
       </head>
       <body className="min-h-[100dvh] flex flex-col font-sans bg-bg text-text-primary selection:bg-accent-solid/30" suppressHydrationWarning>
         <AuthProvider>
+          <OfflineSyncProvider>
           {/* Responsive Background Image */}
           <div 
             className="fixed inset-0 pointer-events-none -z-10 no-print bg-[#080414] bg-cover bg-center bg-no-repeat transform scale-[1.15] md:scale-100"
@@ -70,6 +72,7 @@ export default function RootLayout({
           </div>
           {children}
           <Navigation />
+          </OfflineSyncProvider>
         </AuthProvider>
         <Script id="register-sw" strategy="afterInteractive">
           {`

@@ -108,17 +108,29 @@ if (typeof window !== 'undefined') {
   });
 }
 
-// Cache updating utilities
-async function cacheChart(chart: Chart) {
+// Cache updating utilities — exported so OfflineSyncContext can use them for realtime event handling
+export async function cacheChart(chart: Chart) {
   if (!dbPromise) return;
   const db = await dbPromise;
   await db.put('charts', chart);
 }
 
-async function cacheFolder(folder: Folder) {
+export async function cacheFolder(folder: Folder) {
   if (!dbPromise) return;
   const db = await dbPromise;
   await db.put('folders', folder);
+}
+
+export async function cacheLyric(lyric: any) {
+  if (!dbPromise) return;
+  const db = await dbPromise;
+  await db.put('lyrics', lyric);
+}
+
+export async function deleteFromCache(id: string, store: 'charts' | 'lyrics' | 'folders') {
+  if (!dbPromise) return;
+  const db = await dbPromise;
+  await db.delete(store, id);
 }
 
 // --- Data Access Layer ---

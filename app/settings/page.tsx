@@ -1,11 +1,11 @@
 'use client';
 
 import React, { useState, useEffect } from 'react';
-import { X, Type, Palette, Users, Info, Terminal, BookOpen, Droplet, CloudDownload, CheckCircle2, RefreshCw } from 'lucide-react';
+import { X, Type, Palette, Users, Info, Terminal, BookOpen, Droplet, CloudDownload, CheckCircle2, RefreshCw, WifiOff } from 'lucide-react';
 import { Header } from '@/components/Header';
 import { useRouter } from 'next/navigation';
 import { supabase } from '@/lib/supabase';
-import { syncAllOffline } from '@/lib/storage';
+import { useOfflineSync } from '@/components/OfflineSyncContext';
 
 export default function SettingsPage() {
   const router = useRouter();
@@ -14,8 +14,9 @@ export default function SettingsPage() {
   const [watermark, setWatermark] = useState('');
   const [userCount, setUserCount] = useState<number | null>(null);
   const [isLoadingCount, setIsLoadingCount] = useState(false);
-  const [syncingOffline, setSyncingOffline] = useState(false);
-  const [syncResult, setSyncResult] = useState<string | null>(null);
+
+  // Offline sync state from shared context
+  const { autoSync, setAutoSync, isSyncing: syncingOffline, syncResult, lastSyncedAt, triggerSync } = useOfflineSync();
 
   useEffect(() => {
     setCurrentFont(localStorage.getItem('chord-grid-font') || 'system');
@@ -170,9 +171,50 @@ export default function SettingsPage() {
                 <div>
                   <h3 className="text-sm font-bold uppercase tracking-widest text-text-secondary mb-4">Offline Access</h3>
                   <p className="text-sm text-text-primary mb-6">
-                    Pre-download all your cloud chord charts, lyrics, and folders into your device's local database so you can access them anywhere without an internet connection.
+                    Pre-download all your cloud chord charts, lyrics, and folders into your device&apos;s local database so you can access them anywhere without an internet connection.
                   </p>
-                  
+
+                  {/* ── Auto-sync toggle ── */}
+                  <div className="p-5 bg-surface border border-border rounded-2xl mb-4">
+                    <div className="flex items-center justify-between gap-4">
+                      <div className="flex-1 min-w-0">
+                        <p className="text-sm font-bold text-text-primary">Auto-sync</p>
+                        <p className="text-xs text-text-secondary mt-0.5">
+                          Automatically keep your offline copy up to date in the background.
+                        </p>
+                      </div>
+                      {/* Toggle switch */}
+                      <button
+                        id="auto-sync-toggle"
+                        role="switch"
+                        aria-checked={autoSync}
+                        onClick={() => setAutoSync(!autoSync)}
+                        className={`relative inline-flex h-7 w-12 shrink-0 items-center rounded-full transition-all duration-300 focus:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:ring-offset-surface ${
+                          autoSync
+                            ? 'bg-accent-gradient shadow-[0_0_12px_rgba(139,92,246,0.4)]'
+                            : 'bg-surface-raised border border-border'
+                        }`}
+                      >
+                        <span
+                          className={`inline-block h-5 w-5 rounded-full bg-white shadow-md transform transition-transform duration-300 ${
+                            autoSync ? 'translate-x-6' : 'translate-x-1'
+                          }`}
+                        />
+                      </button>
+                    </div>
+
+                    {/* Persistent note when off */}
+                    {!autoSync && (
+                      <div className="mt-3 flex items-start gap-2 px-3 py-2.5 bg-amber-500/10 border border-amber-500/20 rounded-xl">
+                        <WifiOff size={14} className="text-amber-400 mt-0.5 shrink-0" />
+                        <p className="text-xs text-amber-300">
+                          Offline copy may be out of date — sync manually to update.
+                        </p>
+                      </div>
+                    )}
+                  </div>
+
+                  {/* ── Manual sync card ── */}
                   <div className="p-6 bg-surface border border-border rounded-2xl space-y-4">
                     <div className="flex items-center space-x-4">
                       <div className="p-3 bg-accent-solid/10 text-accent-start rounded-xl">
@@ -180,31 +222,30 @@ export default function SettingsPage() {
                       </div>
                       <div>
                         <h4 className="text-base font-bold text-text-primary">Sync All Songs Offline</h4>
-                        <p className="text-xs text-text-secondary">Downloads all existing charts & lyrics into local IndexedDB.</p>
+                        <p className="text-xs text-text-secondary">Downloads all existing charts &amp; lyrics into local IndexedDB.</p>
+                        {lastSyncedAt && (
+                          <p className="text-xs text-text-secondary mt-1">
+                            Last synced: {new Date(lastSyncedAt).toLocaleString()}
+                          </p>
+                        )}
                       </div>
                     </div>
 
                     {syncResult && (
-                      <div className="p-3 bg-green-500/10 border border-green-500/20 text-green-400 rounded-xl text-xs font-bold flex items-center">
+                      <div className={`p-3 border rounded-xl text-xs font-bold flex items-center ${
+                        syncResult.includes('failed') || syncResult.includes('Failed')
+                          ? 'bg-red-500/10 border-red-500/20 text-red-400'
+                          : 'bg-green-500/10 border-green-500/20 text-green-400'
+                      }`}>
                         <CheckCircle2 size={16} className="mr-2 shrink-0" />
                         {syncResult}
                       </div>
                     )}
 
                     <button
+                      id="download-all-songs-btn"
                       disabled={syncingOffline}
-                      onClick={async () => {
-                        setSyncingOffline(true);
-                        setSyncResult(null);
-                        try {
-                          const res = await syncAllOffline();
-                          setSyncResult(`Successfully downloaded ${res.chartsCount} charts, ${res.lyricsCount} lyrics, and ${res.foldersCount} folders to local storage!`);
-                        } catch (err) {
-                          setSyncResult('Failed to sync songs. Please check your internet connection.');
-                        } finally {
-                          setSyncingOffline(false);
-                        }
-                      }}
+                      onClick={() => triggerSync(true)}
                       className="w-full py-3 px-4 bg-accent-gradient text-white rounded-xl font-bold text-sm hover:brightness-110 transition-all flex items-center justify-center disabled:opacity-50"
                     >
                       {syncingOffline ? (
