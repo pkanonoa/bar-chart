@@ -22,6 +22,7 @@ export type ChartData = {
   prefer_flats: boolean;
   folder_id: string | null;
   custom_text?: string | null;
+  is_performance_copy?: boolean;
   created_by: string;
   updated_at: string;
 };

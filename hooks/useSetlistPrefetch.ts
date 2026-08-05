@@ -54,7 +54,17 @@ export function useSetlistPrefetch(items: SetlistItem[], currentPosition: number
         readChart(item.item_id).then((data) => {
           inFlight.delete(key);
           if (data) {
-            let display = data as ChartData;
+            let display = { ...data } as ChartData;
+            const localOverride = typeof window !== 'undefined' ? localStorage.getItem(`perf_lines_${item.id}`) : null;
+            if (localOverride) {
+              try {
+                display.lines = JSON.parse(localOverride);
+                display.is_performance_copy = true;
+              } catch (e) {}
+            } else if (item.lines_override) {
+              display.lines = item.lines_override;
+              display.is_performance_copy = true;
+            }
             if (item.transpose_override) {
               display = transposeChart(display, item.transpose_override, display.prefer_flats);
             }

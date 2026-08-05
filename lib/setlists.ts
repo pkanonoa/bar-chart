@@ -19,6 +19,7 @@ export type SetlistItem = {
   position: number;
   transpose_override: number | null;
   notes: string | null;
+  lines_override?: any;
   // display fields populated by join
   title?: string;
 };
@@ -185,7 +186,7 @@ export async function addSetlistItems(
 
 export async function updateSetlistItem(
   id: string,
-  patch: Partial<Pick<SetlistItem, 'transpose_override' | 'notes'>>,
+  patch: Partial<Pick<SetlistItem, 'transpose_override' | 'notes' | 'lines_override'>>,
 ): Promise<void> {
   const { error } = await supabase
     .from('setlist_items')
