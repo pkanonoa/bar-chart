@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import { Cloud } from 'lucide-react';
 import { parseChord } from '@/lib/chord-parser';
 import { ChartData } from '@/lib/chart-types';
@@ -39,6 +39,54 @@ function BarMarker({ marker, side }: { marker: string; side: 'left' | 'right' })
   );
 }
 
+// Color swatches for individual element popovers
+const COLOR_SWATCHES = [
+  { name: 'Reset', color: '#0f172a', isReset: true },
+  { name: 'Red', color: '#e11d48' },
+  { name: 'Blue', color: '#2563eb' },
+  { name: 'Indigo', color: '#4f46e5' },
+  { name: 'Purple', color: '#7c3aed' },
+  { name: 'Teal', color: '#0d9488' },
+  { name: 'Amber', color: '#d97706' },
+  { name: 'Emerald', color: '#059669' },
+];
+
+function ColorPickerPopover({
+  itemKey,
+  activePickerKey,
+  onSetColor,
+}: {
+  itemKey: string;
+  activePickerKey: string | null;
+  onSetColor: (key: string, color: string | null) => void;
+}) {
+  if (activePickerKey !== itemKey) return null;
+
+  return (
+    <div
+      onClick={(e) => e.stopPropagation()}
+      className="absolute -top-11 left-1/2 -translate-x-1/2 z-50 flex items-center gap-1.5 p-1.5 bg-slate-900/95 backdrop-blur-md rounded-full shadow-2xl border border-slate-700 animate-in fade-in zoom-in-95 duration-150 print:hidden"
+    >
+      {COLOR_SWATCHES.map((swatch) => (
+        <button
+          key={swatch.name}
+          title={swatch.name}
+          onClick={(e) => {
+            e.stopPropagation();
+            onSetColor(itemKey, swatch.isReset ? null : swatch.color);
+          }}
+          className={`w-5 h-5 rounded-full border transition-transform hover:scale-125 ${
+            swatch.isReset ? 'border-slate-500 bg-slate-800 text-[9px] text-white flex items-center justify-center font-bold' : 'border-white/30'
+          }`}
+          style={!swatch.isReset ? { backgroundColor: swatch.color } : {}}
+        >
+          {swatch.isReset ? '✕' : ''}
+        </button>
+      ))}
+    </div>
+  );
+}
+
 interface ChartRendererProps {
   chart: ChartData;
   showUI?: boolean;
@@ -63,6 +111,36 @@ export function ChartRenderer({
   id = 'chart-card',
   activeSectionIndex,
 }: ChartRendererProps) {
+  // Individual element color overrides
+  const [itemColors, setItemColors] = useState<Record<string, string>>({});
+  const [activePickerKey, setActivePickerKey] = useState<string | null>(null);
+
+  useEffect(() => {
+    if (!chart?.id) return;
+    try {
+      const saved = localStorage.getItem(`chord-grid-item-colors-${chart.id}`);
+      if (saved) setItemColors(JSON.parse(saved));
+    } catch {}
+  }, [chart?.id]);
+
+  const handleSetColor = (key: string, color: string | null) => {
+    setItemColors((prev) => {
+      const updated = { ...prev };
+      if (color === null) {
+        delete updated[key];
+      } else {
+        updated[key] = color;
+      }
+      try {
+        if (chart?.id) {
+          localStorage.setItem(`chord-grid-item-colors-${chart.id}`, JSON.stringify(updated));
+        }
+      } catch {}
+      return updated;
+    });
+    setActivePickerKey(null);
+  };
+
   const renderTextFlow = (chartData: ChartData) => {
     if (!chartData) return null;
     if (chartData.custom_text !== undefined && chartData.custom_text !== null) {
@@ -99,6 +177,9 @@ export function ChartRenderer({
         <div className="flex flex-col w-full items-center justify-center">
           <div className="flex flex-col gap-5 sm:gap-8 print:gap-10 w-fit mx-auto print:mx-0 max-w-full overflow-x-auto scrollbar-none px-2 py-2">
             {chartData.lines.map((line, lIdx) => {
+              const labelKey = `label-${lIdx}-${line.label || 'none'}`;
+              const customLabelColor = itemColors[labelKey] || (chordColor !== '#0f172a' ? chordColor : undefined);
+
               if (line.blocks.length === 0) {
                 return (
                   <div key={lIdx} className={`flex flex-row items-center justify-start w-full flex-nowrap whitespace-nowrap rounded-lg transition-all duration-300 ${
@@ -107,9 +188,15 @@ export function ChartRenderer({
                     {/* Left Label */}
                     {line.label ? (
                       <div 
-                        className="shrink-0 font-extrabold text-lg sm:text-2xl md:text-3xl print:text-[1em] text-right pr-3 sm:pr-6 flex items-center justify-end font-sans select-none"
-                        style={{ width: `${Math.max(7, labelCh)}ch`, minWidth: '6rem', color: chordColor }}
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          setActivePickerKey(activePickerKey === labelKey ? null : labelKey);
+                        }}
+                        className="relative shrink-0 font-extrabold text-lg sm:text-2xl md:text-3xl print:text-[1em] text-right pr-3 sm:pr-6 flex items-center justify-end font-sans select-none cursor-pointer hover:opacity-75 transition-opacity"
+                        style={{ width: `${Math.max(7, labelCh)}ch`, minWidth: '6rem', color: customLabelColor || '#0f172a' }}
+                        title="Click to color this section label"
                       >
+                        <ColorPickerPopover itemKey={labelKey} activePickerKey={activePickerKey} onSetColor={handleSetColor} />
                         {line.label.charAt(0).toUpperCase()}{line.label.slice(1).toLowerCase()}:
                       </div>
                     ) : (
@@ -135,9 +222,15 @@ export function ChartRenderer({
                 }`} id={`chart-line-${lIdx}`}>
                   {/* Left Label */}
                   <div 
-                    className="shrink-0 font-extrabold text-lg sm:text-2xl md:text-3xl print:text-[1em] text-right pr-3 sm:pr-6 flex items-center justify-end font-sans select-none"
-                    style={{ width: `${Math.max(7, labelCh)}ch`, minWidth: '6rem', color: chordColor }}
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      setActivePickerKey(activePickerKey === labelKey ? null : labelKey);
+                    }}
+                    className="relative shrink-0 font-extrabold text-lg sm:text-2xl md:text-3xl print:text-[1em] text-right pr-3 sm:pr-6 flex items-center justify-end font-sans select-none cursor-pointer hover:opacity-75 transition-opacity"
+                    style={{ width: `${Math.max(7, labelCh)}ch`, minWidth: '6rem', color: customLabelColor || '#0f172a' }}
+                    title="Click to color this section label"
                   >
+                    <ColorPickerPopover itemKey={labelKey} activePickerKey={activePickerKey} onSetColor={handleSetColor} />
                     {line.label ? `${line.label.charAt(0).toUpperCase()}${line.label.slice(1).toLowerCase()}:` : ''}
                   </div>
 
@@ -164,19 +257,30 @@ export function ChartRenderer({
                       return (
                         <React.Fragment key={bIdx}>
                           <BarMarker marker={prefix} side="left" />
-                          {block.bars.map((bar, barIdx) => (
-                            <React.Fragment key={barIdx}>
-                              <span
-                                className="inline-flex items-center justify-center min-w-[4rem] sm:min-w-[5.8rem] md:min-w-[6.8rem] px-1 sm:px-2.5 text-center font-extrabold transition-colors duration-150 text-lg sm:text-3xl md:text-[2rem] font-mono sm:font-sans"
-                                style={{ color: chordColor }}
-                              >
-                                {parseChord(bar || '_')}
-                              </span>
-                              {barIdx < block.bars.length - 1 && (
-                                <span className="inline-flex items-center justify-center text-slate-500 font-medium px-1 sm:px-2 text-lg sm:text-2xl md:text-3xl print:text-black">|</span>
-                              )}
-                            </React.Fragment>
-                          ))}
+                          {block.bars.map((bar, barIdx) => {
+                            const barKey = `bar-${lIdx}-${bIdx}-${barIdx}`;
+                            const customBarColor = itemColors[barKey] || (chordColor !== '#0f172a' ? chordColor : undefined);
+
+                            return (
+                              <React.Fragment key={barIdx}>
+                                <span
+                                  onClick={(e) => {
+                                    e.stopPropagation();
+                                    setActivePickerKey(activePickerKey === barKey ? null : barKey);
+                                  }}
+                                  className="relative inline-flex items-center justify-center min-w-[4rem] sm:min-w-[5.8rem] md:min-w-[6.8rem] px-1 sm:px-2.5 text-center font-extrabold transition-colors duration-150 text-lg sm:text-3xl md:text-[2rem] font-mono sm:font-sans cursor-pointer hover:bg-slate-100/80 rounded"
+                                  style={{ color: customBarColor || '#0f172a' }}
+                                  title="Click to color this chord"
+                                >
+                                  <ColorPickerPopover itemKey={barKey} activePickerKey={activePickerKey} onSetColor={handleSetColor} />
+                                  {parseChord(bar || '_')}
+                                </span>
+                                {barIdx < block.bars.length - 1 && (
+                                  <span className="inline-flex items-center justify-center text-slate-500 font-medium px-1 sm:px-2 text-lg sm:text-2xl md:text-3xl print:text-black">|</span>
+                                )}
+                              </React.Fragment>
+                            );
+                          })}
                         </React.Fragment>
                       );
                     })}
