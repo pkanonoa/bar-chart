@@ -173,11 +173,11 @@ export default function PrinterPage() {
   };
 
   return (
-    <div className="min-h-screen flex flex-col">
+    <div className="min-h-screen flex flex-col print:min-h-0 print:block w-full print:w-full print:m-0 print:p-0">
       <div className="print:hidden">
         <Header />
       </div>
-      <main className="flex-1 overflow-y-auto w-full max-w-7xl mx-auto px-4 pt-[max(env(safe-area-inset-top,2rem),2rem)] pb-24">
+      <main className="flex-1 overflow-y-auto w-full max-w-7xl mx-auto px-4 pt-[max(env(safe-area-inset-top,2rem),2rem)] pb-24 print:hidden">
         <div className="print:hidden mb-8">
 
         {/* Search bar and print options button side-by-side */}
@@ -300,19 +300,20 @@ export default function PrinterPage() {
         </div>
       )}
 
-      {/* Hidden Print Container */}
-      <div className="hidden print:block w-full">
+      </main>
+
+      {/* Hidden Print Container - outside scrollable main wrapper to prevent clipping */}
+      <div className="hidden print:block w-full max-w-none m-0 p-0 overflow-visible">
         {queue.map((id, index) => {
           const chart = charts[id];
           if (!chart) return null;
           return (
-            <div key={id} style={{ breakAfter: 'page', pageBreakAfter: 'always', marginBottom: '2rem' }} className="w-full">
+            <div key={id} style={{ breakAfter: 'page', pageBreakAfter: 'always', marginBottom: '2rem' }} className="w-full max-w-none overflow-visible">
               <ChartRenderer chart={chart as any} selectedFont={font} watermark={watermark} />
             </div>
           );
         })}
       </div>
-      </main>
     </div>
   );
 }

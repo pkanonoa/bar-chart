@@ -404,7 +404,7 @@ export default function PerformancePage() {
                 <div className="w-8 h-8 rounded-full border-2 border-accent-start border-t-transparent animate-spin" />
               </div>
             ) : (
-              <PerformChartWrapper chart={currentChart} />
+              <ChartRenderer chart={currentChart} id="perform-chart-card" />
             )}
           </div>
         </main>
