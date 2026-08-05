@@ -29,7 +29,7 @@ interface Props {
 }
 
 // ── Inner chart zoom reset wrapper ──────────────────────────────────────────────
-function ChartContentWrapper({ chart, selectedFont }: { chart: ChartData; selectedFont: string }) {
+function ChartContentWrapper({ chart, selectedFont, chordColor }: { chart: ChartData; selectedFont: string; chordColor: string }) {
   const { zoomToElement } = useControls();
 
   useEffect(() => {
@@ -50,7 +50,7 @@ function ChartContentWrapper({ chart, selectedFont }: { chart: ChartData; select
     };
   }, [zoomToElement, chart.id]);
 
-  return <ChartRenderer chart={chart} selectedFont={selectedFont} id="piascore-chart-card" />;
+  return <ChartRenderer chart={chart} selectedFont={selectedFont} chordColor={chordColor} id="piascore-chart-card" />;
 }
 
 export function PiascoreReader({ initialChart, folderId, onLeaderStart, onFollowStart }: Props) {
@@ -200,10 +200,13 @@ export function PiascoreReader({ initialChart, folderId, onLeaderStart, onFollow
 
   // Settings
   const [selectedFont, setSelectedFont] = useState('system');
+  const [chordColor, setChordColor] = useState('#0f172a');
 
   useEffect(() => {
     const saved = localStorage.getItem('chord-grid-font');
     if (saved) setSelectedFont(saved);
+    const savedColor = localStorage.getItem('chord-grid-chord-color');
+    if (savedColor) setChordColor(savedColor);
   }, []);
 
   // Load bookmarks list
@@ -512,7 +515,7 @@ export function PiascoreReader({ initialChart, folderId, onLeaderStart, onFollow
               }}
               className="bg-white text-slate-900 shadow-2xl rounded-2xl p-4 sm:p-8 md:p-10 w-full max-w-none border border-slate-200/80 flex items-stretch"
             >
-              <ChartContentWrapper chart={currentChart} selectedFont={selectedFont} />
+              <ChartContentWrapper chart={currentChart} selectedFont={selectedFont} chordColor={chordColor} />
             </div>
           </TransformComponent>
         </TransformWrapper>
@@ -765,6 +768,38 @@ export function PiascoreReader({ initialChart, folderId, onLeaderStart, onFollow
               <option value="serif">Classic Serif</option>
               <option value="mono">Monospace</option>
             </select>
+          </div>
+
+          {/* Chord Color */}
+          <div className="flex flex-col gap-2">
+            <label className="text-xs font-bold text-slate-500 uppercase">Chord Color</label>
+            <div className="flex items-center gap-2 flex-wrap">
+              {[
+                { label: 'Ink',     color: '#0f172a' },
+                { label: 'Indigo',  color: '#4f46e5' },
+                { label: 'Blue',    color: '#2563eb' },
+                { label: 'Purple',  color: '#7c3aed' },
+                { label: 'Rose',    color: '#e11d48' },
+                { label: 'Teal',    color: '#0d9488' },
+                { label: 'Amber',   color: '#d97706' },
+                { label: 'Slate',   color: '#475569' },
+              ].map(({ label, color }) => (
+                <button
+                  key={color}
+                  title={label}
+                  onClick={() => {
+                    setChordColor(color);
+                    localStorage.setItem('chord-grid-chord-color', color);
+                  }}
+                  className={`w-7 h-7 rounded-full border-2 transition-all active:scale-90 ${
+                    chordColor === color
+                      ? 'border-slate-900 dark:border-white scale-110 shadow-md'
+                      : 'border-transparent hover:scale-105'
+                  }`}
+                  style={{ backgroundColor: color }}
+                />
+              ))}
+            </div>
           </div>
         </div>
       )}

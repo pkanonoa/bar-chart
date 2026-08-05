@@ -9,6 +9,7 @@ interface ChartRendererProps {
   collaborators?: any[];
   watermark?: string;
   selectedFont?: string;
+  chordColor?: string;
   onClick?: (e: React.MouseEvent) => void;
   id?: string;
   /** Index of the currently active section (for follower highlight) */
@@ -21,6 +22,7 @@ export function ChartRenderer({
   collaborators = [], 
   watermark = '',
   selectedFont = 'system',
+  chordColor = '#0f172a',
   onClick,
   id = 'chart-card',
   activeSectionIndex,
@@ -123,16 +125,31 @@ export function ChartRenderer({
                         }
                       }
 
+                      // Distinguish repeat markers from plain bars
+                      const isRepeatMarker = prefix.includes(':');
+
                       return (
                         <React.Fragment key={bIdx}>
-                          <span className={`inline-block pr-1.5 sm:pr-3 print:pr-1 text-left tracking-tighter print:!tracking-normal print:!font-normal print:!text-[1em] ${prefix.includes('||') ? 'text-slate-800 font-extrabold text-[1.2em] sm:text-[1.35em] print:text-black' : 'text-slate-800 font-bold print:text-black'}`}>{prefix}</span>
+                          {/* Bar-line prefix: repeat markers are indigo, plain bars are muted slate */}
+                          <span
+                            className={`inline-block pr-1.5 sm:pr-3 print:pr-1 text-left tracking-tighter print:!tracking-normal print:!font-normal print:!text-[1em] ${
+                              isRepeatMarker
+                                ? 'text-indigo-500 font-black text-[1.3em] sm:text-[1.45em] print:text-black'
+                                : 'text-slate-400 font-semibold text-[1.1em] sm:text-[1.2em] print:text-black'
+                            }`}
+                          >
+                            {prefix}
+                          </span>
                           {block.bars.map((bar, barIdx) => (
                             <React.Fragment key={barIdx}>
-                              <span className="inline-flex items-center justify-center min-w-[4rem] sm:min-w-[5.8rem] md:min-w-[6.8rem] px-1 sm:px-2.5 text-center font-extrabold text-slate-900 hover:text-indigo-600 transition-colors duration-150 text-lg sm:text-3xl md:text-[2rem] font-mono sm:font-sans">
+                              <span
+                                className="inline-flex items-center justify-center min-w-[4rem] sm:min-w-[5.8rem] md:min-w-[6.8rem] px-1 sm:px-2.5 text-center font-extrabold transition-colors duration-150 text-lg sm:text-3xl md:text-[2rem] font-mono sm:font-sans"
+                                style={{ color: chordColor }}
+                              >
                                 {parseChord(bar || '_')}
                               </span>
                               {barIdx < block.bars.length - 1 && (
-                                <span className="inline-flex items-center justify-center text-slate-400 font-medium px-1 sm:px-2 text-lg sm:text-2xl md:text-3xl print:text-black">|</span>
+                                <span className="inline-flex items-center justify-center text-slate-300 font-medium px-1 sm:px-2 text-lg sm:text-2xl md:text-3xl print:text-black">|</span>
                               )}
                             </React.Fragment>
                           ))}
@@ -144,8 +161,15 @@ export function ChartRenderer({
                     {line.blocks.length > 0 && (() => {
                       const lastBlock = line.blocks[line.blocks.length - 1];
                       const suffix = lastBlock.endRepeat ? ':||' : '||';
+                      const isSuffixRepeat = suffix.includes(':');
                       return (
-                        <span className={`inline-block pl-1.5 sm:pl-3 print:pl-1 text-left tracking-tighter print:!tracking-normal print:!font-normal print:!text-[1em] ${suffix.includes('||') ? 'text-slate-800 font-extrabold text-[1.2em] sm:text-[1.35em] print:text-black' : 'text-slate-800 font-bold print:text-black'}`}>
+                        <span
+                          className={`inline-block pl-1.5 sm:pl-3 print:pl-1 text-left tracking-tighter print:!tracking-normal print:!font-normal print:!text-[1em] ${
+                            isSuffixRepeat
+                              ? 'text-indigo-500 font-black text-[1.3em] sm:text-[1.45em] print:text-black'
+                              : 'text-slate-400 font-semibold text-[1.1em] sm:text-[1.2em] print:text-black'
+                          }`}
+                        >
                           {suffix}
                         </span>
                       );
