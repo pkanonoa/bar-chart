@@ -1,4 +1,4 @@
-const CACHE_NAME = 'chordcraft-v1';
+const CACHE_NAME = 'chordcraft-v2';
 const PRECACHE_ASSETS = [
   '/',
   '/manifest.json',
