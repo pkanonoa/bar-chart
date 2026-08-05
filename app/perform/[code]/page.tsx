@@ -395,10 +395,10 @@ export default function PerformancePage() {
       {viewMode === 'scroll' ? (
         <main
           ref={scrollContainerRef}
-          className="flex-1 w-full h-screen overflow-y-auto scroll-smooth flex flex-col items-center justify-start p-4 sm:p-12 pt-24 pb-32 cursor-pointer"
+          className="flex-1 w-full h-screen overflow-y-auto overflow-x-auto scroll-smooth flex flex-col items-center justify-start p-4 sm:p-12 pt-24 pb-32 cursor-pointer"
           onClick={toggleHeader}
         >
-          <div onClick={(e) => { e.stopPropagation(); toggleHeader(); }} className="w-full max-w-5xl my-auto">
+          <div onClick={(e) => { e.stopPropagation(); toggleHeader(); }} className="w-fit min-w-full max-w-none my-auto">
             {chartLoading || !currentChart ? (
               <div className="flex items-center justify-center w-64 h-64 mx-auto text-text-secondary">
                 <div className="w-8 h-8 rounded-full border-2 border-accent-start border-t-transparent animate-spin" />

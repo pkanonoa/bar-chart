@@ -595,7 +595,7 @@ export function PiascoreReader({ initialChart, folderId, onLeaderStart, onFollow
       {viewMode === 'scroll' ? (
         <main
           ref={scrollContainerRef}
-          className="flex-1 w-full h-full relative overflow-y-auto scroll-smooth flex flex-col items-center justify-start p-2 sm:p-6 pt-16 sm:pt-20 pb-20 cursor-pointer"
+          className="flex-1 w-full h-full relative overflow-y-auto overflow-x-auto scroll-smooth flex flex-col items-center justify-start p-2 sm:p-6 pt-16 sm:pt-20 pb-20 cursor-pointer"
           onClick={toggleUI}
         >
           <div
@@ -603,7 +603,7 @@ export function PiascoreReader({ initialChart, folderId, onLeaderStart, onFollow
               e.stopPropagation();
               toggleUI();
             }}
-            className="bg-white text-slate-900 shadow-2xl rounded-2xl p-4 sm:p-8 md:p-10 w-full max-w-5xl border border-slate-200/80 my-2"
+            className="bg-white text-slate-900 shadow-2xl rounded-2xl p-4 sm:p-8 md:p-10 w-fit min-w-full max-w-none border border-slate-200/80 my-2"
           >
             <ChartRenderer chart={currentChart} selectedFont={selectedFont} chordColor={chordColor} id="piascore-chart-card" />
           </div>
