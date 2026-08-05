@@ -203,15 +203,25 @@ export function ChartRenderer({
                       <div className="shrink-0" style={{ width: `${Math.max(7, labelCh)}ch`, minWidth: '6rem' }}></div>
                     )}
 
-                    {/* Right Label (Annotation) */}
-                    {line.labelRight && (
-                      <div 
-                        className="shrink-0 text-slate-500 font-semibold print:text-black text-lg sm:text-2xl print:text-[1em] text-left pl-3 sm:pl-6 flex items-center ml-auto"
-                        style={{ width: `${labelRightCh}ch` }}
-                      >
-                        {line.labelRight}
-                      </div>
-                    )}
+                    {/* Right Label (Annotation text after || bar) */}
+                    {line.labelRight && (() => {
+                      const labelRightKey = `labelRight-${lIdx}-${line.labelRight}`;
+                      const customLabelRightColor = itemColors[labelRightKey];
+                      return (
+                        <div 
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            setActivePickerKey(activePickerKey === labelRightKey ? null : labelRightKey);
+                          }}
+                          className="relative shrink-0 font-semibold print:text-black text-lg sm:text-2xl print:text-[1em] text-left pl-3 sm:pl-6 flex items-center ml-auto cursor-pointer hover:opacity-75 transition-opacity"
+                          style={{ width: `${labelRightCh}ch`, color: customLabelRightColor || '#64748b' }}
+                          title="Click to color this text"
+                        >
+                          <ColorPickerPopover itemKey={labelRightKey} activePickerKey={activePickerKey} onSetColor={handleSetColor} />
+                          {line.labelRight}
+                        </div>
+                      );
+                    })()}
                   </div>
                 );
               }
@@ -293,15 +303,25 @@ export function ChartRenderer({
                     })()}
                   </div>
                   
-                  {/* Right Label */}
-                  {maxLabelRightLen > 0 && (
-                    <div 
-                      className="shrink-0 text-slate-500 font-semibold print:text-black text-lg sm:text-2xl print:text-[1em] text-left pl-3 sm:pl-6 flex items-center"
-                      style={{ width: `${labelRightCh}ch` }}
-                    >
-                      {line.labelRight}
-                    </div>
-                  )}
+                  {/* Right Label (Annotation text after || bar) */}
+                  {line.labelRight && (() => {
+                    const labelRightKey = `labelRight-${lIdx}-${line.labelRight}`;
+                    const customLabelRightColor = itemColors[labelRightKey];
+                    return (
+                      <div 
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          setActivePickerKey(activePickerKey === labelRightKey ? null : labelRightKey);
+                        }}
+                        className="relative shrink-0 font-semibold print:text-black text-lg sm:text-2xl print:text-[1em] text-left pl-3 sm:pl-6 flex items-center cursor-pointer hover:opacity-75 transition-opacity"
+                        style={{ width: `${labelRightCh}ch`, color: customLabelRightColor || '#64748b' }}
+                        title="Click to color this text"
+                      >
+                        <ColorPickerPopover itemKey={labelRightKey} activePickerKey={activePickerKey} onSetColor={handleSetColor} />
+                        {line.labelRight}
+                      </div>
+                    );
+                  })()}
                 </div>
               );
             })}
