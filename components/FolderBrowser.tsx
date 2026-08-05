@@ -290,12 +290,7 @@ export function FolderBrowser({ folderId, folderName, kind = 'chart' }: Props) {
               if (window.innerHeight - rect.bottom < 200) {
                 setDropdownDirection('up');
               } else {
-                setDropdownDirection('down'); // 3 dot problem
-              }
-              if (rect.left < 200) {
-                setDropdownHorizontal('left');
-              } else {
-                setDropdownHorizontal('right');
+                setDropdownDirection('down');
               }
               setActiveDropdown(id);
             } else {
@@ -308,7 +303,7 @@ export function FolderBrowser({ folderId, folderName, kind = 'chart' }: Props) {
         </button>
 
         {isOpen && (
-          <div className={`absolute ${dropdownHorizontal === 'right' ? 'right-0' : 'left-0'} ${dropdownDirection === 'up' ? 'bottom-full mb-2' : 'top-full mt-2'} w-48 bg-[#161033] rounded-xl shadow-2xl z-[9999] border border-white/20 py-1`}>
+          <div className={`absolute right-0 ${dropdownDirection === 'up' ? 'bottom-full mb-2' : 'top-full mt-2'} w-48 bg-[#161033] rounded-xl shadow-2xl z-[9999] border border-white/20 py-1`}>
             <button
               onClick={(e) => { e.stopPropagation(); setActiveDropdown(null); setRenameItem({ id, type, currentName: name }); }}
               className="flex items-center w-full px-4 py-2 text-xs uppercase tracking-widest font-bold text-text-secondary hover:bg-white/5 hover:text-white"
@@ -448,7 +443,11 @@ export function FolderBrowser({ folderId, folderName, kind = 'chart' }: Props) {
                   <p className="text-[10px] text-text-secondary mt-1">{new Date(chart.updated_at).toLocaleDateString()}</p>
                   <button
                     className={`absolute bottom-3 right-3 z-10 p-1.5 rounded-full hover:bg-white/10 transition-all ${
-                      chart.is_bookmarked ? 'opacity-100 scale-100' : 'opacity-0 group-hover:opacity-100 scale-90 hover:scale-100'
+                      activeDropdown === chart.id
+                        ? 'opacity-0 pointer-events-none'
+                        : chart.is_bookmarked
+                        ? 'opacity-100 scale-100'
+                        : 'opacity-0 group-hover:opacity-100 scale-90 hover:scale-100'
                     }`}
                     onClick={(e) => {
                       e.stopPropagation();
@@ -541,7 +540,11 @@ export function FolderBrowser({ folderId, folderName, kind = 'chart' }: Props) {
                     <p className="text-[10px] text-text-secondary mt-1">{new Date(chart.updated_at).toLocaleDateString()}</p>
                     <button
                       className={`absolute bottom-3 right-3 z-10 p-1.5 rounded-full hover:bg-white/10 transition-all ${
-                        chart.is_bookmarked ? 'opacity-100 scale-100' : 'opacity-0 group-hover:opacity-100 scale-90 hover:scale-100'
+                        activeDropdown === chart.id
+                          ? 'opacity-0 pointer-events-none'
+                          : chart.is_bookmarked
+                          ? 'opacity-100 scale-100'
+                          : 'opacity-0 group-hover:opacity-100 scale-90 hover:scale-100'
                       }`}
                       onClick={(e) => {
                         e.stopPropagation();
