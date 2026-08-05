@@ -58,8 +58,8 @@ export function ChartRenderer({
         </div>
 
         {/* Lines */}
-        <div className="flex flex-col w-full">
-          <div className="flex flex-col gap-4 sm:gap-6 print:gap-8 w-full overflow-x-auto scrollbar-none px-1">
+        <div className="flex flex-col w-full items-center justify-center">
+          <div className="flex flex-col gap-4 sm:gap-6 print:gap-8 w-fit mx-auto print:mx-0 max-w-full overflow-x-auto scrollbar-none px-2">
             {chartData.lines.map((line, lIdx) => {
               if (line.blocks.length === 0) {
                 return (
