@@ -192,23 +192,18 @@ export default function PerformancePage() {
     return () => cancelAnimationFrame(animId);
   }, [isAutoScrolling, scrollSpeed]);
 
-  // Intercept browser back button when leading a sync session
+  // Prevent accidental page leave / tab close during live performance session
   useEffect(() => {
     if (mode !== 'leader') return;
-    const currentUrl = window.location.href;
-    try {
-      window.history.pushState({ inSyncSession: true }, '', currentUrl);
-    } catch {}
 
-    const handlePopState = () => {
-      try {
-        window.history.pushState({ inSyncSession: true }, '', currentUrl);
-      } catch {}
-      setShowEndConfirmModal(true);
+    const handleBeforeUnload = (e: BeforeUnloadEvent) => {
+      e.preventDefault();
+      e.returnValue = '';
+      return '';
     };
 
-    window.addEventListener('popstate', handlePopState);
-    return () => window.removeEventListener('popstate', handlePopState);
+    window.addEventListener('beforeunload', handleBeforeUnload);
+    return () => window.removeEventListener('beforeunload', handleBeforeUnload);
   }, [mode]);
 
   const handleEndSession = () => {

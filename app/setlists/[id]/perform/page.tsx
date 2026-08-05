@@ -306,23 +306,18 @@ export default function SetlistPerformPage() {
     return () => window.removeEventListener('setlist-session-end', handler);
   }, []);
 
-  // Intercept browser back button when leading a setlist sync session
+  // Prevent accidental page leave / tab close during setlist performance session
   useEffect(() => {
     if (!isLeader) return;
-    const currentUrl = window.location.href;
-    try {
-      window.history.pushState({ inSyncSession: true }, '', currentUrl);
-    } catch {}
 
-    const handlePopState = () => {
-      try {
-        window.history.pushState({ inSyncSession: true }, '', currentUrl);
-      } catch {}
-      setShowEndConfirmModal(true);
+    const handleBeforeUnload = (e: BeforeUnloadEvent) => {
+      e.preventDefault();
+      e.returnValue = '';
+      return '';
     };
 
-    window.addEventListener('popstate', handlePopState);
-    return () => window.removeEventListener('popstate', handlePopState);
+    window.addEventListener('beforeunload', handleBeforeUnload);
+    return () => window.removeEventListener('beforeunload', handleBeforeUnload);
   }, [isLeader]);
 
   // Keyboard nav (leader)
