@@ -3,6 +3,7 @@ import { Cloud } from 'lucide-react';
 import { parseChord } from '@/lib/chord-parser';
 import { ChartData } from '@/lib/chart-types';
 import { getChordNotes } from '@/lib/chord-notes';
+import { saveChart } from '@/lib/storage';
 
 function ChordNoteTooltip({ chord }: { chord: string }) {
   const info = getChordNotes(chord);
@@ -154,29 +155,93 @@ export function ChartRenderer({
   }, [activeNoteTooltipKey]);
 
   useEffect(() => {
-    if (!chart?.id) return;
+    if (!chart?.id || !chart?.lines) return;
+    const colors: Record<string, string> = {};
+    let savedLocal: Record<string, string> = {};
     try {
       const saved = localStorage.getItem(`chord-grid-item-colors-${chart.id}`);
-      if (saved) setItemColors(JSON.parse(saved));
-    } catch {}
-  }, [chart?.id]);
-
-  const handleSetColor = (key: string, color: string | null) => {
-    setItemColors((prev) => {
-      const updated = { ...prev };
-      if (color === null) {
-        delete updated[key];
-      } else {
-        updated[key] = color;
+      if (saved) {
+        savedLocal = JSON.parse(saved);
+        Object.assign(colors, savedLocal);
       }
-      try {
-        if (chart?.id) {
-          localStorage.setItem(`chord-grid-item-colors-${chart.id}`, JSON.stringify(updated));
-        }
-      } catch {}
-      return updated;
+    } catch {}
+
+    let needsMigrationSave = false;
+
+    chart.lines.forEach((line, lIdx) => {
+      const secName = line.label ? line.label.trim().toLowerCase() : '';
+      const sectionKey = secName ? `section-${secName}` : `label-${lIdx}`;
+      const labelRightKey = line.labelRight ? `labelRight-${lIdx}-${line.labelRight}` : '';
+
+      // If cloud data already has colors, prioritize them over local cache
+      if (line.labelColor) {
+        if (secName) colors[sectionKey] = line.labelColor;
+        colors[`label-${lIdx}`] = line.labelColor;
+      } else if (savedLocal[sectionKey] || savedLocal[`label-${lIdx}`]) {
+        // Migrate locally saved color to cloud structure
+        line.labelColor = savedLocal[sectionKey] || savedLocal[`label-${lIdx}`];
+        needsMigrationSave = true;
+      }
+
+      if (line.labelRight && line.labelRightColor) {
+        colors[labelRightKey] = line.labelRightColor;
+      } else if (line.labelRight && savedLocal[labelRightKey]) {
+        line.labelRightColor = savedLocal[labelRightKey];
+        needsMigrationSave = true;
+      }
     });
+
+    setItemColors(colors);
+
+    if (needsMigrationSave && chart.id) {
+      try {
+        saveChart(chart as any).catch(() => {});
+      } catch {}
+    }
+  }, [chart?.id, chart?.lines]);
+
+  const handleSetColor = async (key: string, color: string | null) => {
+    const updatedColors = { ...itemColors };
+    if (color === null) {
+      delete updatedColors[key];
+    } else {
+      updatedColors[key] = color;
+    }
+    setItemColors(updatedColors);
     setActivePickerKey(null);
+
+    try {
+      if (chart?.id) {
+        localStorage.setItem(`chord-grid-item-colors-${chart.id}`, JSON.stringify(updatedColors));
+      }
+    } catch {}
+
+    // Save colors directly into chart.lines in cloud database (Supabase)
+    if (chart && chart.lines && chart.id) {
+      let madeChange = false;
+      chart.lines.forEach((line, lIdx) => {
+        const secName = line.label ? line.label.trim().toLowerCase() : '';
+        const sectionKey = secName ? `section-${secName}` : `label-${lIdx}`;
+        const labelRightKey = line.labelRight ? `labelRight-${lIdx}-${line.labelRight}` : '';
+
+        if (key === sectionKey || key === `label-${lIdx}`) {
+          line.labelColor = color !== null ? color : undefined;
+          madeChange = true;
+        }
+        if (key === labelRightKey) {
+          line.labelRightColor = color !== null ? color : undefined;
+          madeChange = true;
+        }
+      });
+
+      if (madeChange) {
+        try {
+          await saveChart(chart as any);
+        } catch (err) {
+          console.warn('Failed to sync color change to cloud:', err);
+        }
+      }
+    }
   };
 
   const renderTextFlow = (chartData: ChartData) => {

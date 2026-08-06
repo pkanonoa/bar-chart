@@ -10,6 +10,8 @@ export type Line = {
   label: string;
   labelRight?: string;
   blocks: Block[];
+  labelColor?: string;
+  labelRightColor?: string;
 };
 
 export type ChartData = {
